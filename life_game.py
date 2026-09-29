@@ -92,6 +92,7 @@ class Player:
         print(f"{Color.GOLD}{'='*68}{Color.RESET}")
         print(f" {Color.BOLD}{self.name}{Color.RESET} ({g_symbol}) · {curr_year} 年 ({self.age} 岁) | 轨迹: {Color.CYAN}{self.career_track} · {self.social_rank}{Color.RESET} | 至亲: {Color.GREEN}{format_family_status(self)}{Color.RESET} | 进度 [{stage_idx}/{total_stages}]")
         print(f" 时代背景: {Color.YELLOW}{era_title}{Color.RESET} · {Color.GRAY}{era_desc}{Color.RESET}")
+        print(f" 历史备考: {Color.YELLOW}{resolve_landmark(curr_year)}{Color.RESET}")
         print(f"{Color.GOLD}{'-'*68}{Color.RESET}")
         print(f" [健康]: {int(self.health):<3}♥  |  [财富]: {self.wealth:.1f} {wealth_unit(self.epoch_mode):<4}  |  [智识]: {int(self.intellect):<3}✦  |  [心安]: {int(self.happiness):<3}☼  |  [气运]: {int(self.luck):<3}🎲")
         sc = self.track_scores
@@ -462,6 +463,28 @@ def generate_random_timeline():
 
 SAVE_FILE = ".fushenglu_save.json"
 RECORDS_FILE = ".fushenglu_records.json"
+KARMA_FILE = ".fushenglu_karma.json"
+
+
+def get_karma_points():
+    if not os.path.exists(KARMA_FILE):
+        return 15
+    try:
+        with open(KARMA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f).get("karma", 15)
+    except Exception:
+        return 15
+
+
+def add_karma_points(n):
+    cur = get_karma_points()
+    updated = max(0, cur + n)
+    try:
+        with open(KARMA_FILE, "w", encoding="utf-8") as f:
+            json.dump({"karma": updated}, f)
+    except Exception:
+        pass
+    return updated
 
 
 def save_game_state(player, stage_idx, timeline):
@@ -661,11 +684,40 @@ def main():
         print(f"\n{Color.GRAY}重新祈求天命...{Color.RESET}\n")
         time.sleep(0.05)
 
+    # 六道轮回祖荫赐福 (消耗5点轮回业力)
+    karma = get_karma_points()
+    blessing_chosen = None
+    if karma >= 5:
+        print(f"  {Color.PURPLE}🌌 当前六道轮回业力: {karma} 点{Color.RESET}")
+        b_input = input(f"  {Color.GOLD}是否求取【祖荫赐福】(消耗5点业力)? [1.青云有路(+8✦) 2.殷实祖荫(+2.5万) 3.体魄如钟(+10♥) 4.福星临门(+12🎲) 0.不求取]: {Color.RESET}").strip()
+        if b_input == "1":
+            blessing_chosen = ("bless_intellect", "青云有路")
+        elif b_input == "2":
+            blessing_chosen = ("bless_wealth", "殷实祖荫")
+        elif b_input == "3":
+            blessing_chosen = ("bless_health", "体魄如钟")
+        elif b_input == "4":
+            blessing_chosen = ("bless_luck", "福星临门")
+
     name = input(f"\n{Color.CYAN}请输入入世姓名 (留空随机): {Color.RESET}").strip()
     if not name:
         name = pick_epoch_name(epoch_mode, gender)
 
     player = Player(name, epoch_mode, b_year, origin, trait, gender=gender)
+    if blessing_chosen:
+        add_karma_points(-5)
+        bid, bname = blessing_chosen
+        if bid == "bless_intellect":
+            player.intellect = min(100, player.intellect + 8)
+        elif bid == "bless_wealth":
+            player.wealth = round(player.wealth + 2.5, 1)
+        elif bid == "bless_health":
+            player.health = min(100, player.health + 10)
+        elif bid == "bless_luck":
+            player.luck = min(100, player.luck + 12)
+        player.tags.append(bname)
+        print(f"  {Color.GREEN}【祖荫庇护】已加持【{bname}】！结余轮回业力: {get_karma_points()} 点。{Color.RESET}")
+
     player.birth_month = b_month
     total_stages = 16
     timeline = generate_random_timeline()
@@ -997,6 +1049,12 @@ def render_terminal_ending(player):
 
     print(f"\n{Color.GOLD}{'='*68}{Color.RESET}")
     print(f"{Color.DIM}大浪淘沙，唯心自守。愿你在人间的每一程都无怨无悔。{Color.RESET}\n")
+
+    # 轮回业力结算
+    earned_karma = max(5, int(player.age * 0.15 + (player.wealth * 0.35 if player.wealth > 0 else 0) + player.reputation * 0.2))
+    total_k = add_karma_points(earned_karma)
+    print(f"{Color.PURPLE}【 🌌 六道轮回业力结算 】{Color.RESET}")
+    print(f"  本世功业转化为 {Color.BOLD}{Color.GOLD}+{earned_karma}{Color.RESET} 点轮回业力，累计结余: {Color.BOLD}{total_k}{Color.RESET} 点。\n")
 
     record_to_hall_of_fame(player, archetype, epitaph)
     if os.path.exists(SAVE_FILE):

@@ -250,6 +250,21 @@
           </p>
         </div>
 
+        <!-- 轮回业力与祖荫赐福模块 (Meta-Progression) -->
+        <div class="max-w-2xl mx-auto mb-4 bg-gradient-to-r from-purple-950/40 via-zinc-900/90 to-purple-950/40 p-3.5 rounded-xl border border-purple-500/40 text-left font-sans-sc">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-purple-200 flex items-center">
+              <span class="mr-1.5 text-sm">🌌</span> 六道轮回业力：
+              <span id="karma-points-display" class="font-mono text-amber-300 font-bold ml-1 text-sm">15</span>
+              <span class="text-zinc-400 text-[10px] ml-1">点（历世轮回善业累积）</span>
+            </span>
+            <span id="blessing-status-tip" class="text-[10px] text-zinc-400 font-mono">可选 1 项祖荫 (消耗5点)</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[11px]" id="blessings-container">
+            <!-- 动态渲染5项祖荫赐福 -->
+          </div>
+        </div>
+
         <!-- 随机投胎抽卡卡片 -->
         <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 max-w-lg mx-auto mb-6 text-left font-sans-sc relative">
           <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2">
@@ -344,6 +359,10 @@
           <p id="era-background-desc" class="text-zinc-400 text-xs leading-relaxed">
             历史的齿轮急速转动，春天的故事传遍大江南北……
           </p>
+          <div id="era-landmark-box" class="mt-2 pt-1.5 border-t border-amber-800/40 text-[11px] text-amber-300/90 font-mono flex items-center">
+            <span class="mr-1">📜 时事纪年：</span>
+            <span id="era-landmark-text" class="text-zinc-300">--</span>
+          </div>
         </div>
 
         <!-- 年龄与状态栏 -->
@@ -3695,6 +3714,22 @@
       player.familyLogs = [];
 
       player.tags = [player.origin.trait, player.trait.name, player.gender === 'female' ? '巾帼女史' : '须眉男儿'];
+
+      // 应用祖荫赐福 (消耗5点轮回业力)
+      if (typeof selectedBlessingId !== 'undefined' && selectedBlessingId && getKarmaPoints() >= 5) {
+        addKarmaPoints(-5);
+        const b = ANCESTRAL_BLESSINGS_DEF.find(x => x.id === selectedBlessingId);
+        if (b) {
+          if (b.id === "bless_intellect") player.intellect = Math.min(100, player.intellect + 8);
+          else if (b.id === "bless_wealth") player.wealth = +(player.wealth + 2.5).toFixed(1);
+          else if (b.id === "bless_health") player.health = Math.min(100, player.health + 10);
+          else if (b.id === "bless_luck") player.luck = Math.min(100, player.luck + 12);
+          else if (b.id === "bless_rep") player.reputation = Math.min(100, player.reputation + 15);
+          player.tags.push(b.tag);
+        }
+        selectedBlessingId = null;
+      }
+
       player.age = 0;
       player.history = [];
       player.keyChoices = [];
@@ -3795,6 +3830,10 @@
       const eraInfo = resolveEraDetails(year, player.epochMode);
       document.getElementById('era-tag').innerText = eraInfo.name;
       document.getElementById('era-background-desc').innerText = eraInfo.desc;
+      const lmEl = document.getElementById('era-landmark-text');
+      if (lmEl && typeof resolveLandmark === 'function') {
+        lmEl.innerText = resolveLandmark(year);
+      }
 
       document.getElementById('display-age').innerText = `${age} 岁`;
       document.getElementById('display-period').innerText = evtConfig.period;
@@ -4093,26 +4132,61 @@
     function showDiceFeedbackModal(evtConfig, choice, historyEntry) {
       const isGuaranteed = historyEntry.successChance >= 100;
       const fateTip = historyEntry.fateNote ? ` <span class="text-purple-300 font-mono text-[10px]">(${historyEntry.fateNote})</span>` : '';
-      const diceNotice = isGuaranteed 
-        ? `<div class="text-[11px] text-emerald-400 font-mono mb-2">【 命运契约 · 确定性达成 】</div>`
-        : `<div class="text-[11px] text-amber-400 font-mono mb-2 flex items-center justify-between">
-             <span>🎲 命运掷骰：出目 ${historyEntry.roll} / 胜率 ${historyEntry.successChance}%${fateTip}</span>
-             <span class="font-bold ${historyEntry.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${historyEntry.isSuccess ? '★ 顺遂如愿' : '✕ 天不遂人'}</span>
-           </div>`;
-
       const container = document.getElementById('choices-container');
-      container.innerHTML = `
-        <div class="bg-zinc-800/90 border border-amber-600/40 rounded-lg p-4 shadow-xl animate-fade-in font-sans-sc">
-          ${diceNotice}
-          <div class="text-xs text-zinc-300 font-medium mb-2 border-b border-zinc-700/60 pb-1.5">抉择：${choice.text}</div>
-          <div class="text-xs md:text-sm text-zinc-200 leading-relaxed pt-1 mb-4 font-serif">
-            ${historyEntry.feedback}
+      if (!container) return;
+
+      const renderCard = () => {
+        const diceNotice = isGuaranteed 
+          ? `<div class="text-[11px] text-emerald-400 font-mono mb-2">【 命运契约 · 确定性达成 】</div>`
+          : `<div class="text-[11px] text-amber-400 font-mono mb-2 flex items-center justify-between">
+               <span>🎲 命运掷骰：出目 <span class="font-bold text-sm ${historyEntry.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${historyEntry.roll}</span> / 胜率 ${historyEntry.successChance}%${fateTip}</span>
+               <span class="font-bold ${historyEntry.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${historyEntry.isSuccess ? '★ 顺遂如愿' : '✕ 天不遂人'}</span>
+             </div>`;
+
+        container.innerHTML = `
+          <div class="bg-zinc-800/90 border border-amber-600/40 rounded-lg p-4 shadow-xl animate-fade-in font-sans-sc">
+            ${diceNotice}
+            <div class="text-xs text-zinc-300 font-medium mb-2 border-b border-zinc-700/60 pb-1.5">抉择：${choice.text}</div>
+            <div class="text-xs md:text-sm text-zinc-200 leading-relaxed pt-1 mb-4 font-serif">
+              ${historyEntry.feedback}
+            </div>
+            <button onclick="nextEvent()" class="w-full py-3.5 sm:py-2.5 bg-amber-600 hover:bg-amber-500 active:bg-amber-400 active:scale-[0.985] text-zinc-950 font-bold rounded-xl sm:rounded-lg text-sm md:text-sm tracking-wider transition shadow-lg touch-manipulation cursor-pointer">
+              步入岁月下一程 ➔
+            </button>
           </div>
-          <button onclick="nextEvent()" class="w-full py-3.5 sm:py-2.5 bg-amber-600 hover:bg-amber-500 active:bg-amber-400 active:scale-[0.985] text-zinc-950 font-bold rounded-xl sm:rounded-lg text-sm md:text-sm tracking-wider transition shadow-lg touch-manipulation cursor-pointer">
-            步入岁月下一程 ➔
-          </button>
-        </div>
-      `;
+        `;
+      };
+
+      if (!isGuaranteed && audioEnabled && typeof setInterval !== 'undefined') {
+        soundDice();
+        container.innerHTML = `
+          <div class="bg-zinc-900/90 border-2 border-amber-500/60 rounded-xl p-5 text-center shadow-2xl font-sans-sc animate-fade-in">
+            <div class="text-3xl mb-1.5 animate-bounce">🎲</div>
+            <div class="text-xs text-amber-300 font-bold mb-1 font-serif">天命掷骰检定中……</div>
+            <div id="dice-rolling-display" class="text-3xl font-black font-mono text-zinc-100 my-1 tracking-wider">--</div>
+            <div class="text-[11px] text-zinc-400 font-mono">胜率检定基准: ${historyEntry.successChance}%${fateTip}</div>
+          </div>
+        `;
+        let count = 0;
+        const timer = setInterval(() => {
+          count++;
+          const el = document.getElementById('dice-rolling-display');
+          if (el) el.innerText = Math.floor(Math.random() * 100) + 1;
+          playTone(420 + Math.random() * 140, 'triangle', 0.03, 0.03);
+          if (count >= 5) {
+            clearInterval(timer);
+            if (historyEntry.isSuccess) {
+              playTone(523.25, 'sine', 0.25, 0.08);
+              setTimeout(() => playTone(659.25, 'sine', 0.3, 0.08), 70);
+            } else {
+              soundCrisis();
+            }
+            renderCard();
+          }
+        }, 50);
+      } else {
+        renderCard();
+      }
     }
 
     function nextEvent() {
@@ -4221,10 +4295,15 @@
       generateVividBiography();
       renderKeyTurningPoints();
 
+      // 轮回天命业力结算与继承
+      const earnedKarma = Math.max(5, Math.floor(player.age * 0.15 + (player.wealth > 0 ? player.wealth * 0.35 : 0) + player.reputation * 0.2));
+      addKarmaPoints(earnedKarma);
+
       checkAndUnlockAchievements(player);
       recordLifeToHallOfFame(player, archetypeData.archetype, archetypeData.epitaph);
       try { localStorage.removeItem('fushenglu_active_save_v1'); } catch (e) {}
       checkResumeAvailable();
+      renderKarmaAndBlessings();
     }
 
     function renderFamilyEnding() {
@@ -4563,6 +4642,7 @@ function renderKeyTurningPoints() {
       soundClick();
       rollNewDestiny();
       checkResumeAvailable();
+      renderKarmaAndBlessings();
       document.getElementById('screen-ending').classList.add('hidden');
       document.getElementById('screen-intro').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -5353,6 +5433,92 @@ function renderKeyTurningPoints() {
       }
     }
 
+    // ==================== 六道轮回业力与祖荫赐福系统 ====================
+    const ANCESTRAL_BLESSINGS_DEF = [
+      { id: "bless_intellect", title: "青云有路", desc: "初始智识 +8✦", icon: "📜", cost: 5, tag: "青云有路" },
+      { id: "bless_wealth", title: "殷实祖荫", desc: "初始家资 +2.5", icon: "🪙", cost: 5, tag: "殷实祖荫" },
+      { id: "bless_health", title: "体魄如钟", desc: "初始体魄 +10♥", icon: "🛡️", cost: 5, tag: "体魄如钟" },
+      { id: "bless_luck", title: "福星临门", desc: "初始气运 +12🎲", icon: "🎲", cost: 5, tag: "福星临门" },
+      { id: "bless_rep", title: "名门遗泽", desc: "初始声望 +15", icon: "👑", cost: 5, tag: "名门遗泽" }
+    ];
+
+    let selectedBlessingId = null;
+
+    function getKarmaPoints() {
+      try {
+        if (typeof localStorage === 'undefined') return 15;
+        const raw = localStorage.getItem('fushenglu_karma_points');
+        return raw !== null ? parseInt(raw, 10) : 15;
+      } catch (e) {
+        return 15;
+      }
+    }
+
+    function addKarmaPoints(n) {
+      const cur = getKarmaPoints();
+      const updated = Math.max(0, cur + n);
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('fushenglu_karma_points', updated);
+        }
+      } catch (e) {}
+      renderKarmaAndBlessings();
+    }
+
+    function toggleBlessing(id) {
+      soundClick();
+      const karma = getKarmaPoints();
+      if (selectedBlessingId === id) {
+        selectedBlessingId = null;
+      } else {
+        if (karma < 5) {
+          alert("轮回业力不足 5 点，多度凡尘几世方能换得此祖荫恩泽。");
+          return;
+        }
+        selectedBlessingId = id;
+      }
+      renderKarmaAndBlessings();
+    }
+
+    function renderKarmaAndBlessings() {
+      const karma = getKarmaPoints();
+      const disp = document.getElementById('karma-points-display');
+      if (disp) disp.innerText = karma;
+
+      const tip = document.getElementById('blessing-status-tip');
+      if (tip) {
+        if (selectedBlessingId) {
+          const b = ANCESTRAL_BLESSINGS_DEF.find(x => x.id === selectedBlessingId);
+          tip.innerText = `已启用【${b.title}】(-5点)`;
+          tip.className = "text-[10px] text-amber-300 font-bold font-mono";
+        } else {
+          tip.innerText = "可选 1 项祖荫 (消耗5点)";
+          tip.className = "text-[10px] text-zinc-400 font-mono";
+        }
+      }
+
+      const container = document.getElementById('blessings-container');
+      if (!container) return;
+      container.innerHTML = ANCESTRAL_BLESSINGS_DEF.map(b => {
+        const on = (b.id === selectedBlessingId);
+        const disabled = (!on && karma < 5);
+        return `
+          <button type="button" onclick="toggleBlessing('${b.id}')" ${disabled ? 'disabled' : ''} class="p-2 rounded-lg border text-left transition flex flex-col justify-between ${
+            on 
+              ? 'bg-purple-900/60 border-amber-400 text-amber-200 ring-2 ring-amber-400/40 shadow-md' 
+              : (disabled ? 'bg-zinc-900/40 border-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-zinc-900/80 border-zinc-800 hover:border-purple-500/60 text-zinc-300')
+          }">
+            <div class="flex items-center justify-between w-full mb-1">
+              <span class="text-sm">${b.icon}</span>
+              <span class="text-[9px] font-mono ${on ? 'text-amber-300 font-bold' : 'text-zinc-500'}">5点</span>
+            </div>
+            <div class="font-bold text-[11px] ${on ? 'text-amber-200' : 'text-zinc-300'} font-serif">${b.title}</div>
+            <div class="text-[9px] ${on ? 'text-purple-200' : 'text-zinc-400'} mt-0.5">${b.desc}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
     // ==================== 视觉美学主题切换 (墨金 / 宣纸 / 幽蓝) ====================
     const THEMES = [
       { id: "ink", label: "墨金", className: "" },
@@ -5423,6 +5589,7 @@ function renderKeyTurningPoints() {
     rollNewDestiny();
     updateAchievementBadge();
     checkResumeAvailable();
+    renderKarmaAndBlessings();
 
     // 注册 PWA Service Worker (支持手机离线安装与全屏独立运行)
     if ('serviceWorker' in navigator) {
