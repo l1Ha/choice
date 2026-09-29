@@ -261,6 +261,48 @@ def pick_stage_event(era_id, stage_idx, gender="male"):
         return candidates[0][0]
     return random.choice(pool)
 
+
+def calculate_fate_bond_modifier(player, choice):
+    if not player or not getattr(player, "tags", None) or not choice:
+        return 0, []
+    total = 0
+    reasons = []
+    text = (choice.get("text", "") + " " + choice.get("risk_label", "")).lower()
+
+    for tag in player.tags:
+        if tag in ("灵光乍现", "博闻强记", "刀笔初成", "深谋远虑", "敏锐嗅觉", "学有渊源"):
+            if any(k in text for k in ("书", "考", "学", "官", "案", "法", "算法", "谋", "辨", "计", "文", "算", "策", "文书", "夜校", "科研", "试")):
+                total += 7
+                reasons.append(f"{tag} +7%")
+        elif tag in ("天生神力", "筋骨强健", "不屈不挠", "从戎有功", "弓马娴熟"):
+            if any(k in text for k in ("战", "兵", "军", "斗", "山", "逃", "力", "突围", "守卫", "苦力", "涉险", "跋涉", "巡检")):
+                total += 7
+                reasons.append(f"{tag} +7%")
+        elif tag in ("商海通达", "货殖有方", "信誉卓著", "利涉大川", "盘店开坊"):
+            if any(k in text for k in ("商", "钱", "货", "盘", "买", "卖", "利", "本", "股", "资", "仓", "市", "账", "店", "铺")):
+                total += 7
+                reasons.append(f"{tag} +7%")
+        elif tag in ("八面玲珑", "厚道人家", "广结善缘", "清心寡欲"):
+            if any(k in text for k in ("人", "友", "交", "亲", "邻", "辞", "退", "和", "隐", "朋", "客", "族", "里")):
+                total += 6
+                reasons.append(f"{tag} +6%")
+        elif tag == "结发齐心":
+            if any(k in text for k in ("难", "危", "险", "灾", "劫", "渡", "困", "病", "坚守", "风浪", "关口")):
+                total += 5
+                reasons.append("同舟共济 +5%")
+        elif tag in ("承欢膝下", "儿孙绕膝"):
+            if any(k in text for k in ("家", "立业", "基业", "长远", "安居", "置产", "护佑", "传承")):
+                total += 5
+                reasons.append("庇荫后人 +5%")
+
+    if "暗疾缠身" in player.tags or "旧伤难愈" in player.tags:
+        if any(k in text for k in ("病", "劳", "累", "险", "耗", "远行", "重任", "严寒", "高压")):
+            total -= 6
+            reasons.append("旧疾牵绊 -6%")
+
+    total = max(-10, min(15, total))
+    return total, reasons
+
 # 过去纪元 16 大关卡
 
 LIFE_STAGE_BRACKETS = [
@@ -552,8 +594,11 @@ def run_game_loop(player, start_stage, total_stages, timeline):
 
         print(f"{Color.CYAN}面临抉择：{Color.RESET}")
         for idx, c in enumerate(stage["choices"], 1):
-            chance = c["calc_chance"](player)
-            badge = f"{Color.GREEN}[稳妥必成]{Color.RESET}" if chance >= 100 else f"{Color.YELLOW}[成功率约 {chance}%]{Color.RESET}"
+            base_chance = c["calc_chance"](player)
+            fate_bonus, reasons = calculate_fate_bond_modifier(player, c)
+            eff_chance = 100 if base_chance >= 100 else min(95, max(15, base_chance + fate_bonus))
+            fate_tip = f" {Color.PURPLE}[羁绊: {reasons[0]}]{Color.RESET}" if (base_chance < 100 and reasons) else ""
+            badge = f"{Color.GREEN}[稳妥必成]{Color.RESET}" if eff_chance >= 100 else f"{Color.YELLOW}[成功率约 {eff_chance}%]{Color.RESET}{fate_tip}"
             print(f"  {idx}. {c['text']}  {badge} ({c['risk_label']})")
 
         while True:
@@ -564,7 +609,9 @@ def run_game_loop(player, start_stage, total_stages, timeline):
             print(f"{Color.RED}输入无效，请重新选择。{Color.RESET}")
 
         chosen = stage["choices"][chosen_idx]
-        chance = chosen["calc_chance"](player)
+        base_chance = chosen["calc_chance"](player)
+        fate_bonus, reasons = calculate_fate_bond_modifier(player, chosen)
+        chance = 100 if base_chance >= 100 else min(95, max(15, base_chance + fate_bonus))
         roll = random.randint(1, 100)
         is_success = roll <= chance
 
@@ -630,7 +677,8 @@ def run_game_loop(player, start_stage, total_stages, timeline):
             player.key_choices.append(record)
 
         if chance < 100:
-            print(f"\n{Color.PURPLE}🎲 命运掷骰：出目 {roll} / 胜率基线 {chance}%  ➔  {'★ 顺遂如愿' if is_success else '✕ 天不遂人'}{Color.RESET}")
+            fate_note = f" ({Color.PURPLE}羁绊加成: {', '.join(reasons)}{Color.RESET})" if reasons else ""
+            print(f"\n{Color.PURPLE}🎲 命运掷骰：出目 {roll} / 胜率基线 {chance}%{fate_note}  ➔  {'★ 顺遂如愿' if is_success else '✕ 天不遂人'}{Color.RESET}")
         print(f"{Color.GREEN}抉择回响：{Color.RESET}{fb}")
 
         save_game_state(player, idx_stage, timeline)

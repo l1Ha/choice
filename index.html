@@ -479,15 +479,18 @@
         </div>
 
         <!-- 底部操作按钮 -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3 border-t border-zinc-800 font-sans-sc">
-          <button onclick="restartGame()" class="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm transition">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-3 border-t border-zinc-800 font-sans-sc">
+          <button onclick="restartGame()" class="w-full sm:w-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm transition">
             开启另一轮轮回
           </button>
-          <button onclick="openHallOfFame()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-300 font-medium rounded text-xs md:text-sm transition flex items-center justify-center">
+          <button onclick="openLifePoster()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-amber-600/40 font-medium rounded text-xs md:text-sm transition flex items-center justify-center shadow">
+            <span class="mr-1.5">🖼️</span> 典藏画报卡
+          </button>
+          <button onclick="openHallOfFame()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded text-xs md:text-sm transition flex items-center justify-center">
             <span class="mr-1.5">🏛️</span> 功业入万世祠
           </button>
-          <button onclick="copySummary()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded text-xs md:text-sm transition">
-            复制人生纪传档案
+          <button onclick="copySummary()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium rounded text-xs md:text-sm transition flex items-center justify-center">
+            复制纪传档案
           </button>
         </div>
 
@@ -495,6 +498,91 @@
 
     </div>
   </main>
+
+  <!-- 人生长卷典藏画报 弹窗模态框 -->
+  <div id="modal-life-poster" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/85 backdrop-blur-md animate-fade-in font-sans-sc">
+    <div class="bg-[#12141c] border-2 border-amber-500/60 rounded-2xl w-full max-w-xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- 顶栏控制 -->
+      <div class="px-5 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80">
+        <span class="text-amber-300 font-bold text-sm flex items-center">
+          <span class="mr-1.5">🖼️</span> 浮生录 · 人生长卷典藏画报
+        </span>
+        <button onclick="closeLifePoster()" class="text-zinc-400 hover:text-zinc-200 text-lg px-2 py-0.5 rounded transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- 画报展示主体（可截屏/复制） -->
+      <div id="poster-capture-area" class="p-5 md:p-7 overflow-y-auto space-y-4 flex-grow bg-gradient-to-b from-[#181a26] via-[#12141c] to-[#0d0e14] text-zinc-200 font-serif border-x border-amber-950">
+        <!-- 典藏题头 -->
+        <div class="text-center border-b border-amber-600/40 pb-4">
+          <div class="text-[10px] tracking-widest text-amber-500/80 uppercase font-mono mb-1">CHRONICLE OF DESTINY · IMMORTAL RECORD</div>
+          <h2 class="text-2xl md:text-3xl font-black text-amber-100 tracking-wider mb-1 font-serif">
+            《 浮 生 录 》
+          </h2>
+          <div id="poster-dynasty-badge" class="inline-block text-xs px-2.5 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-600/50 font-sans-sc font-medium mt-1">
+            --
+          </div>
+        </div>
+
+        <!-- 主角与命格 -->
+        <div class="text-center py-1">
+          <h3 id="poster-player-title" class="text-xl md:text-2xl font-black text-amber-200 mb-1">
+            --
+          </h3>
+          <p id="poster-lifespan-text" class="text-xs text-zinc-400 font-sans-sc">
+            --
+          </p>
+          <blockquote id="poster-quote" class="mt-3 text-xs md:text-sm text-zinc-300 italic px-4 py-2 border-y border-zinc-800/80 font-serif">
+            “--”
+          </blockquote>
+        </div>
+
+        <!-- 六维数值指标 -->
+        <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono font-sans-sc">
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">健康</span><span id="poster-health" class="font-bold text-red-300">--</span></div>
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">财富</span><span id="poster-wealth" class="font-bold text-amber-300">--</span></div>
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">智识</span><span id="poster-intellect" class="font-bold text-sky-300">--</span></div>
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">心安</span><span id="poster-happiness" class="font-bold text-emerald-300">--</span></div>
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">气运</span><span id="poster-luck" class="font-bold text-purple-300">--</span></div>
+          <div class="bg-zinc-900/70 p-2 rounded border border-zinc-800"><span class="text-zinc-400 text-[10px] block">位阶</span><span id="poster-rank" class="font-bold text-amber-200 truncate">--</span></div>
+        </div>
+
+        <!-- 家族与至亲简述 -->
+        <div class="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/80 text-xs font-sans-sc space-y-1">
+          <div class="text-[11px] text-amber-400 font-bold">【 家族谱系 】</div>
+          <div id="poster-family-text" class="text-zinc-300 text-[11px] leading-relaxed">--</div>
+        </div>
+
+        <!-- 时代跨越足迹 -->
+        <div class="bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/80 text-xs font-sans-sc space-y-1">
+          <div class="text-[11px] text-amber-400 font-bold">【 时代足迹 】</div>
+          <div id="poster-eras-text" class="text-zinc-400 text-[11px] leading-relaxed font-mono">--</div>
+        </div>
+
+        <!-- 核心印记 -->
+        <div class="text-center pt-1 border-t border-zinc-800/60">
+          <div id="poster-tags-container" class="flex flex-wrap justify-center gap-1 text-[10px] font-sans-sc">
+            <!-- 标签 -->
+          </div>
+          <p class="text-[10px] text-zinc-500 mt-2 font-serif">大浪淘沙，唯心自守 · 《浮生录》文字人生模拟器</p>
+        </div>
+      </div>
+
+      <!-- 底部操作按钮 -->
+      <div class="px-5 py-3 border-t border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-xs font-sans-sc">
+        <span class="text-zinc-400 text-[11px]">长按上方区域可直接截屏分享</span>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyPosterText()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded transition">
+            复制画报文本
+          </button>
+          <button onclick="closeLifePoster()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- 成就勋章与万世祠 弹窗模态框 -->
   <div id="modal-hall-of-fame" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in font-sans-sc">
@@ -591,7 +679,23 @@
 
     function soundClick() { playTone(420, 'sine', 0.08, 0.05); }
     function soundDice() { playTone(540, 'triangle', 0.08, 0.06); setTimeout(() => playTone(680, 'sine', 0.1, 0.08), 80); }
-    function soundDecision() { playTone(240, 'triangle', 0.35, 0.12); setTimeout(() => playTone(360, 'sine', 0.3, 0.08), 70); }
+    function soundDecision(epochMode = 'contemporary') {
+      if (epochMode === 'ancient' || epochMode === 'premodern') {
+        // 先秦与宋明：古雅青铜钟磬五声音阶 (宫 261.63Hz -> 徵 392.00Hz -> 羽 440.00Hz)
+        playTone(261.63, 'sine', 0.45, 0.12);
+        setTimeout(() => playTone(392.00, 'triangle', 0.4, 0.09), 90);
+        setTimeout(() => playTone(523.25, 'sine', 0.5, 0.06), 200);
+      } else if (epochMode === 'future') {
+        // 未来星海：电子脉冲与光子共鸣音
+        playTone(330, 'sawtooth', 0.25, 0.08);
+        setTimeout(() => playTone(493.88, 'sine', 0.3, 0.09), 60);
+        setTimeout(() => playTone(659.25, 'sine', 0.4, 0.07), 130);
+      } else {
+        // 近现代与当代：厚重浑厚之音
+        playTone(220, 'triangle', 0.35, 0.12);
+        setTimeout(() => playTone(329.63, 'sine', 0.3, 0.08), 80);
+      }
+    }
     function soundCrisis() { playTone(160, 'sawtooth', 0.45, 0.1); }
     function soundEnding() {
       playTone(220, 'sine', 0.8, 0.1);
@@ -1075,6 +1179,70 @@
         parts.push(`${fam.children.length}子嗣`);
       }
       return parts.join(" · ");
+    }
+
+    // ==================== 命运羁绊与长期后效系统 ====================
+    function calculateFateBondModifier(p, choice) {
+      if (!p || !p.tags || !choice) return { total: 0, reasons: [] };
+      let total = 0;
+      let reasons = [];
+      const text = (choice.text + " " + (choice.riskLevel || "")).toLowerCase();
+
+      p.tags.forEach(tag => {
+        // 智慧、读书与谋略类羁绊
+        if (["灵光乍现", "博闻强记", "刀笔初成", "深谋远虑", "敏锐嗅觉", "学有渊源"].includes(tag)) {
+          if (/书|考|学|官|案|法|算法|谋|辨|计|文|算|策|文书|夜校|科研|试/.test(text)) {
+            total += 7;
+            reasons.push(`${tag} +7%`);
+          }
+        }
+        // 武力、军伍与筋骨体魄类羁绊
+        else if (["天生神力", "筋骨强健", "不屈不挠", "从戎有功", "弓马娴熟"].includes(tag)) {
+          if (/战|兵|军|斗|山|逃|力|突围|守卫|苦力|涉险|跋涉|巡检/.test(text)) {
+            total += 7;
+            reasons.push(`${tag} +7%`);
+          }
+        }
+        // 商贾、贸易与财富眼光类羁绊
+        else if (["商海通达", "货殖有方", "信誉卓著", "利涉大川", "盘店开坊"].includes(tag)) {
+          if (/商|钱|货|盘|买|卖|利|本|股|资|仓|市|账|店|铺/.test(text)) {
+            total += 7;
+            reasons.push(`${tag} +7%`);
+          }
+        }
+        // 处世、德行与人脉信义类羁绊
+        else if (["八面玲珑", "厚道人家", "广结善缘", "清心寡欲"].includes(tag)) {
+          if (/人|友|交|亲|邻|辞|退|和|隐|朋|客|族|里/.test(text)) {
+            total += 6;
+            reasons.push(`${tag} +6%`);
+          }
+        }
+        // 家族齐心与伴侣羁绊
+        else if (tag === "结发齐心") {
+          if (/难|危|险|灾|劫|渡|困|病|坚守|风浪|关口/.test(text)) {
+            total += 5;
+            reasons.push("同舟共济 +5%");
+          }
+        }
+        else if (tag === "承欢膝下" || tag === "儿孙绕膝") {
+          if (/家|立业|基业|长远|安居|置产|护佑|传承/.test(text)) {
+            total += 5;
+            reasons.push("庇荫后人 +5%");
+          }
+        }
+      });
+
+      // 负面伤病削弱羁绊
+      if (p.tags.includes("暗疾缠身") || p.tags.includes("旧伤难愈")) {
+        if (/病|劳|累|险|耗|远行|重任|严寒|高压/.test(text)) {
+          total -= 6;
+          reasons.push("旧疾牵绊 -6%");
+        }
+      }
+
+      // 限制单次羁绊修正最高 +15%，最低 -10%
+      total = Math.max(-10, Math.min(15, total));
+      return { total, reasons };
     }
 
     function generateRandomDestiny() {
@@ -3492,10 +3660,17 @@
         btn.className = "choice-card w-full text-left p-4 sm:p-3.5 rounded-xl sm:rounded-lg bg-zinc-900/95 border border-zinc-800/90 hover:bg-zinc-800/90 active:bg-zinc-800 transition flex flex-col group cursor-pointer shadow-md touch-manipulation select-none";
         btn.onclick = () => handleChoiceSelection(idx);
 
-        const chanceRate = choice.successChance(player);
-        const chanceBadge = chanceRate >= 100 
+        const baseChance = choice.successChance(player);
+        const fateMod = calculateFateBondModifier(player, choice);
+        const effectiveChance = baseChance >= 100 ? 100 : Math.min(95, Math.max(15, baseChance + fateMod.total));
+
+        const fateBadge = (baseChance < 100 && fateMod.reasons.length > 0)
+          ? `<span class="text-[9px] px-1.5 py-0.5 rounded ${fateMod.total > 0 ? 'bg-purple-950/80 text-purple-300 border border-purple-700/60' : 'bg-red-950/80 text-red-300 border border-red-800/60'} font-mono">${fateMod.reasons[0]}</span>`
+          : '';
+
+        const chanceBadge = effectiveChance >= 100 
           ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 font-mono">稳妥必成</span>`
-          : `<span class="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-mono">成功率约 ${Math.min(95, Math.max(15, chanceRate))}%</span>`;
+          : `<div class="flex items-center space-x-1.5"><span class="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-mono">成功率约 ${effectiveChance}%</span>${fateBadge}</div>`;
 
         btn.innerHTML = `
           <div class="flex items-start justify-between w-full mb-1">
@@ -3516,11 +3691,13 @@
     }
 
     function handleChoiceSelection(choiceIndex) {
-      soundDecision();
+      soundDecision(player.epochMode);
       const evtConfig = activeEpochEvents[currentEventIndex];
       const choice = evtConfig.choices[choiceIndex];
 
-      const successChance = choice.successChance(player);
+      const baseChance = choice.successChance(player);
+      const fateMod = calculateFateBondModifier(player, choice);
+      const successChance = baseChance >= 100 ? 100 : Math.min(95, Math.max(15, baseChance + fateMod.total));
       const roll = Math.floor(Math.random() * 100) + 1;
       const isSuccess = roll <= successChance;
 
@@ -3547,6 +3724,7 @@
         isSuccess,
         roll,
         successChance,
+        fateNote: fateMod.reasons.join(', '),
         feedback,
         isKey: choice.isKey
       };
@@ -3600,10 +3778,11 @@
 
     function showDiceFeedbackModal(evtConfig, choice, historyEntry) {
       const isGuaranteed = historyEntry.successChance >= 100;
+      const fateTip = historyEntry.fateNote ? ` <span class="text-purple-300 font-mono text-[10px]">(${historyEntry.fateNote})</span>` : '';
       const diceNotice = isGuaranteed 
         ? `<div class="text-[11px] text-emerald-400 font-mono mb-2">【 命运契约 · 确定性达成 】</div>`
         : `<div class="text-[11px] text-amber-400 font-mono mb-2 flex items-center justify-between">
-             <span>🎲 命运掷骰：出目 ${historyEntry.roll} / 胜率基准 ${historyEntry.successChance}%</span>
+             <span>🎲 命运掷骰：出目 ${historyEntry.roll} / 胜率 ${historyEntry.successChance}%${fateTip}</span>
              <span class="font-bold ${historyEntry.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${historyEntry.isSuccess ? '★ 顺遂如愿' : '✕ 天不遂人'}</span>
            </div>`;
 
@@ -4025,6 +4204,120 @@ function renderKeyTurningPoints() {
         alert("人生纪传档案已成功复制到剪贴板！");
       }).catch(() => {
         alert("复制失败，请手动截屏或选择文本。");
+      });
+    }
+
+    // ==================== 典藏画报卡片生成与导出 ====================
+    function openLifePoster() {
+      soundClick();
+      const p = player;
+      const endYear = p.birthYear + p.age;
+      const cfg = getEpochConfig(p.epochMode);
+      const fam = p.family || initializeFamily(p);
+      const eras = listErasBetween(p.birthYear, endYear);
+      const archetypeData = evaluateLifeArchetype();
+
+      const dynastyEl = document.getElementById('poster-dynasty-badge');
+      if (dynastyEl) dynastyEl.innerText = `${cfg.eraIcon} ${cfg.name} (${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)})`;
+
+      const titleEl = document.getElementById('poster-player-title');
+      if (titleEl) titleEl.innerText = `${p.name} · ${archetypeData.archetype}`;
+
+      const lifespanEl = document.getElementById('poster-lifespan-text');
+      if (lifespanEl) lifespanEl.innerText = `${p.gender === 'female' ? '女 ♀' : '男 ♂'} · 降生于【${p.origin ? p.origin.title : '凡人家'}】 · 享年 ${p.age} 岁 · ${p.deathReason}`;
+
+      const quoteEl = document.getElementById('poster-quote');
+      if (quoteEl) quoteEl.innerText = `“${archetypeData.epitaph}”`;
+
+      const hEl = document.getElementById('poster-health');
+      if (hEl) hEl.innerText = `${Math.round(p.health)}♥`;
+      const wEl = document.getElementById('poster-wealth');
+      if (wEl) wEl.innerText = `${p.wealth.toFixed(1)}${wealthUnitShort(p.epochMode)}`;
+      const iEl = document.getElementById('poster-intellect');
+      if (iEl) iEl.innerText = `${Math.round(p.intellect)}✦`;
+      const hapEl = document.getElementById('poster-happiness');
+      if (hapEl) hapEl.innerText = `${Math.round(p.happiness)}☼`;
+      const lEl = document.getElementById('poster-luck');
+      if (lEl) lEl.innerText = `${Math.round(p.luck)}🎲`;
+      const rEl = document.getElementById('poster-rank');
+      if (rEl) rEl.innerText = `${p.careerTrack}·${p.socialRank}`;
+
+      // 家族简述
+      let fText = `父母：慈父【${fam.father.name}】、严母【${fam.mother.name}】；`;
+      if (fam.spouse) {
+        fText += `结发${fam.spouse.role}【${fam.spouse.name}】相伴一生；`;
+      } else {
+        fText += `一生独行立世；`;
+      }
+      if (fam.children && fam.children.length > 0) {
+        fText += `育有子嗣 ${fam.children.length} 人${fam.grandchildrenCount > 0 ? '，孙辈满堂' : ''}。`;
+      } else {
+        fText += `膝下无子嗣。`;
+      }
+      const famEl = document.getElementById('poster-family-text');
+      if (famEl) famEl.innerText = fText;
+
+      // 时代足迹
+      const erasEl = document.getElementById('poster-eras-text');
+      if (erasEl) {
+        erasEl.innerText = eras.length <= 4 ? eras.join(" ➔ ") : `${eras.slice(0, 2).join(" ➔ ")} ➔ ... ➔ ${eras.slice(-2).join(" ➔ ")} (共${eras.length}重大时代)`;
+      }
+
+      // 印记标签
+      const tagBox = document.getElementById('poster-tags-container');
+      if (tagBox) {
+        tagBox.innerHTML = '';
+        p.tags.slice(0, 8).forEach(t => {
+          const span = document.createElement('span');
+          span.className = "px-2 py-0.5 rounded bg-zinc-800/90 text-amber-200 border border-zinc-700/80";
+          span.innerText = `#${t}`;
+          tagBox.appendChild(span);
+        });
+      }
+
+      const modal = document.getElementById('modal-life-poster');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeLifePoster() {
+      soundClick();
+      const modal = document.getElementById('modal-life-poster');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copyPosterText() {
+      soundClick();
+      const p = player;
+      const endYear = p.birthYear + p.age;
+      const cfg = getEpochConfig(p.epochMode);
+      const arch = document.getElementById('end-archetype').innerText;
+      const quote = document.getElementById('end-quote').innerText;
+      const famText = document.getElementById('poster-family-text') ? document.getElementById('poster-family-text').innerText : '';
+      const erasText = document.getElementById('poster-eras-text') ? document.getElementById('poster-eras-text').innerText : '';
+
+      const card = [
+        "================================================",
+        `       《 浮 生 录 · 百 世 轮 回 传 》`,
+        `  ${cfg.eraIcon} ${cfg.name}  |  享年 ${p.age} 岁 (${p.gender === 'female' ? '女' : '男'})`,
+        "================================================",
+        `【人物】${p.name} · ${arch}`,
+        `【生卒】${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)}`,
+        `【归宿】${p.deathReason}`,
+        `【墓志】${quote}`,
+        "------------------------------------------------",
+        `【数标】健康 ${Math.round(p.health)} | 财富 ${p.wealth.toFixed(1)}${wealthUnit(p.epochMode)} | 智识 ${Math.round(p.intellect)} | 心安 ${Math.round(p.happiness)} | 气运 ${Math.round(p.luck)}`,
+        `【轨迹】${p.careerTrack} · ${p.socialRank}`,
+        `【至亲】${famText}`,
+        `【时代】${erasText}`,
+        `【印记】${p.tags.join(' ')}`,
+        "================================================",
+        "     大浪淘沙，唯心自守 · 浮生录文字人生模拟器"
+      ].join("\n");
+
+      navigator.clipboard.writeText(card).then(() => {
+        alert("典藏画报文本已复制到剪贴板！可直接粘贴分享。");
+      }).catch(() => {
+        alert("复制失败，请截图保存。");
       });
     }
 
