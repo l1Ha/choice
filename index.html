@@ -195,7 +195,10 @@
           <span>🏛️ 轮回谱</span>
           <span id="top-badge-ach" class="ml-1 text-[10px] text-amber-300 font-mono">0</span>
         </button>
-        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2.5 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition">
+        <button id="btn-ambient" onclick="toggleAmbientAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition" title="开启/关闭禅意白噪音与环境声景">
+          🌧️ 意境: 关
+        </button>
+        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition">
           🔊 音效: 开
         </button>
       </div>
@@ -633,16 +636,25 @@
           </div>
           <p class="text-[10px] text-zinc-500 mt-2 font-serif">大浪淘沙，唯心自守 · 《浮生录》文字人生模拟器</p>
         </div>
+
+        <!-- 导出的高清长图预览（在手机端方便直接长按保存到相册） -->
+        <div id="poster-img-container" class="hidden pt-2 border-t border-amber-600/40 text-center animate-fade-in">
+          <p class="text-[11px] text-amber-300 font-bold mb-2">长图已生成！手机端可长按下方图片保存至相册：</p>
+          <img id="poster-exported-img" class="w-full max-h-[60vh] object-contain mx-auto rounded-lg border border-amber-500/50 shadow-2xl" alt="浮生录典藏长图" />
+        </div>
       </div>
 
       <!-- 底部操作按钮 -->
-      <div class="px-5 py-3 border-t border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-xs font-sans-sc">
-        <span class="text-zinc-400 text-[11px]">长按上方区域可直接截屏分享</span>
+      <div class="px-5 py-3 border-t border-zinc-800 bg-zinc-900/80 flex flex-wrap items-center justify-between gap-2 text-xs font-sans-sc">
+        <span class="text-zinc-400 text-[11px]">可保存为高清长图或长按截屏</span>
         <div class="flex items-center space-x-2">
-          <button onclick="copyPosterText()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded transition">
-            复制画报文本
+          <button onclick="exportPosterImage()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold rounded shadow transition flex items-center">
+            <span class="mr-1">📥</span> 生成长图 (PNG)
           </button>
-          <button onclick="closeLifePoster()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition">
+          <button onclick="copyPosterText()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded transition">
+            复制文本
+          </button>
+          <button onclick="closeLifePoster()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded transition">
             关闭
           </button>
         </div>
@@ -771,6 +783,103 @@
     function toggleAudio() {
       audioEnabled = !audioEnabled;
       document.getElementById('btn-audio').innerText = audioEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
+    }
+
+    // --- 禅意白噪音与环境意境声景合成器 (纯 Web Audio，零外部资源依赖) ---
+    let ambientEnabled = false;
+    let ambientNodes = null;
+
+    function toggleAmbientAudio() {
+      ambientEnabled = !ambientEnabled;
+      const btn = document.getElementById('btn-ambient');
+      if (ambientEnabled) {
+        initAudio();
+        startAmbientSound((typeof player !== 'undefined' && player.epochMode) ? player.epochMode : selectedEpochMode);
+        if (btn) btn.innerText = '🌧️ 意境: 开';
+      } else {
+        stopAmbientSound();
+        if (btn) btn.innerText = '🌧️ 意境: 关';
+      }
+    }
+
+    function startAmbientSound(epochMode = 'contemporary') {
+      stopAmbientSound();
+      if (!ambientEnabled) return;
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
+        if (epochMode === 'ancient' || epochMode === 'premodern') {
+          // 古代：古寺晨钟空灵微风五声和鸣 (宫 130.81Hz + 徵 196Hz)
+          const osc1 = audioCtx.createOscillator();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(130.81, audioCtx.currentTime);
+          const g1 = audioCtx.createGain();
+          g1.gain.setValueAtTime(0.03, audioCtx.currentTime);
+          osc1.connect(g1);
+          g1.connect(masterGain);
+          osc1.start();
+
+          const osc2 = audioCtx.createOscillator();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(196.00, audioCtx.currentTime);
+          const g2 = audioCtx.createGain();
+          g2.gain.setValueAtTime(0.015, audioCtx.currentTime);
+          osc2.connect(g2);
+          g2.connect(masterGain);
+          osc2.start();
+
+          ambientNodes = [masterGain, osc1, osc2, g1, g2];
+        } else if (epochMode === 'future') {
+          // 未来：深空引力波与恒星际微弱脉冲
+          const osc = audioCtx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+          const flt = audioCtx.createBiquadFilter();
+          flt.type = 'lowpass';
+          flt.frequency.setValueAtTime(180, audioCtx.currentTime);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.02, audioCtx.currentTime);
+          osc.connect(flt);
+          flt.connect(g);
+          g.connect(masterGain);
+          osc.start();
+
+          ambientNodes = [masterGain, osc, flt, g];
+        } else {
+          // 近现代与当代：老唱片底噪般的温润嗡鸣
+          const osc = audioCtx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+          const flt = audioCtx.createBiquadFilter();
+          flt.type = 'lowpass';
+          flt.frequency.setValueAtTime(320, audioCtx.currentTime);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.02, audioCtx.currentTime);
+          osc.connect(flt);
+          flt.connect(g);
+          g.connect(masterGain);
+          osc.start();
+
+          ambientNodes = [masterGain, osc, flt, g];
+        }
+      } catch (e) {}
+    }
+
+    function stopAmbientSound() {
+      if (ambientNodes) {
+        try {
+          ambientNodes.forEach(n => {
+            if (n.stop) n.stop();
+            if (n.disconnect) n.disconnect();
+          });
+        } catch (e) {}
+        ambientNodes = null;
+      }
     }
 
     // --- 宏大双纪元年代设定：过去纪元 vs 未来纪元 ---
@@ -4175,12 +4284,25 @@
       const w = player.wealth;
       const hap = player.happiness;
       const i = player.intellect;
+      const rep = player.reputation;
+      const trk = player.careerTrack || "";
       const isFuture = isFutureEpoch(player.epochMode);
       const isClassical = isClassicalEpoch(player.epochMode);
       const eraCfg = getEpochConfig(player.epochMode);
+      const tags = player.tags || [];
 
       if (isFuture) {
-        if (w >= 45 && hap >= 55) {
+        if (trk === "学术科技" && i >= 85) {
+          return {
+            archetype: "智械天启 · 虚空构筑者",
+            epitaph: "在量子与超弦间构筑起包容百亿生灵的精神圣殿，思维在此彻底摆脱了重力与肉身的束缚。"
+          };
+        } else if (trk === "守拙布衣" && hap >= 65) {
+          return {
+            archetype: "地表植林者 · 纯真守望",
+            epitaph: "当整个文明争相飞升虚空，你深情守望脚下的每一寸泥土，是大地最质朴、最深情的孩子。"
+          };
+        } else if (w >= 45 && hap >= 55) {
           return {
             archetype: "星海拓荒巨擘 · 载誉深空",
             epitaph: "你从人造穹顶起步，乘上了人类迈向星海的巍峨巨舰。在引力与虚空中纵横开阖，无愧为宇宙的孩子。"
@@ -4212,7 +4334,27 @@
           };
         }
       } else if (isClassical) {
-        if (w >= 30 && player.reputation >= 60) {
+        if (trk === "体制政务" && rep >= 68) {
+          return {
+            archetype: "宰辅梁栋 · 经邦济世",
+            epitaph: "受命于微时，总摄纲纪，居庙堂之高而忧其民。修明庶政，澄清海宇，为万民立万代规矩。"
+          };
+        } else if (trk === "商海实业" && w >= 28) {
+          return {
+            archetype: "陶朱遗风 · 富甲八荒",
+            epitaph: "贾道通天下，积散有方，贾亦有道。兼济宗族邻里，千金散尽还复来，青史留清誉。"
+          };
+        } else if (trk === "文艺江湖" && hap >= 62) {
+          return {
+            archetype: "仗剑放歌 · 绝尘游侠",
+            epitaph: "行止由心，不问王侯。诗词墨宝与快意恩仇冠绝一时，人间留下了你无羁的歌哭与传说。"
+          };
+        } else if (trk === "学术科技" && (i >= 76 || tags.some(t => /医|草医|青囊|良方/.test(t)))) {
+          return {
+            archetype: "杏林大医 · 悬壶济世",
+            epitaph: "常怀大慈恻隐之心，博极医源，救含灵之苦。一剂温凉解百代沉疴，大德长留民间。"
+          };
+        } else if (w >= 30 && player.reputation >= 60) {
           return {
             archetype: "名标青史 · 一世风流",
             epitaph: `你的名字被郑重写进了${eraCfg.legacyNoun}，与那个时代的山川人物并列。富贵或已散去，声名却比血肉活得更久。`
@@ -4244,7 +4386,18 @@
           };
         }
       } else {
-        if (w >= 45 && hap >= 55) {
+        // 当代腾飞 (Contemporary)
+        if (trk === "学术科技" && i >= 80) {
+          return {
+            archetype: "科学先驱 · 拓荒真知",
+            epitaph: "一生淡泊名利，以求真为唯一航标。在代码与实验室的枯寂中，为人类推开了一扇通往明天的窗。"
+          };
+        } else if (trk === "文艺江湖" && hap >= 66) {
+          return {
+            archetype: "旷达行者 · 浪潮诗人",
+            epitaph: "世人奔波于功名利禄，你却把一生活成了一首自由散漫的诗。走过山海，满心温热与坦荡。"
+          };
+        } else if (w >= 45 && hap >= 55) {
           return {
             archetype: "时代弄潮翁 · 功成身退",
             epitaph: "你乘上了历史最激荡的风帆，饱览过财富的壮阔，亦未曾迷失于物欲的深壑。行过大江大河，落子无悔。"
@@ -4442,6 +4595,9 @@ function renderKeyTurningPoints() {
       const eras = listErasBetween(p.birthYear, endYear);
       const archetypeData = evaluateLifeArchetype();
 
+      const imgBox = document.getElementById('poster-img-container');
+      if (imgBox) imgBox.classList.add('hidden');
+
       const dynastyEl = document.getElementById('poster-dynasty-badge');
       if (dynastyEl) dynastyEl.innerText = `${cfg.eraIcon} ${cfg.name} (${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)})`;
 
@@ -4544,6 +4700,245 @@ function renderKeyTurningPoints() {
       }).catch(() => {
         alert("复制失败，请截图保存。");
       });
+    }
+
+    function exportPosterImage() {
+      soundClick();
+      const p = player;
+      const endYear = p.birthYear + p.age;
+      const cfg = getEpochConfig(p.epochMode);
+      const archetypeData = evaluateLifeArchetype();
+      const fam = p.family || initializeFamily(p);
+      const eras = listErasBetween(p.birthYear, endYear);
+
+      if (typeof document === 'undefined' || !document.createElement) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = 750;
+      canvas.height = 1260;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const isParchment = document.body && document.body.classList.contains('theme-parchment');
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, 1260);
+      if (isParchment) {
+        bgGrad.addColorStop(0, '#f9f5ec');
+        bgGrad.addColorStop(0.5, '#f4ece0');
+        bgGrad.addColorStop(1, '#ebdcc9');
+      } else {
+        bgGrad.addColorStop(0, '#1a1c28');
+        bgGrad.addColorStop(0.4, '#12141d');
+        bgGrad.addColorStop(1, '#0a0b10');
+      }
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 750, 1260);
+
+      // Border colors
+      const goldColor = isParchment ? '#92400e' : '#d4af37';
+      const subColor = isParchment ? '#b45309' : '#f59e0b';
+      const textColor = isParchment ? '#292524' : '#e2e8f0';
+      const dimColor = isParchment ? '#78716c' : '#94a3b8';
+
+      // Borders
+      ctx.strokeStyle = goldColor;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(30, 30, 690, 1200);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.35)' : 'rgba(212, 175, 55, 0.35)';
+      ctx.strokeRect(40, 40, 670, 1180);
+
+      // Header Title
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 15px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText('CHRONICLE OF DESTINY · IMMORTAL RECORD', 375, 80);
+
+      ctx.font = '900 40px "Noto Serif SC", serif';
+      ctx.fillStyle = isParchment ? '#78350f' : '#fef3c7';
+      ctx.fillText('《 浮 生 录 》', 375, 130);
+
+      ctx.font = 'bold 17px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = goldColor;
+      ctx.fillText(`${cfg.eraIcon} ${cfg.name} · 百世长卷`, 375, 168);
+
+      ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.3)' : 'rgba(212, 175, 55, 0.3)';
+      ctx.beginPath();
+      ctx.moveTo(120, 190);
+      ctx.lineTo(630, 190);
+      ctx.stroke();
+
+      // Player Name & Archetype
+      ctx.font = '900 34px "Noto Serif SC", serif';
+      ctx.fillStyle = isParchment ? '#1c1917' : '#fde68a';
+      const gText = p.gender === 'female' ? '女 ♀' : '男 ♂';
+      ctx.fillText(`${p.name} (${gText})`, 375, 238);
+
+      ctx.font = '15px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = dimColor;
+      ctx.fillText(`${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)} · 享年 ${p.age} 岁 · ${p.deathReason}`, 375, 270);
+
+      // Archetype Box
+      ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.1)' : 'rgba(212, 175, 55, 0.12)';
+      ctx.fillRect(80, 298, 590, 84);
+      ctx.strokeStyle = goldColor;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(80, 298, 590, 84);
+
+      ctx.font = 'bold 22px "Noto Serif SC", serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText(`【 ${archetypeData.archetype} 】`, 375, 332);
+
+      ctx.font = 'italic 14px "Noto Serif SC", serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText(`“${archetypeData.epitaph}”`, 375, 362);
+
+      // Six Stat Tiles
+      const stats = [
+        { label: '生命健康', val: `${Math.round(p.health)}♥`, color: '#ef4444' },
+        { label: '积累财富', val: `${p.wealth.toFixed(1)}${wealthUnitShort(p.epochMode)}`, color: '#f59e0b' },
+        { label: '学识智识', val: `${Math.round(p.intellect)}✦`, color: '#38bdf8' },
+        { label: '心境安宁', val: `${Math.round(p.happiness)}☼`, color: '#10b981' },
+        { label: '天命气运', val: `${Math.round(p.luck)}🎲`, color: '#a855f7' },
+        { label: '终生位阶', val: `${p.careerTrack}·${p.socialRank}`, color: goldColor }
+      ];
+
+      const tileW = 180, tileH = 60, startX = 85, startY = 402;
+      stats.forEach((st, idx) => {
+        const col = idx % 3;
+        const row = Math.floor(idx / 3);
+        const tx = startX + col * (tileW + 20);
+        const ty = startY + row * (tileH + 14);
+
+        ctx.fillStyle = isParchment ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.05)';
+        ctx.fillRect(tx, ty, tileW, tileH);
+        ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+        ctx.strokeRect(tx, ty, tileW, tileH);
+
+        ctx.textAlign = 'center';
+        ctx.font = '12px "Noto Sans SC", sans-serif';
+        ctx.fillStyle = dimColor;
+        ctx.fillText(st.label, tx + tileW / 2, ty + 22);
+
+        ctx.font = 'bold 15px "Noto Sans SC", sans-serif';
+        ctx.fillStyle = st.color;
+        ctx.fillText(st.val, tx + tileW / 2, ty + 46);
+      });
+
+      // Family Chronicle Section
+      const famBoxY = 560;
+      ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.06)' : 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(80, famBoxY, 590, 105);
+      ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.25)' : 'rgba(212, 175, 55, 0.25)';
+      ctx.strokeRect(80, famBoxY, 590, 105);
+
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 14px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText('【 家族谱系与至亲因缘 】', 100, famBoxY + 28);
+
+      ctx.font = '13px "Noto Serif SC", serif';
+      ctx.fillStyle = textColor;
+      ctx.fillText(`慈父【${fam.father.name}】 · 严母【${fam.mother.name}】`, 100, famBoxY + 54);
+      const spText = fam.spouse ? `结发${fam.spouse.role}【${fam.spouse.name}】(${fam.spouse.marriedYear}年结缡，相守一生)` : '一生未入凡尘婚姻，清修自守';
+      ctx.fillText(spText, 100, famBoxY + 76);
+      const chText = fam.children && fam.children.length > 0 ? `育有${fam.children.length}位子嗣（${fam.children.map(c=>c.name).join('、')}）${fam.grandchildrenCount > 0 ? '，孙辈满堂' : ''}` : '膝下清素，无子嗣挂累';
+      ctx.fillText(chText, 100, famBoxY + 96);
+
+      // Era Trajectory
+      const erasBoxY = 685;
+      ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.06)' : 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(80, erasBoxY, 590, 85);
+      ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.25)' : 'rgba(212, 175, 55, 0.25)';
+      ctx.strokeRect(80, erasBoxY, 590, 85);
+
+      ctx.font = 'bold 14px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText('【 大时代漫漫长河坐标 】', 100, erasBoxY + 28);
+
+      ctx.font = '12px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = dimColor;
+      const eraStr1 = eras.slice(0, 3).join(' ➔ ');
+      const eraStr2 = eras.length > 3 ? (eras.slice(3, 6).join(' ➔ ') + (eras.length > 6 ? ` ...共跨越${eras.length}重大时代` : '')) : '';
+      ctx.fillText(eraStr1, 100, erasBoxY + 52);
+      if (eraStr2) ctx.fillText(eraStr2, 100, erasBoxY + 72);
+
+      // Career Tracks Bars
+      const compBoxY = 790;
+      ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.06)' : 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(80, compBoxY, 590, 110);
+      ctx.strokeStyle = isParchment ? 'rgba(146, 64, 14, 0.25)' : 'rgba(212, 175, 55, 0.25)';
+      ctx.strokeRect(80, compBoxY, 590, 110);
+
+      ctx.font = 'bold 14px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText('【 五大赛道终生罗盘 】', 100, compBoxY + 26);
+
+      const sc = player.trackScores || {};
+      const maxSc = Math.max(1, ...Object.values(sc));
+      const trkColors = ['#ef4444', '#f59e0b', '#38bdf8', '#a855f7', '#10b981'];
+      const trkKeys = ["体制政务", "商海实业", "学术科技", "文艺江湖", "守拙布衣"];
+      trkKeys.forEach((tk, idx) => {
+        const val = sc[tk] || 0;
+        const barW = Math.max(8, (val / maxSc) * 160);
+        const by = compBoxY + 44 + idx * 13;
+        ctx.font = '11px "Noto Sans SC", sans-serif';
+        ctx.fillStyle = dimColor;
+        ctx.fillText(tk, 100, by);
+        ctx.fillStyle = trkColors[idx];
+        ctx.fillRect(160, by - 9, barW, 8);
+        ctx.fillStyle = textColor;
+        ctx.fillText(`${val}分`, 170 + barW, by);
+      });
+
+      // Red Seal Stamp (朱砂印章)
+      const sealX = 540, sealY = 925, sealSize = 85;
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(sealX, sealY, sealSize, sealSize);
+      ctx.strokeStyle = '#fca5a5';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(sealX + 4, sealY + 4, sealSize - 8, sealSize - 8);
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#fef2f2';
+      ctx.font = 'bold 18px "Noto Serif SC", serif';
+      ctx.fillText('浮生', sealX + sealSize / 2, sealY + 34);
+      ctx.fillText('之印', sealX + sealSize / 2, sealY + 64);
+
+      // Tags in bottom left
+      ctx.textAlign = 'left';
+      ctx.font = '12px "Noto Sans SC", sans-serif';
+      ctx.fillStyle = dimColor;
+      ctx.fillText('终生印记标签：', 100, 935);
+      ctx.fillStyle = subColor;
+      ctx.fillText(p.tags.slice(0, 5).map(t => `#${t}`).join('  '), 100, 960);
+      if (p.tags.length > 5) {
+        ctx.fillText(p.tags.slice(5, 10).map(t => `#${t}`).join('  '), 100, 982);
+      }
+
+      // Footer Watermark
+      ctx.textAlign = 'center';
+      ctx.font = '13px "Noto Serif SC", serif';
+      ctx.fillStyle = isParchment ? '#78716c' : '#64748b';
+      ctx.fillText('大浪淘沙，唯心自守 · 《浮生录》文字人生模拟器', 375, 1180);
+
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const imgContainer = document.getElementById('poster-img-container');
+        const expImg = document.getElementById('poster-exported-img');
+        if (imgContainer && expImg) {
+          expImg.src = dataUrl;
+          imgContainer.classList.remove('hidden');
+        }
+
+        const a = document.createElement('a');
+        a.download = `浮生录_${p.name}_${archetypeData.archetype}.png`;
+        a.href = dataUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (err) {
+        console.error("Canvas export failed", err);
+        copyPosterText();
+      }
     }
 
     // ==================== 功业勋章与成就系统 ====================
@@ -4976,7 +5371,7 @@ function renderKeyTurningPoints() {
       } catch (e) {}
 
       const active = THEMES[currentThemeIdx];
-      if (typeof document !== 'undefined' && document.body) {
+      if (typeof document !== 'undefined' && document.body && document.body.classList) {
         document.body.classList.remove('theme-parchment', 'theme-cosmic');
         if (active.className) {
           document.body.classList.add(active.className);

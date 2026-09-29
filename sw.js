@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fushenglu-v9';
+const CACHE_NAME = 'fushenglu-v10';
 const ASSETS = [
   './',
   './index.html',

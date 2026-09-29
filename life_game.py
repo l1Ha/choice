@@ -850,17 +850,30 @@ def render_terminal_ending(player):
 
     is_future = is_future_epoch(player.epoch_mode)
     is_classical = is_classical_epoch(player.epoch_mode)
+    trk = player.career_track
+    w = player.wealth
+    hap = player.happiness
+    i = player.intellect
+    rep = player.reputation
+    tags = player.tags or []
+
     if is_future:
-        if player.wealth >= 45 and player.happiness >= 55:
+        if trk == "学术科技" and i >= 85:
+            archetype = "智械天启 · 虚空构筑者"
+            epitaph = "在量子与超弦间构筑起包容百亿生灵的精神圣殿，思维在此彻底摆脱了重力与肉身的束缚。"
+        elif trk == "守拙布衣" and hap >= 65:
+            archetype = "地表植林者 · 纯真守望"
+            epitaph = "当整个文明争相飞升虚空，你深情守望脚下的每一寸泥土，是大地最质朴、最深情的孩子。"
+        elif w >= 45 and hap >= 55:
             archetype = "星海拓荒巨擘 · 载誉深空"
             epitaph = "你从人造穹顶起步，乘上了人类迈向星海的巍峨巨舰。在引力与虚空中纵横开阖，无愧为宇宙的孩子。"
-        elif player.wealth >= 25 and player.happiness < 45:
+        elif w >= 25 and hap < 45:
             archetype = "赛博齿轮 · 冰冷义体攀登者"
             epitaph = "你在代码洪流与钛合金内脏间奔波一生，换来了令人艳羡的算力与配额，却在深夜怀念母亲曾哼唱过的古老摇篮曲。"
-        elif player.happiness >= 70 and player.wealth < 25:
+        elif hap >= 70 and w < 25:
             archetype = "纯粹碳基散人 · 地表哲人"
             epitaph = "世人争先恐后抛弃肉身飞升云端，唯有你深情守望脚下的每一寸泥土。虽无万贯算力，胸中自有一整座真实星汉。"
-        elif player.intellect >= 80:
+        elif i >= 80:
             archetype = "文明先知 · 灵境守望者"
             epitaph = "你以澄澈的智识看穿了技术膨胀与人性异化的迷局，在冷酷的代码矩阵中，为人类守护住了最后一丝温热的诗意。"
         elif player.age < 50:
@@ -869,35 +882,54 @@ def render_terminal_ending(player):
         else:
             archetype = "星尘守夜人 · 凡人的尊严"
             epitaph = "既没有成为神话般的星际领主，亦未沦为算法的附庸。守住爱人，守护家人，堂堂正正走完了属于人的壮丽一生。"
-    else:
-        if is_classical and player.wealth >= 30 and player.reputation >= 60:
+    elif is_classical:
+        if trk == "体制政务" and rep >= 68:
+            archetype = "宰辅梁栋 · 经邦济世"
+            epitaph = "受命于微时，总摄纲纪，居庙堂之高而忧其民。修明庶政，澄清海宇，为万民立万代规矩。"
+        elif trk == "商海实业" and w >= 28:
+            archetype = "陶朱遗风 · 富甲八荒"
+            epitaph = "贾道通天下，积散有方，贾亦有道。兼济宗族邻里，千金散尽还复来，青史留清誉。"
+        elif trk == "文艺江湖" and hap >= 62:
+            archetype = "仗剑放歌 · 绝尘游侠"
+            epitaph = "行止由心，不问王侯。诗词墨宝与快意恩仇冠绝一时，人间留下了你无羁的歌哭与传说。"
+        elif trk == "学术科技" and (i >= 76 or any("医" in t for t in tags)):
+            archetype = "杏林大医 · 悬壶济世"
+            epitaph = "常怀大慈恻隐之心，博极医源，救含灵之苦。一剂温凉解百代沉疴，大德长留民间。"
+        elif w >= 30 and rep >= 60:
             archetype = "名标青史 · 一世风流"
             epitaph = "你的名字被郑重写进了%s，与那个时代的山川人物并列。富贵或已散去，声名却比血肉活得更久。" % _cfg["legacy"]
-        elif is_classical and player.wealth >= 15 and player.happiness < 45:
+        elif w >= 15 and hap < 45:
             archetype = "负重跋涉者 · 寒暑苦行"
             epitaph = "你一生都在为一族人的口粮与体面奔波，风霜刻在额角，未曾有一日懈怠，也未曾真正为自己活过。"
-        elif is_classical and player.happiness >= 70 and player.wealth < 15:
+        elif hap >= 70 and w < 15:
             archetype = "林泉散人 · 自在一生"
             epitaph = "不慕朱门车马，只爱一壶浊酒、半亩薄田。你以清贫换得心安，是那个时代少数真正自由的人。"
-        elif is_classical and player.intellect >= 78:
+        elif i >= 78:
             archetype = "明哲通达 · 洞观兴替"
             epitaph = "你冷眼看尽王朝更迭与人事翻覆，读懂了兴衰的规律，因而对世人多了一份悲悯与宽恕。"
-        elif is_classical and player.age < 50:
+        elif player.age < 50:
             archetype = "断弦流星 · 孤勇悲歌"
             epitaph = "乱世里的性命如风中烛火，你疾行过，灿然过，终是太早熄灭了。山河依旧，只是再无你的消息。"
-        elif is_classical:
+        else:
             archetype = "烟火凡人 · 坚韧一生"
             epitaph = "你没有在史书上留下一行字，却用一粥一饭把血脉与家训传了下去。这本身就是了不起的功业。"
-        elif player.wealth >= 45 and player.happiness >= 55:
+    else:
+        if trk == "学术科技" and i >= 80:
+            archetype = "科学先驱 · 拓荒真知"
+            epitaph = "一生淡泊名利，以求真为唯一航标。在代码与实验室的枯寂中，为人类推开了一扇通往明天的窗。"
+        elif trk == "文艺江湖" and hap >= 66:
+            archetype = "旷达行者 · 浪潮诗人"
+            epitaph = "世人奔波于功名利禄，你却把一生活成了一首自由散漫的诗。走过山海，满心温热与坦荡。"
+        elif w >= 45 and hap >= 55:
             archetype = "时代弄潮翁 · 功成身退"
             epitaph = "你乘上了历史最激荡的风帆，饱览过财富的壮阔，亦未曾迷失于物欲的深壑。行过大江大河，落子无悔。"
-        elif player.wealth >= 25 and player.happiness < 45:
+        elif w >= 25 and hap < 45:
             archetype = "负重攀登者 · 时代苦行僧"
             epitaph = "在狂飙的城市化与债务大山中，你用肩膀扛起了几代人的体面与产证，却在深夜加班室里耗尽了青春灵气。"
-        elif player.happiness >= 70 and player.wealth < 25:
+        elif hap >= 70 and w < 25:
             archetype = "旷达布衣 · 自在散人"
             epitaph = "世人慌慌张张图碎银几两，而你早早参透了内卷的虚妄。向青山借得满怀清风，虽无万贯财，胸中自安然。"
-        elif player.intellect >= 80:
+        elif i >= 80:
             archetype = "清醒明哲者 · 孤峰观澜"
             epitaph = "你以澄澈的智识洞穿了时代周期演进的规律，在浮华中冷眼旁观，在下行中从容不迫。懂得了历史，因而深怀悲悯。"
         elif player.age < 50:
