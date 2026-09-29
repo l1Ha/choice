@@ -66,47 +66,76 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #0c0d10; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+
+    /* 移动端与全屏触控体验升级 */
+    .pb-safe {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 16px));
+    }
+    .pt-safe {
+      padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+    }
+    .touch-manipulation {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 手机端按钮微弹性回弹动效与大点击热区 */
+    .choice-card:active {
+      transform: scale(0.985) !important;
+      border-color: rgba(245, 158, 11, 0.8) !important;
+      background-color: rgba(39, 39, 42, 0.95) !important;
+    }
+    /* 防止手机端输入框聚焦自动变焦拉扯 */
+    input, button, select {
+      font-size: 16px;
+    }
+    @media (min-width: 640px) {
+      input, button, select { font-size: inherit; }
+    }
+    /* 隐藏横向滚动条但保持丝滑滑动 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-amber-900 selection:text-amber-100">
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-900 selection:text-amber-100 pb-safe touch-manipulation">
 
   <!-- 顶部状态栏 -->
   <header id="top-bar" class="w-full bg-[#12141a]/95 backdrop-blur border-b border-zinc-800/80 sticky top-0 z-50 py-3 px-4 md:px-8 transition-all duration-300">
-    <div class="max-w-4xl mx-auto flex items-center justify-between font-sans-sc">
-      <div class="flex items-center space-x-3">
-        <span class="text-xl font-bold tracking-widest text-amber-200/90 font-serif">浮生录</span>
+    <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-y-2 font-sans-sc">
+      <div class="flex items-center space-x-2">
+        <span class="text-lg md:text-xl font-bold tracking-widest text-amber-200/90 font-serif">浮生录</span>
         <!-- 时代与年份标识 -->
-        <span id="display-era-badge" class="hidden text-xs px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/60 era-pulse font-mono">
+        <span id="display-era-badge" class="hidden text-[11px] md:text-xs px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/60 era-pulse font-mono truncate max-w-[150px] md:max-w-none">
           1985 · 浪潮初起
         </span>
       </div>
       
-      <!-- 实时属性指标 -->
-      <div id="stats-container" class="hidden flex items-center space-x-3 md:space-x-5 text-xs md:text-sm font-mono">
-        <div class="flex items-center space-x-1" title="健康状态">
+      <!-- 实时属性指标 (手机端支持横向平滑滑动，视觉清晰紧凑) -->
+      <div id="stats-container" class="hidden flex items-center space-x-2 md:space-x-4 text-xs md:text-sm font-mono overflow-x-auto no-scrollbar py-0.5 max-w-full">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-zinc-800 flex-shrink-0" title="健康状态">
           <span class="text-red-400">♥</span>
           <span id="val-health" class="font-bold text-zinc-200">100</span>
         </div>
-        <div class="flex items-center space-x-1" title="财富总额 (万元)">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-zinc-800 flex-shrink-0" title="财富总额 (万元)">
           <span class="text-amber-400">￥</span>
           <span id="val-wealth" class="font-bold text-zinc-200">0万</span>
         </div>
-        <div class="flex items-center space-x-1" title="认知心智">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-zinc-800 flex-shrink-0" title="认知心智">
           <span class="text-sky-400">✦</span>
           <span id="val-intellect" class="font-bold text-zinc-200">50</span>
         </div>
-        <div class="flex items-center space-x-1" title="心境安宁">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-zinc-800 flex-shrink-0" title="心境安宁">
           <span class="text-emerald-400">☼</span>
           <span id="val-happiness" class="font-bold text-zinc-200">60</span>
         </div>
-        <div class="flex items-center space-x-1" title="天命气运 (影响随机掷骰)">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-2 py-0.5 rounded-md border border-zinc-800 flex-shrink-0" title="天命气运 (影响随机掷骰)">
           <span class="text-purple-400">🎲</span>
           <span id="val-luck" class="font-bold text-zinc-200">50</span>
         </div>
       </div>
 
       <div class="flex items-center space-x-2">
-        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded border border-zinc-700 hover:border-amber-400/50 transition">
+        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2.5 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition">
           🔊 音效: 开
         </button>
       </div>
@@ -226,7 +255,7 @@
           </div>
         </div>
 
-        <button onclick="startGame()" class="px-8 py-3 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-zinc-950 font-bold rounded-lg tracking-widest text-sm md:text-base shadow-lg shadow-amber-900/40 transition transform hover:-translate-y-0.5 active:translate-y-0">
+        <button onclick="startGame()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-zinc-950 font-bold rounded-xl tracking-widest text-sm md:text-base shadow-lg shadow-amber-900/40 transition transform hover:-translate-y-0.5 active:scale-[0.985] cursor-pointer touch-manipulation">
           领受天命 · 步入人间
         </button>
       </section>
@@ -514,7 +543,7 @@
     const PAST_BIRTH_YEARS = [1976, 1982, 1988, 1994];
     const FUTURE_BIRTH_YEARS = [2042, 2048, 2054, 2060];
 
-    // 过去背景池
+    // 过去背景池 (丰富扩充至 10 大时代典型身份)
     const PAST_ORIGINS = [
       {
         id: "worker_soep",
@@ -526,15 +555,15 @@
       },
       {
         id: "rural_tiller",
-        title: "黄土丘陵偏远农村",
-        desc: "祖辈世代躬耕于贫瘠的麦田或梯田。父母起早贪黑面容沧桑，最大的执念就是供你'读书跳出农门，不要再吃泥土里的苦'。",
+        title: "黄土丘陵偏远农耕世家",
+        desc: "祖辈世代躬耕于贫瘠的梯田。父母起早贪黑面容沧桑，最大的执念就是供你'读书跳出农门，不要再吃泥土里的苦'。",
         statMod: { health: 94, wealth: 0.3, intellect: 48, luck: 52, happiness: 55, rep: 35 },
         trait: "野草劲骨",
         eraFlavor: "童年总伴随着农忙时割麦打场的热浪与对县城楼房的遥望，早早就知晓生活需步步淌血"
       },
       {
         id: "intellect_family",
-        title: "省城中学/大学教师家庭",
+        title: "省城高校/中学教师家庭",
         desc: "家里有一整面墙的旧书和文学期刊，父母讲求体面修养，自幼要求你每日练字读书，家庭氛围温和但期望极高。",
         statMod: { health: 84, wealth: 6.0, intellect: 65, luck: 54, happiness: 58, rep: 55 },
         trait: "书香灵慧",
@@ -542,15 +571,63 @@
       },
       {
         id: "merchant_coastal",
-        title: "沿海敢闯个体户",
+        title: "沿海弄潮敢闯个体户",
         desc: "父母最早一批在村头摆摊贩卖布匹电器，常年在绿皮火车硬座与催账酒桌上穿梭，从小在算盘和厚厚的现金堆里长大。",
         statMod: { health: 88, wealth: 12.0, intellect: 54, luck: 58, happiness: 60, rep: 48 },
         trait: "市井嗅觉",
         eraFlavor: "自幼耳濡目染商贾交易与契约博弈，深知市场经济的残酷与暴利，敢于在风口下重注"
+      },
+      {
+        id: "cadre_compound",
+        title: "机关大院行政干事家庭",
+        desc: "父母任职于地方行政机关，住在一号机关家属楼。饭局间常有长辈高谈宏观调控与人事变迁，人情世故的规矩自幼刻在骨子里。",
+        statMod: { health: 86, wealth: 8.0, intellect: 60, luck: 56, happiness: 62, rep: 68 },
+        trait: "洞察人情",
+        eraFlavor: "看惯了会议室红头文件与门卫室往来礼节，对体制运作与资源调度有着本能的早慧"
+      },
+      {
+        id: "military_family",
+        title: "边疆驻防军旅军属之家",
+        desc: "父亲常年驻扎守卫哨所，母亲在军人服务社勤勉工作。家教如军令般严明方正，被子必须叠成豆腐块，意志如铸铁般坚定。",
+        statMod: { health: 96, wealth: 4.0, intellect: 52, luck: 50, happiness: 56, rep: 62 },
+        trait: "铁血脊梁",
+        eraFlavor: "听着军号起床，看着绿色吉普穿行，骨子里流淌着不怕苦累与甘于奉献的血性"
+      },
+      {
+        id: "medical_family",
+        title: "老城中医院悬壶世家",
+        desc: "三代在中医院坐堂行医，屋子里终年弥漫着甘草与黄芪的陈香。父母医德高尚，自幼教导你辨识穴位草药与体恤疾苦。",
+        statMod: { health: 92, wealth: 7.0, intellect: 62, luck: 54, happiness: 64, rep: 58 },
+        trait: "仁心济世",
+        eraFlavor: "见过形形色色的病痛与生死无常，养成了处变不惊的沉稳心境与内敛宽厚的性情"
+      },
+      {
+        id: "shikumen_artisan",
+        title: "沿海老弄堂钟表匠手艺人",
+        desc: "蜗居于逼仄狭窄的石库门阁楼，父亲是修机械表与缝纫机的高级手艺人。在台灯与放大镜下一分一厘钻研，精打细算过日子。",
+        statMod: { health: 85, wealth: 3.5, intellect: 63, luck: 52, happiness: 58, rep: 46 },
+        trait: "工匠微雕",
+        eraFlavor: "在逼仄的阁楼敲击声与弄堂晨昏煤炉气味中长大，懂得沉下心把一门手艺做到极致"
+      },
+      {
+        id: "mining_town",
+        title: "北方重工业矿区家庭",
+        desc: "生长在黑金遍布的煤铁矿区，父辈下井挥汗如雨。矿工俱乐部的大喇叭、黑沉沉的运煤火车与浴池里的热气是最初的记忆。",
+        statMod: { health: 92, wealth: 3.8, intellect: 48, luck: 48, happiness: 62, rep: 42 },
+        trait: "矿山粗粝",
+        eraFlavor: "体会过地下深处的险恶与地表的欢歌，生就了一副豪迈硬朗、大口吃肉喝酒的热忱性格"
+      },
+      {
+        id: "theatre_troupe",
+        title: "省戏曲歌舞团行当家庭",
+        desc: "父母是地方戏曲歌舞团台柱子演员，练功房的踢腿勒头与后台油彩箱是你的游乐场。童年见证过剧场的满座喝彩与落幕清冷。",
+        statMod: { health: 87, wealth: 4.2, intellect: 58, luck: 56, happiness: 66, rep: 52 },
+        trait: "粉墨风华",
+        eraFlavor: "看尽了粉墨登场的繁华与时代变迁下流行音乐对传统戏曲的冲击，对世事如戏有独到感悟"
       }
     ];
 
-    // 未来背景池
+    // 未来背景池 (丰富扩充至 10 大科幻时代典型身份)
     const FUTURE_ORIGINS = [
       {
         id: "orbital_technician",
@@ -583,6 +660,54 @@
         statMod: { health: 88, wealth: 3.0, intellect: 64, luck: 60, happiness: 58, rep: 36 },
         trait: "断网自守",
         eraFlavor: "在充满松香焊锡味与旧书本的防空洞里长大，珍惜不被算法监控的纯粹思想与手写文字"
+      },
+      {
+        id: "quantum_researcher",
+        title: "深空引力波观测站学者家庭",
+        desc: "父母供职于月球背面的引力波实验阵列，成长于静谧的真空观测站。家中全息球体整夜演算着脉冲星引力微扰与黑洞视界。",
+        statMod: { health: 83, wealth: 11.0, intellect: 75, luck: 52, happiness: 52, rep: 60 },
+        trait: "宇宙深眸",
+        eraFlavor: "在无垠黑夜与跳跃的量子曲率图表中启蒙，对浩瀚宇宙充满敬畏，骨子里有着极致的求真欲"
+      },
+      {
+        id: "synthetic_artist",
+        title: "灵境虚拟现实织梦人家庭",
+        desc: "父母是首屈一指的'神经感官建筑师'，为千万人设计永不落幕的虚拟极乐境。现实中居室极简，但神经元储物柜里存有万千梦境。",
+        statMod: { health: 85, wealth: 8.5, intellect: 65, luck: 58, happiness: 68, rep: 55 },
+        trait: "幻境编织",
+        eraFlavor: "分得清每一个梦境分辨率与多巴胺阈值，对真实人类的情感羁绊有着旁观者般的清醒与依恋"
+      },
+      {
+        id: "lunar_miner",
+        title: "月球极区氦-3深钻矿业家庭",
+        desc: "父母常年驾驶重型电磁掘进机在月球南极沙克尔顿环形山开采聚变能源。生活区在月岩十米深处，饮水需按微升严格配额。",
+        statMod: { health: 93, wealth: 6.0, intellect: 54, luck: 50, happiness: 56, rep: 46 },
+        trait: "极地冷淬",
+        eraFlavor: "在没有风声与鸟鸣的冷月深处长大，性格寡言耐得住绝对孤独，拥有极强的空间应变力"
+      },
+      {
+        id: "dyson_cadre",
+        title: "地月联合行政议会公职家庭",
+        desc: "父母在联合政府近地空间协调署任职高级专员，居住在悬空绿洲城核心枢纽。出入均有浮空舱接送，掌握前沿星际配额动态。",
+        statMod: { health: 88, wealth: 14.0, intellect: 66, luck: 55, happiness: 60, rep: 72 },
+        trait: "星际权衡",
+        eraFlavor: "自幼耳濡目染地月关税博弈与火星拓荒自治提案，深谙在硅基算法与碳基民众利益间平衡"
+      },
+      {
+        id: "deepsea_arc",
+        title: "万米深海马里亚纳方舟之子",
+        desc: "为了躲避地表极端高温与空间太阳风暴，全家生活在马里亚纳海沟一万米下的耐压核能方舟。舷窗外是静谧的深海发光生物与热液喷口。",
+        statMod: { health: 91, wealth: 5.5, intellect: 63, luck: 54, happiness: 62, rep: 44 },
+        trait: "渊底沉潜",
+        eraFlavor: "在千个大气压的水声轰鸣与热液荧光中成长，心如止水，拥有超乎常人的心理承受耐力"
+      },
+      {
+        id: "bionic_medic",
+        title: "生物机械义体调试工匠世家",
+        desc: "家族在地下赛博黑市经营三代义体维修诊所。从神经缝合到钛金骨骼校准无所不能，见惯了为了一副好肺出卖灵魂的形形色色雇客。",
+        statMod: { health: 87, wealth: 7.2, intellect: 64, luck: 56, happiness: 54, rep: 50 },
+        trait: "神机剖解",
+        eraFlavor: "伴着液压油与电烙铁的青烟长大，深知机械永远无法替代真实跳动心肌的温度"
       }
     ];
 
@@ -592,7 +717,11 @@
       { name: "福泽深厚", effectDesc: "冥冥中自有运气眷顾，常能逢凶化吉", mod: { luck: +12 } },
       { name: "钝感心安", effectDesc: "不善内耗，神经大条，心境极其不易崩溃", mod: { happiness: +10 } },
       { name: "商海通达", effectDesc: "对财富流转天生亲和，初始多带微薄启动金", mod: { wealth: +3 } },
-      { name: "多愁善感", effectDesc: "同理心与艺术直觉敏锐，但容易多思内耗", mod: { intellect: +5, happiness: -5 } }
+      { name: "多愁善感", effectDesc: "同理心与艺术直觉敏锐，但容易多思内耗", mod: { intellect: +5, happiness: -5 } },
+      { name: "不屈不挠", effectDesc: "逆境中求生意志极为强烈，危局中易有奇迹", mod: { health: +5, luck: +6 } },
+      { name: "八面玲珑", effectDesc: "处世圆润得体，交游广阔，长辈同侪皆喜", mod: { rep: +10, happiness: +4 } },
+      { name: "清心寡欲", effectDesc: "知足常乐，不易为物欲所累，身心松弛自然", mod: { happiness: +12, wealth: -1 } },
+      { name: "洞若观火", effectDesc: "直觉极强，能迅速洞察谎言与暗藏的风险", mod: { intellect: +6, luck: +5 } }
     ];
 
     const DEFAULT_NAMES = ["陈远", "林栖", "陆明舟", "沈清弦", "许念安", "周子墨", "苏晚亭", "顾长风", "宋平", "星野", "原野", "唐立本", "艾柯", "零壹"];
@@ -2975,7 +3104,7 @@
 
       evtConfig.choices.forEach((choice, idx) => {
         const btn = document.createElement('button');
-        btn.className = "choice-card w-full text-left p-3.5 rounded-lg bg-zinc-900/90 border border-zinc-800 hover:bg-zinc-800/80 transition flex flex-col group cursor-pointer";
+        btn.className = "choice-card w-full text-left p-4 sm:p-3.5 rounded-xl sm:rounded-lg bg-zinc-900/95 border border-zinc-800/90 hover:bg-zinc-800/90 active:bg-zinc-800 transition flex flex-col group cursor-pointer shadow-md touch-manipulation select-none";
         btn.onclick = () => handleChoiceSelection(idx);
 
         const chanceRate = choice.successChance(player);
@@ -3065,7 +3194,7 @@
           <div class="text-xs md:text-sm text-zinc-200 leading-relaxed pt-1 mb-4 font-serif">
             ${historyEntry.feedback}
           </div>
-          <button onclick="nextEvent()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm tracking-wider transition">
+          <button onclick="nextEvent()" class="w-full py-3.5 sm:py-2.5 bg-amber-600 hover:bg-amber-500 active:bg-amber-400 active:scale-[0.985] text-zinc-950 font-bold rounded-xl sm:rounded-lg text-sm md:text-sm tracking-wider transition shadow-lg touch-manipulation cursor-pointer">
             步入岁月下一程 ➔
           </button>
         </div>
