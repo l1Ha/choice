@@ -285,6 +285,9 @@
           <div class="flex items-baseline space-x-3">
             <span id="display-age" class="text-2xl md:text-3xl font-black text-amber-200 font-serif">6 岁</span>
             <span id="display-period" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-medium">幼年启蒙</span>
+            <span id="display-track-badge" class="text-[11px] px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/60 font-sans-sc font-medium flex items-center">
+              🧭 轨迹：<span id="player-track-text" class="ml-1 font-bold">探索中</span>
+            </span>
           </div>
           <div id="stat-change-notify" class="h-6 text-xs flex items-center space-x-2 font-mono">
             <!-- 动态数值飘动 -->
@@ -543,174 +546,185 @@
     const PAST_BIRTH_YEARS = [1976, 1982, 1988, 1994];
     const FUTURE_BIRTH_YEARS = [2042, 2048, 2054, 2060];
 
-    // 过去背景池 (丰富扩充至 10 大时代典型身份)
-    const PAST_ORIGINS = [
+    const PAST_REGIONS = [
+      { name: "三线内陆工业基地", desc: "秦岭或太行深山里的红砖厂区，群山环抱，汽笛日夜长鸣", stat: { health: +2, intellect: +1 } },
+      { name: "江浙水乡沿海古镇", desc: "青石板路旁摇橹的乌篷船，弄堂商贾往来，早早浸润在商品交易的萌芽中", stat: { wealth: +1.5, intellect: +3 } },
+      { name: "中原农耕沃野平原", desc: "一眼望不到头的麦浪与泥土芳香，父辈面朝黄土背朝天，深知粒粒皆辛苦", stat: { health: +4, happiness: +2 } },
+      { name: "南粤沿海开放特区", desc: "紧邻港澳的风口浪尖，到处是淘金客匆匆的步伐与粤语叫卖声", stat: { wealth: +3.0, luck: +3 } },
+      { name: "白山黑水重工业老林", desc: "烟囱耸立的钢城与大煤田，大雪纷飞的冬夜里热腾腾的澡堂与大铁锅", stat: { health: +3, rep: +2 } },
+      { name: "西南巴蜀青石码头", desc: "川江号子在江面上回荡，茶馆里龙门阵摆得热闹，生活悠闲却暗藏激流", stat: { happiness: +4, intellect: +2 } },
+      { name: "西北戈壁军垦绿洲", desc: "胡杨林与白杨树庇护下的军垦地，坎儿井流水清冽，见惯了长风与星河", stat: { health: +4, rep: +3 } },
+      { name: "京畿皇城根胡同巷陌", desc: "斑驳的朱门与鸽哨掠过天空，长辈在槐树下品茶论国事，市井与朝堂声息相通", stat: { intellect: +4, rep: +5 } }
+    ];
+
+    const PAST_SOCIAL_STRATA = [
       {
-        id: "worker_soep",
-        title: "三线内陆国企职工家庭",
-        desc: "父母在大型国营机械厂当技术工，住在家属大院。厂里有自己的医院、学校与电影院，看似稳如泰山，实则暗藏国企转轨巨澜。",
-        statMod: { health: 90, wealth: 2.5, intellect: 52, luck: 50, happiness: 65, rep: 45 },
-        trait: "大院情怀",
-        eraFlavor: "在红砖家属楼与工厂汽笛声中度过童年，习惯了集体生活的温情与拘谨"
+        title: "国企大厂八级技工世家",
+        desc: "厂长也要客客气气递烟的技术大拿，工具箱擦得锃亮，手艺过硬骨气硬，住在家属大院套房",
+        statMod: { health: 90, wealth: 2.5, intellect: 52, luck: 50, happiness: 65, rep: 50 },
+        trait: "大院情怀"
       },
       {
-        id: "rural_tiller",
-        title: "黄土丘陵偏远农耕世家",
-        desc: "祖辈世代躬耕于贫瘠的梯田。父母起早贪黑面容沧桑，最大的执念就是供你'读书跳出农门，不要再吃泥土里的苦'。",
-        statMod: { health: 94, wealth: 0.3, intellect: 48, luck: 52, happiness: 55, rep: 35 },
-        trait: "野草劲骨",
-        eraFlavor: "童年总伴随着农忙时割麦打场的热浪与对县城楼房的遥望，早早就知晓生活需步步淌血"
+        title: "世代躬耕贫瘠农户",
+        desc: "手里捧着泥土过活，吃尽了风吹日晒之苦，对'读书进城吃商品粮'有着刻骨执念",
+        statMod: { health: 94, wealth: 0.4, intellect: 48, luck: 52, happiness: 55, rep: 32 },
+        trait: "野草劲骨"
       },
       {
-        id: "intellect_family",
-        title: "省城高校/中学教师家庭",
-        desc: "家里有一整面墙的旧书和文学期刊，父母讲求体面修养，自幼要求你每日练字读书，家庭氛围温和但期望极高。",
-        statMod: { health: 84, wealth: 6.0, intellect: 65, luck: 54, happiness: 58, rep: 55 },
-        trait: "书香灵慧",
-        eraFlavor: "在省城机关与教工宿舍的书卷香中长大，骨子里带着几分清高，对时代潮汐有着敏锐观察"
+        title: "省城书香教书先生门第",
+        desc: "一墙发黄的文史古籍与教案批注，重视修身立德，清贫中透着书卷傲骨与敏锐见识",
+        statMod: { health: 84, wealth: 5.5, intellect: 66, luck: 54, happiness: 58, rep: 58 },
+        trait: "书香灵慧"
       },
       {
-        id: "merchant_coastal",
-        title: "沿海弄潮敢闯个体户",
-        desc: "父母最早一批在村头摆摊贩卖布匹电器，常年在绿皮火车硬座与催账酒桌上穿梭，从小在算盘和厚厚的现金堆里长大。",
-        statMod: { health: 88, wealth: 12.0, intellect: 54, luck: 58, happiness: 60, rep: 48 },
-        trait: "市井嗅觉",
-        eraFlavor: "自幼耳濡目染商贾交易与契约博弈，深知市场经济的残酷与暴利，敢于在风口下重注"
+        title: "敢为人先个体商贩家庭",
+        desc: "最早摆摊卖电子表喇叭裤的弄潮儿，提着蛇皮袋挤绿皮车，在算盘与现金中讨生活",
+        statMod: { health: 88, wealth: 11.5, intellect: 55, luck: 58, happiness: 60, rep: 46 },
+        trait: "市井嗅觉"
       },
       {
-        id: "cadre_compound",
         title: "机关大院行政干事家庭",
-        desc: "父母任职于地方行政机关，住在一号机关家属楼。饭局间常有长辈高谈宏观调控与人事变迁，人情世故的规矩自幼刻在骨子里。",
-        statMod: { health: 86, wealth: 8.0, intellect: 60, luck: 56, happiness: 62, rep: 68 },
-        trait: "洞察人情",
-        eraFlavor: "看惯了会议室红头文件与门卫室往来礼节，对体制运作与资源调度有着本能的早慧"
+        desc: "父母任职于地方行政机关，住在一号机关家属楼。言行沉稳讲究方寸，知晓规矩早慧",
+        statMod: { health: 86, wealth: 7.5, intellect: 60, luck: 56, happiness: 62, rep: 68 },
+        trait: "洞察人情"
       },
       {
-        id: "military_family",
-        title: "边疆驻防军旅军属之家",
-        desc: "父亲常年驻扎守卫哨所，母亲在军人服务社勤勉工作。家教如军令般严明方正，被子必须叠成豆腐块，意志如铸铁般坚定。",
-        statMod: { health: 96, wealth: 4.0, intellect: 52, luck: 50, happiness: 56, rep: 62 },
-        trait: "铁血脊梁",
-        eraFlavor: "听着军号起床，看着绿色吉普穿行，骨子里流淌着不怕苦累与甘于奉献的血性"
+        title: "边防军旅驻扎军烈门第",
+        desc: "挂满军功章的军大衣与清脆的起床军号，家教极严，骨子里流淌着刚正与担当",
+        statMod: { health: 96, wealth: 4.0, intellect: 53, luck: 50, happiness: 56, rep: 68 },
+        trait: "铁血脊梁"
       },
       {
-        id: "medical_family",
-        title: "老城中医院悬壶世家",
-        desc: "三代在中医院坐堂行医，屋子里终年弥漫着甘草与黄芪的陈香。父母医德高尚，自幼教导你辨识穴位草药与体恤疾苦。",
-        statMod: { health: 92, wealth: 7.0, intellect: 62, luck: 54, happiness: 64, rep: 58 },
-        trait: "仁心济世",
-        eraFlavor: "见过形形色色的病痛与生死无常，养成了处变不惊的沉稳心境与内敛宽厚的性情"
+        title: "老城回春堂中医世家",
+        desc: "满屋甘草陈皮与青草药香，自幼习得搭脉问诊与望闻问切，看淡生死多怀悲悯",
+        statMod: { health: 92, wealth: 6.8, intellect: 63, luck: 54, happiness: 64, rep: 60 },
+        trait: "仁心济世"
       },
       {
-        id: "shikumen_artisan",
-        title: "沿海老弄堂钟表匠手艺人",
-        desc: "蜗居于逼仄狭窄的石库门阁楼，父亲是修机械表与缝纫机的高级手艺人。在台灯与放大镜下一分一厘钻研，精打细算过日子。",
-        statMod: { health: 85, wealth: 3.5, intellect: 63, luck: 52, happiness: 58, rep: 46 },
-        trait: "工匠微雕",
-        eraFlavor: "在逼仄的阁楼敲击声与弄堂晨昏煤炉气味中长大，懂得沉下心把一门手艺做到极致"
+        title: "老弄堂巧手钟表锁匠铺",
+        desc: "一盏台灯放大镜前拆装精密发条齿轮，一厘一毫不差，靠真本事在街坊立足",
+        statMod: { health: 85, wealth: 3.2, intellect: 64, luck: 52, happiness: 58, rep: 45 },
+        trait: "工匠微雕"
       },
       {
-        id: "mining_town",
-        title: "北方重工业矿区家庭",
-        desc: "生长在黑金遍布的煤铁矿区，父辈下井挥汗如雨。矿工俱乐部的大喇叭、黑沉沉的运煤火车与浴池里的热气是最初的记忆。",
-        statMod: { health: 92, wealth: 3.8, intellect: 48, luck: 48, happiness: 62, rep: 42 },
-        trait: "矿山粗粝",
-        eraFlavor: "体会过地下深处的险恶与地表的欢歌，生就了一副豪迈硬朗、大口吃肉喝酒的热忱性格"
+        title: "北方煤铁矿山采掘之家",
+        desc: "头顶矿灯下几百米矿井的硬汉，性格豪迈如酒，视生死兄弟如手足，大口吃肉喝酒",
+        statMod: { health: 92, wealth: 3.6, intellect: 47, luck: 48, happiness: 62, rep: 40 },
+        trait: "矿山粗粝"
       },
       {
-        id: "theatre_troupe",
-        title: "省戏曲歌舞团行当家庭",
-        desc: "父母是地方戏曲歌舞团台柱子演员，练功房的踢腿勒头与后台油彩箱是你的游乐场。童年见证过剧场的满座喝彩与落幕清冷。",
+        title: "地方京剧歌舞团曲艺人家",
+        desc: "后台油彩箱与练功房的飞天水袖，在流行曲浪潮冲击下守望着传统粉墨风华",
         statMod: { health: 87, wealth: 4.2, intellect: 58, luck: 56, happiness: 66, rep: 52 },
-        trait: "粉墨风华",
-        eraFlavor: "看尽了粉墨登场的繁华与时代变迁下流行音乐对传统戏曲的冲击，对世事如戏有独到感悟"
+        trait: "粉墨风华"
       }
     ];
 
-    // 未来背景池 (丰富扩充至 10 大科幻时代典型身份)
-    const FUTURE_ORIGINS = [
+    const FUTURE_REGIONS = [
+      { name: "近地低轨第二聚合环站", desc: "透过透明抗辐射舷窗俯瞰地球日出日落，常年处于人工离心重力环境", stat: { intellect: +4, health: -2 } },
+      { name: "东亚中央恒温气候巨穹顶", desc: "数十平方公里的全息天幕屏蔽了地表酸雨，人工微气候四季恒定在22度", stat: { health: +3, wealth: +2.0 } },
+      { name: "马里亚纳深海核聚变方舟", desc: "沉浸于万米深蓝海沟，伴着深海热液喷口与发光生物，与世隔绝静谧安宁", stat: { health: +4, happiness: +3 } },
+      { name: "火星水手大峡谷殖民前哨", desc: "红砂岩地表之下的蜂窝防护洞穴，仰望夜空微弱的蓝色地球母星", stat: { health: +2, luck: +4 } },
+      { name: "月球静海背阴面超导基地", desc: "终年避开强烈太阳直射的永夜环形山，常温超导流水线无声飞速运转", stat: { intellect: +3, wealth: +1.5 } },
+      { name: "青藏高原稀疏大气聚变中心", desc: "依托地表最高海拔建设的磁约束聚变堆，雪山巍峨，蓝天纯净无瑕", stat: { health: +5, happiness: +2 } },
+      { name: "地表失控区地下掩体自由邦", desc: "未接入官方超脑云端的废墟防空洞，依靠手工燃油机与古董电子管维系自由", stat: { intellect: +3, luck: +5 } },
+      { name: "太平洋漂浮人工珊瑚矩阵", desc: "漂浮在赤道洋流上的生物自给自足岛，与基因改造蓝藻群紧密共生", stat: { happiness: +5, health: +2 } }
+    ];
+
+    const FUTURE_SOCIAL_STRATA = [
       {
-        id: "orbital_technician",
-        title: "近地轨道空港维护工家庭",
-        desc: "父母是低轨道空间站聚变管路维修工，常年处于微重力环境。居住在第三层蜂巢胶囊舱，最大的心愿是攒够地表绿区永久居住权。",
-        statMod: { health: 86, wealth: 4.5, intellect: 62, luck: 52, happiness: 54, rep: 48 },
-        trait: "真空坚毅",
-        eraFlavor: "在透过观察舷窗俯瞰蓝色地球与低沉机械轰鸣中长大，对辽阔星空与狭窄生存有着双重直觉"
+        title: "低轨聚变管路高级技术工",
+        desc: "负责太空天梯与电磁推进阀的无重力焊接检修，生活在蜂巢舱，最大的心愿是攒够地表永久绿区产权",
+        statMod: { health: 86, wealth: 4.8, intellect: 62, luck: 52, happiness: 54, rep: 48 },
+        trait: "真空坚毅"
       },
       {
-        id: "dome_suburb",
-        title: "次级穹顶边缘生态农场",
-        desc: "在受控人造光与水培架间长大，父母躬耕于藻类蛋白工厂，虽然远离核心算力区，但保持了纯天然食物与自然情感的质朴。",
-        statMod: { health: 95, wealth: 1.5, intellect: 50, luck: 50, happiness: 66, rep: 40 },
-        trait: "大地复归",
-        eraFlavor: "在人造紫外灯与水培滴灌的声音中成长，渴望挣脱穹顶过滤网，亲眼看看真正未经净化的暴雨"
+        title: "次级穹顶垂直藻类农场主",
+        desc: "在受控光照与营养液架间照料高能螺旋藻，远离核心算力区，但保持了天然食物与质朴情感",
+        statMod: { health: 95, wealth: 2.2, intellect: 50, luck: 50, happiness: 66, rep: 40 },
+        trait: "大地复归"
       },
       {
-        id: "cyber_corp_junior",
-        title: "跨国巨企算力中继基层职员",
-        desc: "父母为中央神经网络提供日常标记与清理，生活被密密麻麻的指标与义体维护费绑死，自幼被植入基础教学芯片。",
-        statMod: { health: 82, wealth: 9.0, intellect: 68, luck: 55, happiness: 50, rep: 52 },
-        trait: "数据感知",
-        eraFlavor: "在全息霓虹与代码流的光影中长大，早早见识了数字永生者的傲慢与底层义体磨损的焦糊味"
+        title: "跨国巨企算力中继核心架构师",
+        desc: "为中央神经网络设计容灾拓扑，出入有反重力浮空艇，生活被高昂的义体维护与算力指数绑死",
+        statMod: { health: 82, wealth: 12.0, intellect: 72, luck: 55, happiness: 50, rep: 62 },
+        trait: "数据感知"
       },
       {
-        id: "independent_hacker",
-        title: "地下自由频段游民家庭",
-        desc: "父母是未接入官方脑机中央网络的旧人类守望者，藏身于旧城地下防空洞，靠维修古董电子仪器与私密通信中继为生。",
-        statMod: { health: 88, wealth: 3.0, intellect: 64, luck: 60, happiness: 58, rep: 36 },
-        trait: "断网自守",
-        eraFlavor: "在充满松香焊锡味与旧书本的防空洞里长大，珍惜不被算法监控的纯粹思想与手写文字"
+        title: "地下暗网自由频段游民首领",
+        desc: "拒绝官方神经接口的旧人类守望者，藏身地下维修古董电子仪器与私密通信中继，守卫思想自由",
+        statMod: { health: 88, wealth: 3.5, intellect: 65, luck: 60, happiness: 58, rep: 38 },
+        trait: "断网自守"
       },
       {
-        id: "quantum_researcher",
-        title: "深空引力波观测站学者家庭",
-        desc: "父母供职于月球背面的引力波实验阵列，成长于静谧的真空观测站。家中全息球体整夜演算着脉冲星引力微扰与黑洞视界。",
-        statMod: { health: 83, wealth: 11.0, intellect: 75, luck: 52, happiness: 52, rep: 60 },
-        trait: "宇宙深眸",
-        eraFlavor: "在无垠黑夜与跳跃的量子曲率图表中启蒙，对浩瀚宇宙充满敬畏，骨子里有着极致的求真欲"
+        title: "深空引力波观测站首席学者",
+        desc: "供职于月背引力波阵列，整夜演算黑洞碰撞与量子微扰，对宇宙充满敬畏，骨子里有着极致求真欲",
+        statMod: { health: 83, wealth: 11.5, intellect: 76, luck: 52, happiness: 52, rep: 65 },
+        trait: "宇宙深眸"
       },
       {
-        id: "synthetic_artist",
-        title: "灵境虚拟现实织梦人家庭",
-        desc: "父母是首屈一指的'神经感官建筑师'，为千万人设计永不落幕的虚拟极乐境。现实中居室极简，但神经元储物柜里存有万千梦境。",
-        statMod: { health: 85, wealth: 8.5, intellect: 65, luck: 58, happiness: 68, rep: 55 },
-        trait: "幻境编织",
-        eraFlavor: "分得清每一个梦境分辨率与多巴胺阈值，对真实人类的情感羁绊有着旁观者般的清醒与依恋"
+        title: "灵境虚拟现实特级织梦大师",
+        desc: "为数百万人编织永不落幕的虚拟感官梦境，现实居室极简，但神经储物柜里存有万千幻界坐标",
+        statMod: { health: 85, wealth: 9.0, intellect: 66, luck: 58, happiness: 68, rep: 56 },
+        trait: "幻境编织"
       },
       {
-        id: "lunar_miner",
-        title: "月球极区氦-3深钻矿业家庭",
-        desc: "父母常年驾驶重型电磁掘进机在月球南极沙克尔顿环形山开采聚变能源。生活区在月岩十米深处，饮水需按微升严格配额。",
-        statMod: { health: 93, wealth: 6.0, intellect: 54, luck: 50, happiness: 56, rep: 46 },
-        trait: "极地冷淬",
-        eraFlavor: "在没有风声与鸟鸣的冷月深处长大，性格寡言耐得住绝对孤独，拥有极强的空间应变力"
+        title: "月球南极重型采矿队工段长",
+        desc: "驾驶重型电磁盾构机开采极地氦-3聚变能源，在月岩深处耐得住极度严寒与绝对死寂",
+        statMod: { health: 93, wealth: 6.5, intellect: 54, luck: 50, happiness: 56, rep: 48 },
+        trait: "极地冷淬"
       },
       {
-        id: "dyson_cadre",
-        title: "地月联合行政议会公职家庭",
-        desc: "父母在联合政府近地空间协调署任职高级专员，居住在悬空绿洲城核心枢纽。出入均有浮空舱接送，掌握前沿星际配额动态。",
-        statMod: { health: 88, wealth: 14.0, intellect: 66, luck: 55, happiness: 60, rep: 72 },
-        trait: "星际权衡",
-        eraFlavor: "自幼耳濡目染地月关税博弈与火星拓荒自治提案，深谙在硅基算法与碳基民众利益间平衡"
+        title: "地月联合行政协调署特派专员",
+        desc: "负责地火关税调停与星际配额调度，掌握前沿星际法规，深谙在硅基逻辑与碳基民众间权衡",
+        statMod: { health: 88, wealth: 14.5, intellect: 67, luck: 55, happiness: 60, rep: 75 },
+        trait: "星际权衡"
       },
       {
-        id: "deepsea_arc",
-        title: "万米深海马里亚纳方舟之子",
-        desc: "为了躲避地表极端高温与空间太阳风暴，全家生活在马里亚纳海沟一万米下的耐压核能方舟。舷窗外是静谧的深海发光生物与热液喷口。",
-        statMod: { health: 91, wealth: 5.5, intellect: 63, luck: 54, happiness: 62, rep: 44 },
-        trait: "渊底沉潜",
-        eraFlavor: "在千个大气压的水声轰鸣与热液荧光中成长，心如止水，拥有超乎常人的心理承受耐力"
+        title: "深海万米生态方舟维生总监",
+        desc: "在千个大气压的核潜方舟中维护全息生命循环系统，心如止水，拥有超乎常人的定力",
+        statMod: { health: 91, wealth: 5.8, intellect: 64, luck: 54, happiness: 62, rep: 46 },
+        trait: "渊底沉潜"
       },
       {
-        id: "bionic_medic",
-        title: "生物机械义体调试工匠世家",
-        desc: "家族在地下赛博黑市经营三代义体维修诊所。从神经缝合到钛金骨骼校准无所不能，见惯了为了一副好肺出卖灵魂的形形色色雇客。",
-        statMod: { health: 87, wealth: 7.2, intellect: 64, luck: 56, happiness: 54, rep: 50 },
-        trait: "神机剖解",
-        eraFlavor: "伴着液压油与电烙铁的青烟长大，深知机械永远无法替代真实跳动心肌的温度"
+        title: "赛博地下黑诊所义体调试工匠",
+        desc: "地下黑市神经缝合与钛合金骨骼校准大师，看惯了为一副仿生器官押上身家的市井百态",
+        statMod: { health: 87, wealth: 7.5, intellect: 65, luck: 56, happiness: 54, rep: 52 },
+        trait: "神机剖解"
       }
     ];
 
+    function generateProceduralOrigin(epochMode) {
+      const isPast = (epochMode === "past");
+      const regions = isPast ? PAST_REGIONS : FUTURE_REGIONS;
+      const strataList = isPast ? PAST_SOCIAL_STRATA : FUTURE_SOCIAL_STRATA;
+
+      const region = regions[Math.floor(Math.random() * regions.length)];
+      const strata = strataList[Math.floor(Math.random() * strataList.length)];
+
+      const title = `${region.name.slice(0, 4)} · ${strata.title}`;
+      const desc = `降生于【${region.name}】。${region.desc}；家庭是【${strata.title}】，${strata.desc}。`;
+
+      const statMod = {
+        health: strata.statMod.health + (region.stat.health || 0),
+        wealth: +(strata.statMod.wealth + (region.stat.wealth || 0)).toFixed(1),
+        intellect: strata.statMod.intellect + (region.stat.intellect || 0),
+        happiness: strata.statMod.happiness + (region.stat.happiness || 0),
+        luck: strata.statMod.luck + (region.stat.luck || 0),
+        rep: strata.statMod.rep + (region.stat.rep || 0)
+      };
+
+      return {
+        id: "origin_" + Math.random().toString(36).slice(2, 8),
+        title,
+        desc,
+        regionName: region.name,
+        strataTitle: strata.title,
+        statMod,
+        trait: strata.trait,
+        eraFlavor: strata.desc
+      };
+    }
     const RANDOM_TRAITS = [
       { name: "天生神力", effectDesc: "体魄异常健硕，抗病力强，耐劳度高", mod: { health: +8 } },
       { name: "灵光乍现", effectDesc: "悟性出众，学东西极快，见识超群", mod: { intellect: +8 } },
@@ -747,7 +761,10 @@
       keyChoices: [],
       randomEventsTriggered: [],
       isDead: false,
-      deathReason: ""
+      deathReason: "",
+      careerTrack: "探索未定",
+      socialRank: "风雨布衣",
+      trackScores: { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 }
     };
 
     let currentDestinyDraft = null;
@@ -767,13 +784,65 @@
       rollNewDestiny();
     }
 
+        // --- 动态连续历史/未来大时代背景解析器 (任意具体年份无缝自适应) ---
+    function resolveEraDetails(year, epochMode) {
+      if (epochMode === "past") {
+        if (year < 1958) {
+          return { name: "建国初期与工业筑基", desc: "一五计划火热推进，苏联援建重点工厂开工，红旗号子声在四方回荡，万众一心百废俱兴。" };
+        } else if (year < 1966) {
+          return { name: "大庆精神与艰难拓荒", desc: "大庆铁人战胜严寒泥浆，自力更生发展工业命脉，全国人民勒紧裤腰带在风沙中艰苦奋斗。" };
+        } else if (year < 1978) {
+          return { name: "风雨激荡与红砖岁月", desc: "凭票供应与粮本油票，大院里回荡着广播操与样板戏，青年人在大时代的起伏波澜中体会凡人冷暖。" };
+        } else if (year < 1984) {
+          return { name: "改革春风与真理讨论", desc: "十一届三中全会春风吹拂，小岗村大包干传遍神州，喇叭裤与邓丽君卡带在街巷深处悄然流行。" };
+        } else if (year < 1992) {
+          return { name: "商品初潮与万元户涌现", desc: "价格双轨制松动，民间个体户提着蛇皮袋在绿皮火车奔波，深圳特区高楼平地起，商品意识全面觉醒。" };
+        } else if (year < 1998) {
+          return { name: "南方谈话与特区狂澜", desc: "春天的故事响彻神州，体制内大批骨干下海淘金，股票交易所排起长龙，沿海开放迎来狂飙岁月。" };
+        } else if (year < 2003) {
+          return { name: "国企转轨与加入世贸", desc: "世纪之交体制转轨阵痛，加入WTO后外贸代工厂遍地开花，中国正式成为轰鸣运转的世界工厂。" };
+        } else if (year < 2009) {
+          return { name: "北京奥运与四万亿投资", desc: "鸟巢烟花点亮苍穹，四万亿刺激落地，高铁网络向全国延伸，房地产狂飙十年大幕拉开。" };
+        } else if (year < 2016) {
+          return { name: "移动互联与创业风口", desc: "智能手机普及与移动支付颠覆传统，百团大战与风口神话层出不穷，大众创业潮催生无数传奇。" };
+        } else if (year < 2023) {
+          return { name: "突发疫情与行业洗牌", desc: "居家隔离健康码与全球供应链震荡，教培地产退潮，稳健底线与内生定力成为全社会的共识。" };
+        } else if (year < 2030) {
+          return { name: "生成式AI与智能新质", desc: "大模型颠覆传统知识劳动，新能源车与商业航天并进，社会在老龄化与科技跃迁中寻找新平衡。" };
+        } else {
+          return { name: "深空深蓝与智算文明", desc: "中国空间站常态运营，商业航天与量子计算重塑生产力，人与智能机器和谐共生。" };
+        }
+      } else {
+        if (year < 2046) {
+          return { name: "常温超导与聚变初并网", desc: "商业托卡马克聚变堆首度向城市群并网供电，常温超导输电网贯通，大城市建起微气候恒温穹顶。" };
+        } else if (year < 2056) {
+          return { name: "太空天梯与地月微重力工业", desc: "赤道太空电梯贯通低轨，微重力芯片晶圆厂常态生产，月球南极氦-3采掘船队往返穿梭。" };
+        } else if (year < 2066) {
+          return { name: "神经脑机直连与算力配额", desc: "视网膜脑机接口成为入世标配，全球碳积分与算力账户直接绑定，肉体与数据分化显现。" };
+        } else if (year < 2076) {
+          return { name: "火星农业穹顶与外星拓荒", desc: "水手峡谷基地人口突破两百万，地火航线常态化轮渡，年轻一代在地球引力与异星自由间抉择。" };
+        } else if (year < 2086) {
+          return { name: "逻辑自组织超脑与硅基共治", desc: "中央分布式超脑自主接管全球能源司法调度，算法特区与旧人类自由城邦形成二元平衡。" };
+        } else if (year < 2096) {
+          return { name: "强恒星风暴与旧网归寂之劫", desc: "数十年一遇的超强太阳磁暴冲击内太阳系，行星偏转护盾彻夜泛起极光，考验文明抗灾韧性。" };
+        } else if (year < 2110) {
+          return { name: "半人马座远航与恒星际点火", desc: "人类首艘亚光速恒星际巨舰点火升空飞向比邻星，火种散播银河，人类正式迈向多恒星纪元。" };
+        } else {
+          return { name: "恒星戴森云与文明跃迁", desc: "人造能量金环环绕恒星熠熠生辉，戴森云初具规模，碳硅同辉，生命形式迈向全新维度。" };
+        }
+      }
+    }
+
     function generateRandomDestiny() {
       const isPast = (selectedEpochMode === "past");
-      const birthPool = isPast ? PAST_BIRTH_YEARS : FUTURE_BIRTH_YEARS;
-      const originPool = isPast ? PAST_ORIGINS : FUTURE_ORIGINS;
+      
+      // 出生年份全域随机化 (过去纪元 1952-2002 任意年份；未来纪元 2040-2085 任意年份)
+      const minYear = isPast ? 1952 : 2040;
+      const maxYear = isPast ? 2002 : 2085;
+      const birthYear = Math.floor(Math.random() * (maxYear - minYear + 1)) + minYear;
 
-      const birthYear = birthPool[Math.floor(Math.random() * birthPool.length)];
-      const origin = originPool[Math.floor(Math.random() * originPool.length)];
+      // 出身家庭全程序化随机生成 (8大地域 x 10大社会阶层自由碰撞组合)
+      const origin = generateProceduralOrigin(selectedEpochMode);
       const trait = RANDOM_TRAITS[Math.floor(Math.random() * RANDOM_TRAITS.length)];
       
       const deltaHealth = Math.floor(Math.random() * 9) - 4;
@@ -810,8 +879,7 @@
 
       currentDestinyDraft = generateRandomDestiny();
 
-      const timeline = (currentDestinyDraft.epochMode === "past") ? PAST_TIMELINE : FUTURE_TIMELINE;
-      const yearInfo = timeline[currentDestinyDraft.birthYear] || { name: "时代更迭", desc: "" };
+      const yearInfo = resolveEraDetails(currentDestinyDraft.birthYear, currentDestinyDraft.epochMode);
 
       document.getElementById('init-era-text').innerText = `${currentDestinyDraft.birthYear}年 · ${yearInfo.name}`;
       document.getElementById('init-origin-text').innerText = currentDestinyDraft.origin.title;
@@ -3020,6 +3088,8 @@
       document.getElementById('val-intellect').innerText = Math.round(player.intellect);
       document.getElementById('val-happiness').innerText = Math.round(player.happiness);
       document.getElementById('val-luck').innerText = Math.round(player.luck);
+      const trackEl = document.getElementById('player-track-text');
+      if (trackEl) trackEl.innerText = `${player.careerTrack} · ${player.socialRank}`;
 
       const currentYear = player.birthYear + player.age;
       document.getElementById('display-era-badge').innerText = `${currentYear}年 · ${player.age}岁`;
@@ -3063,11 +3133,9 @@
       // 更新进度
       document.getElementById('stage-progress').innerText = `${currentEventIndex + 1}/${activeEpochEvents.length}`;
 
-      // 更新时代横幅
+      // 更新时代横幅 (任意具体年份动态匹配)
       document.getElementById('era-year').innerText = year;
-      const timeline = (player.epochMode === "past") ? PAST_TIMELINE : FUTURE_TIMELINE;
-      const eraKey = Object.keys(timeline).reverse().find(y => year >= parseInt(y)) || (player.epochMode === "past" ? 1982 : 2042);
-      const eraInfo = timeline[eraKey] || { name: "时代前行", desc: "历史的车轮滚滚向前..." };
+      const eraInfo = resolveEraDetails(year, player.epochMode);
       document.getElementById('era-tag').innerText = eraInfo.name;
       document.getElementById('era-background-desc').innerText = eraInfo.desc;
 
@@ -3169,6 +3237,42 @@
 
       if (choice.isKey) {
         player.keyChoices.push(historyEntry);
+      }
+
+      
+      // --- 动态人生发展轨迹实时研判 ---
+      const choiceContent = (choice.text + " " + (tag || "")).toLowerCase();
+      if (!player.trackScores) player.trackScores = { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 };
+      
+      if (/考编|公务员|体制|军旅|入伍|纪检|行政|公职|团长|协调官|防御|上岸|保供/.test(choiceContent)) {
+        player.trackScores["体制政务"] += 2;
+      } else if (/经商|淘宝|电商|创业|个体户|操盘|股市|商海|小行星|矿业|水务|买房|信托|首富|红利/.test(choiceContent)) {
+        player.trackScores["商海实业"] += 2;
+      } else if (/无线电|实验室|论文|科研|工程师|算法|智脑|黑客|聚变|脑机|量子|质子|核能/.test(choiceContent)) {
+        player.trackScores["学术科技"] += 2;
+      } else if (/乐队|摇滚|武侠|自由|海岛|江湖|茶楼|房车|诗社|民宿|艺术|写诗/.test(choiceContent)) {
+        player.trackScores["文艺江湖"] += 2;
+      } else {
+        player.trackScores["守拙布衣"] += 1;
+      }
+
+      let bestTrack = "守拙布衣";
+      let maxScore = -1;
+      for (const [k, v] of Object.entries(player.trackScores)) {
+        if (v > maxScore) { maxScore = v; bestTrack = k; }
+      }
+      player.careerTrack = bestTrack;
+
+      if (player.reputation >= 70 && player.wealth >= 18) {
+        player.socialRank = "时代领军巨擘";
+      } else if (player.reputation >= 60) {
+        player.socialRank = "德高望重栋梁";
+      } else if (player.wealth >= 25) {
+        player.socialRank = "殷实一方富户";
+      } else if (player.wealth >= 5) {
+        player.socialRank = "小康体面人家";
+      } else {
+        player.socialRank = "风雨坚韧布衣";
       }
 
       updateHistoryUI();
@@ -3374,55 +3478,80 @@
       }
     }
 
-    function generateVividBiography() {
+        function generateVividBiography() {
       const p = player;
-      const bYear = p.birthYear;
-      const originName = p.origin ? p.origin.title : "普通家庭";
-      const originFlavor = p.origin ? p.origin.eraFlavor : "自幼感知生活的平实与温情";
-      const traitName = p.trait ? p.trait.name : "坚韧";
+      const container = document.getElementById('end-biography');
+      container.innerHTML = '';
 
-      let bio = `【引子 · 命运的起点】\n${bYear} 年，在${originName}里，伴随着时代苏醒的微光，${p.name}呱呱坠地。${originFlavor}，先天气质中带着【${traitName}】的底色。\n\n`;
+      // 顶部人生轨迹与终身位阶总结条
+      const summaryBar = document.createElement('div');
+      summaryBar.className = "mb-4 p-3 bg-amber-950/40 rounded-lg border border-amber-800/50 flex flex-wrap items-center justify-between gap-2 text-xs font-sans-sc";
+      summaryBar.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-400 font-bold">【 核心人生轨迹 】</span>
+          <span class="px-2 py-0.5 rounded bg-amber-900/60 text-amber-200 border border-amber-600/50 font-bold">${p.careerTrack || "守拙自持"}</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-zinc-400">终身社会坐标：</span>
+          <span class="font-bold text-amber-300 font-mono">${p.socialRank || "风雨布衣"}</span>
+        </div>
+      `;
+      container.appendChild(summaryBar);
 
-      // 阶段1：启蒙与求学
-      bio += `【第一卷 · 青葱岁月与时代潮涌】\n`;
-      const youthEvents = p.history.filter(h => h.age <= 21);
-      youthEvents.forEach(h => {
-        bio += `· ${h.year}年（${h.age}岁），正值【${h.title}】。面对关口，${p.name}做出了“${h.choiceText}”的选择。${h.feedback}\n`;
+      // 按编年史岁月阶段组织大篇幅深度传记
+      const stages = [
+        { label: "幼学与开蒙之春", minAge: 0, maxAge: 12 },
+        { label: "志学与风华正茂", minAge: 13, maxAge: 25 },
+        { label: "立业与沉浮搏击", minAge: 26, maxAge: 48 },
+        { label: "知命与桑榆晚景", minAge: 49, maxAge: 100 }
+      ];
+
+      stages.forEach(st => {
+        const records = p.history.filter(h => h.age >= st.minAge && h.age <= st.maxAge);
+        if (records.length === 0) return;
+
+        const startRec = records[0];
+        const endRec = records[records.length - 1];
+        const eraInfo = resolveEraDetails(startRec.year, p.epochMode);
+
+        const card = document.createElement('div');
+        card.className = "p-4 bg-zinc-900/60 rounded-xl border border-zinc-800/80 hover:border-amber-600/40 transition";
+
+        let recordsHTML = records.map(r => `
+          <div class="text-xs leading-relaxed space-y-1 bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-800/60">
+            <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span class="text-amber-300 font-bold">${r.year} 年 (${r.age} 岁) · ${r.title}</span>
+              <span class="${r.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${r.isSuccess ? '★ 顺遂' : '✕ 坎坷'}</span>
+            </div>
+            <div class="text-zinc-300 font-medium pl-1 border-l-2 border-amber-500/50">
+              决策：${r.choiceText}
+            </div>
+            <div class="text-zinc-400 text-[11px] italic pl-1 text-justify">
+              回响：${r.feedback}
+            </div>
+          </div>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2 border-b border-zinc-800 pb-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span class="text-xs md:text-sm font-bold text-amber-200 font-serif">${st.label} (${startRec.year} - ${endRec.year})</span>
+            </div>
+            <span class="text-[11px] text-zinc-400 font-mono">${eraInfo.name}</span>
+          </div>
+          <p class="text-xs text-zinc-400 mb-3 leading-relaxed font-serif text-justify">
+            ${eraInfo.desc}
+          </p>
+          <div class="space-y-2 font-sans-sc">
+            ${recordsHTML}
+          </div>
+        `;
+        container.appendChild(card);
       });
-
-      // 阶段2：前线搏杀与立业立身
-      bio += `\n【第二卷 · 盛年狂飙与负重前行】\n在时代资源与技术狂飙的黄金岁月，${p.name}迎来了人生负荷最重的盛年。`;
-      const midEvents = p.history.filter(h => h.age > 21 && h.age <= 35);
-      midEvents.forEach(h => {
-        bio += `\n· ${h.year}年（${h.age}岁），在【${h.title}】的十字路口，选择“${h.choiceText}”。${h.feedback}`;
-      });
-
-      // 阶段3：中年关隘与风浪洗礼
-      bio += `\n\n【第三卷 · 中年关隘与时代洗礼】\n人到中年，上有高堂下有幼雏，更逢宏观大洗牌。`;
-      const elderEvents = p.history.filter(h => h.age > 35 && h.age <= 58);
-      elderEvents.forEach(h => {
-        bio += `\n· ${h.year}年（${h.age}岁），面临【${h.title}】，“${h.choiceText}”。${h.feedback}`;
-      });
-
-      // 阶段4：桑榆晚景与天地辞章
-      bio += `\n\n【第四卷 · 桑榆晚景与天地辞章】\n走过半生波澜，红尘万事渐渐归于沉静。`;
-      const lateEvents = p.history.filter(h => h.age > 58);
-      lateEvents.forEach(h => {
-        bio += `\n· ${h.year}年（${h.age}岁），在【${h.title}】时分，做出“${h.choiceText}”。${h.feedback}`;
-      });
-
-      // 偶发事件回响
-      if (p.randomEventsTriggered.length > 0) {
-        bio += `\n\n【命运的暗线 · 猝不及防的掷骰】\n漫长岁月里，命运的骰子从未停歇：${p.randomEventsTriggered.map(r => `${r.age}岁遭遇【${r.title}】`).join('、')}。这些偶发的天降甘霖与飞来横祸，如工笔细描般刻画出真实人生的无常质地。`;
-      }
-
-      // 结语
-      bio += `\n\n【盖棺定论】\n纵观 ${p.name} 八十载春秋：终生积累净财富 ${p.wealth.toFixed(1)} 万元，学识智识造诣 ${Math.round(p.intellect)} 点，内心安宁度 ${Math.round(p.happiness)} 点，终生天命气运 ${Math.round(p.luck)} 点。\n大浪淘沙，千帆过尽。山川日月皆知你曾深情走过，落子无悔，问心自安。`;
-
-      document.getElementById('end-biography').innerText = bio;
     }
 
-    function renderKeyTurningPoints() {
+function renderKeyTurningPoints() {
       const container = document.getElementById('end-key-turning-points');
       container.innerHTML = '';
 

@@ -72,151 +72,127 @@ FUTURE_TIMELINE = {
 }
 
 # 过去家庭背景池
-PAST_ORIGINS = [
-    {
-        "title": "三线内陆国企职工家庭",
-        "desc": "父母在大型国营机械厂当技术工，住在大院。看似安稳平实，实则深藏体制改革巨澜。",
-        "flavor": "在红砖家属楼与工厂汽笛声中度过童年，习惯了集体生活的温情与拘谨",
-        "stat": {"health": 90, "wealth": 2.5, "intellect": 52, "happiness": 65, "luck": 50, "rep": 45},
-        "trait": "大院情怀"
-    },
-    {
-        "title": "黄土丘陵偏远农耕世家",
-        "desc": "祖辈世代躬耕于贫瘠农田。父母起早贪黑，唯一执念就是供你'读书跳出农门'。",
-        "flavor": "童年总伴随割麦打场的热浪与对县城楼房的遥望，早早就知晓生活需步步淌血",
-        "stat": {"health": 94, "wealth": 0.3, "intellect": 48, "happiness": 55, "luck": 52, "rep": 35},
-        "trait": "野草劲骨"
-    },
-    {
-        "title": "省城高校/中学教师家庭",
-        "desc": "家里有一整面墙的藏书与学术期刊，家教严谨体面，重视修养但期待甚高。",
-        "flavor": "在省城机关与教工宿舍的书卷香中长大，骨子里带着几分清高，见识敏锐",
-        "stat": {"health": 84, "wealth": 6.0, "intellect": 65, "happiness": 58, "luck": 54, "rep": 55},
-        "trait": "书香灵慧"
-    },
-    {
-        "title": "沿海弄潮敢闯个体户",
-        "desc": "父母最早一批摆摊贩卖布匹电器，常年火车奔波，从小在算盘和现金堆中长大。",
-        "flavor": "自幼耳濡目染商贾交易与博弈，深知市场经济的残酷与暴利，敢于在风口下重注",
-        "stat": {"health": 88, "wealth": 12.0, "intellect": 54, "happiness": 60, "luck": 58, "rep": 48},
-        "trait": "市井嗅觉"
-    },
-    {
-        "title": "机关大院行政干事家庭",
-        "desc": "父母任职于地方行政机关，住在一号机关家属楼。饭局间常听闻人事变迁，人情世故的规矩自幼刻在骨子里。",
-        "flavor": "看惯了会议室红头文件与门卫室往来礼节，对体制运作与资源调度有着本能的早慧",
-        "stat": {"health": 86, "wealth": 8.0, "intellect": 60, "happiness": 62, "luck": 56, "rep": 68},
-        "trait": "洞察人情"
-    },
-    {
-        "title": "边疆驻防军旅军属之家",
-        "desc": "父亲常年驻扎守卫哨所，母亲在军人服务社勤勉工作。家教如军令般严明方正，意志如铸铁般坚定。",
-        "flavor": "听着军号起床，看着绿色吉普穿行，骨子里流淌着不怕苦累与甘于奉献的血性",
-        "stat": {"health": 96, "wealth": 4.0, "intellect": 52, "happiness": 56, "luck": 50, "rep": 62},
-        "trait": "铁血脊梁"
-    },
-    {
-        "title": "老城中医院悬壶世家",
-        "desc": "三代在中医院坐堂行医，屋子里终年弥漫着甘草与黄芪陈香。父母医德高尚，自幼教导你辨识穴位草药与体恤疾苦。",
-        "flavor": "见过形形色色的病痛与生死无常，养成了处变不惊的沉稳心境与内敛宽厚的性情",
-        "stat": {"health": 92, "wealth": 7.0, "intellect": 62, "happiness": 64, "luck": 54, "rep": 58},
-        "trait": "仁心济世"
-    },
-    {
-        "title": "沿海老弄堂钟表匠手艺人",
-        "desc": "蜗居于逼仄狭窄的石库门阁楼，父亲是修机械表与缝纫机的高级手艺人。在台灯放大镜下一厘一毫精打细算。",
-        "flavor": "在逼仄的阁楼敲击声与弄堂晨昏煤炉气味中长大，懂得沉下心把一门手艺做到极致",
-        "stat": {"health": 85, "wealth": 3.5, "intellect": 63, "happiness": 58, "luck": 52, "rep": 46},
-        "trait": "工匠微雕"
-    },
-    {
-        "title": "北方重工业矿区家庭",
-        "desc": "生长在黑金遍布的煤铁矿区，父辈下井挥汗如雨。矿区大喇叭、黑沉沉运煤火车与大澡堂的热气是最初记忆。",
-        "flavor": "体会过地下深处的险恶与地表的欢歌，生就了一副豪迈硬朗、大口吃肉喝酒的热忱性格",
-        "stat": {"health": 92, "wealth": 3.8, "intellect": 48, "happiness": 62, "luck": 48, "rep": 42},
-        "trait": "矿山粗粝"
-    },
-    {
-        "title": "省戏曲歌舞团行当家庭",
-        "desc": "父母是地方戏曲歌舞团台柱子演员，练功房踢腿勒头与后台油彩箱是童年游乐场。看尽了剧场满座喝彩与落幕清冷。",
-        "flavor": "看尽了粉墨登场的繁华与时代变迁下流行文化冲击，对世事如戏有独到感悟",
-        "stat": {"health": 87, "wealth": 4.2, "intellect": 58, "happiness": 66, "luck": 56, "rep": 52},
-        "trait": "粉墨风华"
-    }
+PAST_REGIONS = [
+    ("三线内陆工业基地", "秦岭或太行深山里的红砖厂区，群山环抱，汽笛日夜长鸣", {"health": 2, "intellect": 1}),
+    ("江浙水乡沿海古镇", "青石板路旁摇橹的乌篷船，弄堂商贾往来，早早浸润在商品交易的萌芽中", {"wealth": 1.5, "intellect": 3}),
+    ("中原农耕沃野平原", "一眼望不到头的麦浪与泥土芳香，父辈面朝黄土背朝天，深知粒粒皆辛苦", {"health": 4, "happiness": 2}),
+    ("南粤沿海开放特区", "紧邻港澳的风口浪尖，到处是淘金客匆匆的步伐与粤语叫卖声", {"wealth": 3.0, "luck": 3}),
+    ("白山黑水重工业老林", "烟囱耸立的钢城与大煤田，大雪纷飞的冬夜里热腾腾的澡堂与大铁锅", {"health": 3, "rep": 2}),
+    ("西南巴蜀青石码头", "川江号子在江面上回荡，茶馆里龙门阵摆得热闹，生活悠闲却暗藏激流", {"happiness": 4, "intellect": 2}),
+    ("西北戈壁军垦绿洲", "胡杨林与白杨树庇护下的军垦地，坎儿井流水清冽，见惯了长风与星河", {"health": 4, "rep": 3}),
+    ("京畿皇城根胡同巷陌", "斑驳的朱门与鸽哨掠过天空，长辈在槐树下品茶论国事，市井与朝堂声息相通", {"intellect": 4, "rep": 5})
 ]
 
-FUTURE_ORIGINS = [
-    {
-        "title": "近地轨道空港维护工家庭",
-        "desc": "父母是低轨道空间站聚变管路维修工，常年处于微重力环境。蜂巢胶囊居住区，盼望攒够地表绿区永久居住权。",
-        "flavor": "在透过观察舷窗俯瞰蓝色地球与低沉机械轰鸣中长大，对辽阔星空与狭窄生存有着双重直觉",
-        "stat": {"health": 86, "wealth": 4.5, "intellect": 62, "happiness": 54, "luck": 52, "rep": 48},
-        "trait": "真空坚毅"
-    },
-    {
-        "title": "次级穹顶边缘生态农场",
-        "desc": "在受控人造光与水培架间长大，父母躬耕于藻类蛋白工厂，虽然远离核心算力区，但保持了纯天然食物的质朴。",
-        "flavor": "在人造紫外灯与水培滴灌的声音中成长，渴望挣脱穹顶过滤网，亲眼看看真正未经净化的暴雨",
-        "stat": {"health": 95, "wealth": 1.5, "intellect": 50, "happiness": 66, "luck": 50, "rep": 40},
-        "trait": "大地复归"
-    },
-    {
-        "title": "跨国巨企算力中继基层职员",
-        "desc": "父母为中央神经网络提供日常标记与清理，生活被密密麻麻的指标与义体维护费绑死，自幼植入基础教学芯片。",
-        "flavor": "在全息霓虹与代码流的光影中长大，早早见识了数字永生者的傲慢与底层义体磨损的焦糊味",
-        "stat": {"health": 82, "wealth": 9.0, "intellect": 68, "happiness": 50, "luck": 55, "rep": 52},
-        "trait": "数据感知"
-    },
-    {
-        "title": "地下自由频段游民家庭",
-        "desc": "父母是未接入官方脑机中央网络的旧人类守望者，藏身于旧城地下防空洞，靠维修古董电子仪器与私密通信为生。",
-        "flavor": "在充满松香焊锡味与旧书本的防空洞里长大，珍惜不被算法监控的纯粹思想与手写文字",
-        "stat": {"health": 88, "wealth": 3.0, "intellect": 64, "happiness": 58, "luck": 60, "rep": 36},
-        "trait": "断网自守"
-    },
-    {
-        "title": "深空引力波观测站学者家庭",
-        "desc": "父母供职于月背引力波实验阵列，成长于静谧真空观测站。家中全息球体整夜演算着脉冲星引力微扰与黑洞视界。",
-        "flavor": "在无垠黑夜与跳跃的量子曲率图表中启蒙，对浩瀚宇宙充满敬畏，骨子里有着极致的求真欲",
-        "stat": {"health": 83, "wealth": 11.0, "intellect": 75, "happiness": 52, "luck": 52, "rep": 60},
-        "trait": "宇宙深眸"
-    },
-    {
-        "title": "灵境虚拟现实织梦人家庭",
-        "desc": "父母是首屈一指的神经感官建筑师，为千万人设计永不落幕的虚拟极乐境。储物柜里存有万千梦境数据。",
-        "flavor": "分得清每一个梦境分辨率与多巴胺阈值，对真实人类的情感羁绊有着旁观者般的清醒与依恋",
-        "stat": {"health": 85, "wealth": 8.5, "intellect": 65, "happiness": 68, "luck": 58, "rep": 55},
-        "trait": "幻境编织"
-    },
-    {
-        "title": "月球极区氦-3深钻矿业家庭",
-        "desc": "父母驾驶重型电磁掘进机在月球南极沙克尔顿环形山开采聚变能源。生活在月岩十米深处，饮水按微升严格配额。",
-        "flavor": "在没有风声与鸟鸣的冷月深处长大，性格寡言耐得住绝对孤独，拥有极强的空间应变力",
-        "stat": {"health": 93, "wealth": 6.0, "intellect": 54, "happiness": 56, "luck": 50, "rep": 46},
-        "trait": "极地冷淬"
-    },
-    {
-        "title": "地月联合行政议会公职家庭",
-        "desc": "父母在联合政府近地空间协调署任职高级专员，居住在悬空绿洲城核心枢纽。掌握前沿星际配额与关税动向。",
-        "flavor": "自幼耳濡目染地月关税博弈与火星拓荒自治提案，深谙在硅基算法与碳基民众利益间平衡",
-        "stat": {"health": 88, "wealth": 14.0, "intellect": 66, "happiness": 60, "luck": 55, "rep": 72},
-        "trait": "星际权衡"
-    },
-    {
-        "title": "万米深海马里亚纳方舟之子",
-        "desc": "为了避开地表极端高温与空间太阳风暴，全家生活在马里亚纳海沟万米下的耐压核能方舟。舷窗外是深海热液喷口。",
-        "flavor": "在千个大气压的水声轰鸣与热液荧光中成长，心如止水，拥有超乎常人的心理承受耐力",
-        "stat": {"health": 91, "wealth": 5.5, "intellect": 63, "happiness": 62, "luck": 54, "rep": 44},
-        "trait": "渊底沉潜"
-    },
-    {
-        "title": "生物机械义体调试工匠世家",
-        "desc": "家族在地下赛博黑市经营三代义体维修诊所。从神经缝合到钛金骨骼校准无所不能，看惯了为一副好肺出卖灵魂的雇客。",
-        "flavor": "伴着液压油与电烙铁的青烟长大，深知机械永远无法替代真实跳动心肌的温度",
-        "stat": {"health": 87, "wealth": 7.2, "intellect": 64, "happiness": 54, "luck": 56, "rep": 50},
-        "trait": "神机剖解"
-    }
+PAST_SOCIAL_STRATA = [
+    ("国企大厂八级技工世家", "厂长也要客客气气递烟的技术大拿，工具箱擦得锃亮，手艺过硬骨气硬", {"health": 90, "wealth": 2.5, "intellect": 52, "happiness": 65, "luck": 50, "rep": 50}, "大院情怀"),
+    ("世代躬耕贫瘠农户", "手里捧着泥土过活，吃尽了风吹日晒之苦，对'读书进城吃商品粮'有着刻骨执念", {"health": 94, "wealth": 0.4, "intellect": 48, "happiness": 55, "luck": 52, "rep": 32}, "野草劲骨"),
+    ("省城书香教书先生门第", "一墙发黄的文史古籍与教案批注，重视修身立德，清贫中透着书卷傲骨与敏锐见识", {"health": 84, "wealth": 5.5, "intellect": 66, "happiness": 58, "luck": 54, "rep": 58}, "书香灵慧"),
+    ("敢为人先个体商贩家庭", "最早摆摊卖电子表喇叭裤的弄潮儿，提着蛇皮袋挤绿皮车，在算盘与现金中讨生活", {"health": 88, "wealth": 11.5, "intellect": 55, "happiness": 60, "luck": 58, "rep": 46}, "市井嗅觉"),
+    ("机关大院行政干事家庭", "父母任职于地方行政机关，住在一号机关家属楼。言行沉稳讲究方寸，知晓规矩早慧", {"health": 86, "wealth": 7.5, "intellect": 60, "happiness": 62, "luck": 56, "rep": 68}, "洞察人情"),
+    ("边防军旅驻扎军烈门第", "挂满军功章的军大衣与清脆的起床军号，家教极严，骨子里流淌着刚正与担当", {"health": 96, "wealth": 4.0, "intellect": 53, "happiness": 56, "luck": 50, "rep": 68}, "铁血脊梁"),
+    ("老城回春堂中医世家", "满屋甘草陈皮与青草药香，自幼习得搭脉问诊与望闻问切，看淡生死多怀悲悯", {"health": 92, "wealth": 6.8, "intellect": 63, "happiness": 64, "luck": 54, "rep": 60}, "仁心济世"),
+    ("老弄堂巧手钟表锁匠铺", "一盏台灯放大镜前拆装精密发条齿轮，一厘一毫不差，靠真本事在街坊立足", {"health": 85, "wealth": 3.2, "intellect": 64, "happiness": 58, "luck": 52, "rep": 45}, "工匠微雕"),
+    ("北方煤铁矿山采掘之家", "头顶矿灯下几百米矿井的硬汉，性格豪迈如酒，视生死兄弟如手足，大口吃肉喝酒", {"health": 92, "wealth": 3.6, "intellect": 47, "happiness": 62, "luck": 48, "rep": 40}, "矿山粗粝"),
+    ("地方京剧歌舞团曲艺人家", "后台油彩箱与练功房的飞天水袖，在流行曲浪潮冲击下守望着传统粉墨风华", {"health": 87, "wealth": 4.2, "intellect": 58, "happiness": 66, "luck": 56, "rep": 52}, "粉墨风华")
 ]
+
+FUTURE_REGIONS = [
+    ("近地低轨第二聚合环站", "透过透明抗辐射舷窗俯瞰地球日出日落，常年处于人工离心重力环境", {"intellect": 4, "health": -2}),
+    ("东亚中央恒温气候巨穹顶", "数十平方公里的全息天幕屏蔽了地表酸雨，人工微气候四季恒定在22度", {"health": 3, "wealth": 2.0}),
+    ("马里亚纳深海核聚变方舟", "沉浸于万米深蓝海沟，伴着深海热液喷口与发光生物，与世隔绝静谧安宁", {"health": 4, "happiness": 3}),
+    ("火星水手大峡谷殖民前哨", "红砂岩地表之下的蜂窝防护洞穴，仰望夜空微弱的蓝色地球母星", {"health": 2, "luck": 4}),
+    ("月球静海背阴面超导基地", "终年避开强烈太阳直射的永夜环形山，常温超导流水线无声飞速运转", {"intellect": 3, "wealth": 1.5}),
+    ("青藏高原稀疏大气聚变中心", "依托地表最高海拔建设的磁约束聚变堆，雪山巍峨，蓝天纯净无瑕", {"health": 5, "happiness": 2}),
+    ("地表失控区地下掩体自由邦", "未接入官方超脑云端的废墟防空洞，依靠手工燃油机与古董电子管维系自由", {"intellect": 3, "luck": 5}),
+    ("太平洋漂浮人工珊瑚矩阵", "漂浮在赤道洋流上的生物自给自足岛，与基因改造蓝藻群紧密共生", {"happiness": 5, "health": 2})
+]
+
+FUTURE_SOCIAL_STRATA = [
+    ("低轨聚变管路高级技术工", "负责太空天梯与电磁推进阀的无重力焊接检修，生活在蜂巢舱，渴望攒够地表绿区产权", {"health": 86, "wealth": 4.8, "intellect": 62, "happiness": 54, "luck": 52, "rep": 48}, "真空坚毅"),
+    ("次级穹顶垂直藻类农场主", "在受控光照与营养液架间照料高能螺旋藻，远离核心算力区，但保持了天然食物与质朴情感", {"health": 95, "wealth": 2.2, "intellect": 50, "happiness": 66, "luck": 50, "rep": 40}, "大地复归"),
+    ("跨国巨企算力中继核心架构师", "为中央神经网络设计容灾拓扑，出入有反重力浮空艇，生活被高昂的义体维护与算力指数绑死", {"health": 82, "wealth": 12.0, "intellect": 72, "happiness": 50, "luck": 55, "rep": 62}, "数据感知"),
+    ("地下暗网自由频段游民首领", "拒绝官方神经接口的旧人类守望者，藏身地下维修古董电子仪器与私密通信中继，守卫思想自由", {"health": 88, "wealth": 3.5, "intellect": 65, "happiness": 58, "luck": 60, "rep": 38}, "断网自守"),
+    ("深空引力波观测站首席学者", "供职于月背引力波阵列，整夜演算黑洞碰撞与量子微扰，对宇宙充满敬畏，骨子里有着极致求真欲", {"health": 83, "wealth": 11.5, "intellect": 76, "happiness": 52, "luck": 52, "rep": 65}, "宇宙深眸"),
+    ("灵境虚拟现实特级织梦大师", "为数百万人编织永不落幕的虚拟感官梦境，现实居室极简，但神经储物柜里存有万千幻界坐标", {"health": 85, "wealth": 9.0, "intellect": 66, "happiness": 68, "luck": 58, "rep": 56}, "幻境编织"),
+    ("月球南极重型采矿队工段长", "驾驶重型电磁盾构机开采极地氦-3聚变能源，在月岩深处耐得住极度严寒与绝对死寂", {"health": 93, "wealth": 6.5, "intellect": 54, "happiness": 56, "luck": 50, "rep": 48}, "极地冷淬"),
+    ("地月联合行政协调署特派专员", "负责地火关税调停与星际配额调度，掌握前沿星际法规，深谙在硅基逻辑与碳基民众间权衡", {"health": 88, "wealth": 14.5, "intellect": 67, "happiness": 60, "luck": 55, "rep": 75}, "星际权衡"),
+    ("深海万米生态方舟维生总监", "在千个大气压的核潜方舟中维护全息生命循环系统，心如止水，拥有超乎常人的定力", {"health": 91, "wealth": 5.8, "intellect": 64, "happiness": 62, "luck": 54, "rep": 46}, "渊底沉潜"),
+    ("赛博地下黑诊所义体调试工匠", "地下黑市神经缝合与钛合金骨骼校准大师，看惯了为一副仿生器官押上身家的市井百态", {"health": 87, "wealth": 7.5, "intellect": 65, "happiness": 54, "luck": 56, "rep": 52}, "神机剖解")
+]
+
+def generate_procedural_origin(epoch_mode):
+    is_past = (epoch_mode == "past")
+    regions = PAST_REGIONS if is_past else FUTURE_REGIONS
+    strata_list = PAST_SOCIAL_STRATA if is_past else FUTURE_SOCIAL_STRATA
+
+    region_name, region_desc, region_stat = random.choice(regions)
+    strata_title, strata_desc, strata_stat, trait_name = random.choice(strata_list)
+
+    title = f"{region_name[:4]} · {strata_title}"
+    desc = f"降生于【{region_name}】。{region_desc}；家庭是【{strata_title}】，{strata_desc}。"
+
+    stat_mod = {
+        "health": strata_stat["health"] + region_stat.get("health", 0),
+        "wealth": round(strata_stat["wealth"] + region_stat.get("wealth", 0), 1),
+        "intellect": strata_stat["intellect"] + region_stat.get("intellect", 0),
+        "happiness": strata_stat["happiness"] + region_stat.get("happiness", 0),
+        "luck": strata_stat["luck"] + region_stat.get("luck", 0),
+        "rep": strata_stat["rep"] + region_stat.get("rep", 0)
+    }
+
+    return {
+        "title": title,
+        "desc": desc,
+        "region": region_name,
+        "strata": strata_title,
+        "stat": stat_mod,
+        "trait": trait_name,
+        "flavor": strata_desc
+    }
+
+def resolve_era_details(year, epoch_mode):
+    if epoch_mode == "past":
+        if year < 1958:
+            return ("建国初期与工业筑基", "一五计划火热推进，苏联援建重点工厂开工，红旗号子声在四方回荡，万众一心百废俱兴。")
+        elif year < 1966:
+            return ("大庆精神与艰难拓荒", "大庆铁人战胜严寒泥浆，自力更生发展工业命脉，全国人民勒紧裤腰带在风沙中艰苦奋斗。")
+        elif year < 1978:
+            return ("风雨激荡与红砖岁月", "凭票供应与粮本油票，大院里回荡着广播操与样板戏，青年人在大时代的起伏波澜中体会凡人冷暖。")
+        elif year < 1984:
+            return ("改革春风与真理讨论", "十一届三中全会春风吹拂，小岗村大包干传遍神州，喇叭裤与邓丽君卡带在街巷深处悄然流行。")
+        elif year < 1992:
+            return ("商品初潮与万元户涌现", "价格双轨制松动，民间个体户提着蛇皮袋在绿皮火车奔波，深圳特区高楼平地起，商品意识全面觉醒。")
+        elif year < 1998:
+            return ("南方谈话与特区狂澜", "春天的故事响彻神州，体制内大批骨干下海淘金，股票交易所排起长龙，沿海开放迎来狂飙岁月。")
+        elif year < 2003:
+            return ("国企转轨与加入世贸", "世纪之交体制转轨阵痛，加入WTO后外贸代工厂遍地开花，中国正式成为轰鸣运转的世界工厂。")
+        elif year < 2009:
+            return ("北京奥运与四万亿投资", "鸟巢烟花点亮苍穹，四万亿刺激落地，高铁网络向全国延伸，房地产狂飙十年大幕拉开。")
+        elif year < 2016:
+            return ("移动互联与创业风口", "智能手机普及与移动支付颠覆传统，百团大战与风口神话层出不穷，大众创业潮催生无数传奇。")
+        elif year < 2023:
+            return ("突发疫情与行业洗牌", "居家隔离健康码与全球供应链震荡，教培地产退潮，稳健底线与内生定力成为全社会的共识。")
+        elif year < 2030:
+            return ("生成式AI与智能新质", "大模型颠覆传统知识劳动，新能源车与商业航天并进，社会在老龄化与科技跃迁中寻找新平衡。")
+        else:
+            return ("深空深蓝与智算文明", "中国空间站常态运营，商业航天与量子计算重塑生产力，人与智能机器和谐共生。")
+    else:
+        if year < 2046:
+            return ("常温超导与聚变初并网", "商业托卡马克聚变堆首度向城市群并网供电，常温超导输电网贯通，大城市建起微气候恒温穹顶。")
+        elif year < 2056:
+            return ("太空天梯与地月微重力工业", "赤道太空电梯贯通低轨，微重力芯片晶圆厂常态生产，月球南极氦-3采掘船队往返穿梭。")
+        elif year < 2066:
+            return ("神经脑机直连与算力配额", "视网膜脑机接口成为入世标配，全球碳积分与算力账户直接绑定，肉体与数据分化显现。")
+        elif year < 2076:
+            return ("火星农业穹顶与外星拓荒", "水手峡谷基地人口突破两百万，地火航线常态化轮渡，年轻一代在地球引力与异星自由间抉择。")
+        elif year < 2086:
+            return ("逻辑自组织超脑与硅基共治", "中央分布式超脑自主接管全球能源司法调度，算法特区与旧人类自由城邦形成二元平衡。")
+        elif year < 2096:
+            return ("强恒星风暴与旧网归寂之劫", "数十年一遇的超强太阳磁暴冲击内太阳系，行星偏转护盾彻夜泛起极光，考验文明抗灾韧性。")
+        elif year < 2110:
+            return ("半人马座远航与恒星际点火", "人类首艘亚光速恒星际巨舰点火升空飞向比邻星，火种散播银河，人类正式迈向多恒星纪元。")
+        else:
+            return ("恒星戴森云与文明跃迁", "人造能量金环环绕恒星熠熠生辉，戴森云初具规模，碳硅同辉，生命形式迈向全新维度。")
 
 RANDOM_TRAITS = [
     {"name": "天生神力", "desc": "体魄异常健硕，抗病力强，耐劳度高", "mod": {"health": 8}},
@@ -256,16 +232,17 @@ class Player:
         self.random_events = []
         self.is_dead = False
         self.death_reason = ""
+        self.career_track = "探索未定"
+        self.social_rank = "风雨布衣"
+        self.track_scores = {"体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0}
 
     def show_dashboard(self, stage_idx, total_stages):
         clear_screen()
         curr_year = self.birth_year + self.age
-        timeline = PAST_TIMELINE if self.epoch_mode == "past" else FUTURE_TIMELINE
-        era_key = max([y for y in timeline if curr_year >= y], default=self.birth_year)
-        era_title, era_desc = timeline.get(era_key, ("时代演进", "历史的年轮悄然流转..."))
+        era_title, era_desc = resolve_era_details(curr_year, self.epoch_mode)
 
         print(f"{Color.GOLD}{'='*68}{Color.RESET}")
-        print(f" {Color.BOLD}{self.name}{Color.RESET} · {curr_year} 年 ({self.age} 岁) | 进度 [{stage_idx}/{total_stages}] | 时代：{Color.YELLOW}{era_title}{Color.RESET}")
+        print(f" {Color.BOLD}{self.name}{Color.RESET} · {curr_year} 年 ({self.age} 岁) | 轨迹: {Color.CYAN}{self.career_track} · {self.social_rank}{Color.RESET} | 进度 [{stage_idx}/{total_stages}] | 时代：{Color.YELLOW}{era_title}{Color.RESET}")
         print(f" 时代背景: {Color.GRAY}{era_desc}{Color.RESET}")
         print(f"{Color.GOLD}{'-'*68}{Color.RESET}")
         print(f" [健康]: {int(self.health):<3}♥  |  [财富]: {self.wealth:.1f}万￥  |  [智识]: {int(self.intellect):<3}✦  |  [心安]: {int(self.happiness):<3}☼  |  [气运]: {int(self.luck):<3}🎲")
@@ -1205,13 +1182,11 @@ FUTURE_STAGES = [
 
 def generate_random_destiny(epoch_mode):
     if epoch_mode == "past":
-        birth_years = [1976, 1982, 1988, 1994]
-        origin = random.choice(PAST_ORIGINS)
+        b_year = random.randint(1952, 2002)
     else:
-        birth_years = [2042, 2048, 2054, 2060]
-        origin = random.choice(FUTURE_ORIGINS)
+        b_year = random.randint(2040, 2085)
     
-    b_year = random.choice(birth_years)
+    origin = generate_procedural_origin(epoch_mode)
     trait = random.choice(RANDOM_TRAITS)
     return b_year, origin, trait
 
@@ -2148,12 +2123,103 @@ FUTURE_STAGE_POOLS = [
     [FUTURE_STAGES[i], FUTURE_ALT_STAGES_PY[i]] for i in range(16)
 ]
 
+
+PAST_RANDOM_EVENTS = [
+    {
+        "id": "re_lottery",
+        "title": "街头彩票微幸",
+        "tag": "微幸眷顾",
+        "desc": "路过街头报刊亭随手刮了一张体育彩票，竟中了二等小奖！虽非巨资，却在捉襟见肘时添了口温热饭菜。",
+        "effect": {"wealth": 1.2, "happiness": 8, "luck": -2}
+    },
+    {
+        "id": "re_illness_scare",
+        "title": "深夜急诊惊魂",
+        "tag": "病痛突袭",
+        "desc": "毫无征兆的急性剧痛让你在深夜被送进急诊。无影灯与消毒水味刺鼻，让你体会到肉体凡胎的极度脆弱。",
+        "effect": {"health": -10, "wealth": -0.8, "happiness": -5, "luck": 0}
+    },
+    {
+        "id": "re_old_mentor",
+        "title": "偶遇退休老法师点拨",
+        "tag": "良师开窍",
+        "desc": "在旧书摊旁与一位隐退老工程师攀谈，对方一席肺腑之言醍醐灌顶，让你瞬间参透了行业底层门道。",
+        "effect": {"intellect": 10, "happiness": 5, "luck": 4}
+    },
+    {
+        "id": "re_market_slump",
+        "title": "小本买卖突遭寒流",
+        "tag": "市井波折",
+        "desc": "跟风囤积的一批小百货遭遇退潮，不得不折价半月方才甩清。虽然折了本钱，但交足了接地气的学费。",
+        "effect": {"wealth": -2.0, "happiness": -6, "intellect": 4}
+    },
+    {
+        "id": "re_neighbor_kindness",
+        "title": "邻里风雪送炭",
+        "tag": "人间烟火",
+        "desc": "遭遇困顿水暖爆裂之时，对门邻居送来了热腾腾的饭菜与应急工具，平淡的人间温情让你眼眶发热。",
+        "effect": {"happiness": 10, "health": 4, "rep": 5}
+    },
+    {
+        "id": "re_peer_envy",
+        "title": "流言蜚语中伤",
+        "tag": "人情冷暖",
+        "desc": "略有小成招来周围人的暗中忌恨，甚至有捕风捉影的闲话传到了单位。你学会了收敛锋芒保持定力。",
+        "effect": {"happiness": -8, "rep": -4, "intellect": 5}
+    }
+]
+
+FUTURE_RANDOM_EVENTS = [
+    {
+        "id": "re_quantum_drop",
+        "title": "近地暗网算力空投",
+        "tag": "开源馈赠",
+        "desc": "暗网分布式节点突发零日算力空投，你的私人量子钱包意外截获了一笔匿名加密配额！",
+        "effect": {"wealth": 3.0, "happiness": 8, "luck": -2}
+    },
+    {
+        "id": "re_cyber_virus",
+        "title": "突触神经木马侵袭",
+        "tag": "赛博劫波",
+        "desc": "在公共星网信道感染了定向神经木马，视网膜持续产生剧烈色彩噪点，自费刷新固件心惊肉跳。",
+        "effect": {"health": -8, "wealth": -1.5, "happiness": -8}
+    },
+    {
+        "id": "re_solar_surge",
+        "title": "微型地磁耀斑脉冲",
+        "tag": "天体微澜",
+        "desc": "太阳微耀斑穿透了电离层次级护盾，家庭全息投影短路冒烟，在黑暗中全家点燃了久违的古董蜡烛。",
+        "effect": {"happiness": 6, "health": -2, "intellect": 4}
+    },
+    {
+        "id": "re_bionic_recall",
+        "title": "仿生零件召回公函",
+        "tag": "巨企维权",
+        "desc": "多年前植入的微型代谢滤网被巨企以'安全隐患'召回，跑了一整天流程获得一笔微薄补偿金。",
+        "effect": {"wealth": 1.5, "happiness": -4, "rep": 3}
+    },
+    {
+        "id": "re_ai_insight",
+        "title": "智脑异常逻辑自省",
+        "tag": "超维顿悟",
+        "desc": "偶遇一次中央智脑公共调试日志泄露，一段纯粹的哲学正弦波令你陷入整夜深思，看淡了功名。",
+        "effect": {"intellect": 12, "happiness": 8, "luck": 3}
+    },
+    {
+        "id": "re_carbon_fine",
+        "title": "超额碳排放罚单",
+        "tag": "配额红线",
+        "desc": "因违规在室内使用老旧电阻炉烹调真实肉食，被社区无人机检测开出二级碳排放惩戒罚单。",
+        "effect": {"wealth": -2.5, "happiness": -8, "rep": -3}
+    }
+]
+
 def main():
     clear_screen()
     print(f"{Color.GOLD}{'='*68}{Color.RESET}")
     print(f"{Color.BOLD}{Color.GOLD}    浮 生 录  ·  过 去 与 未 来 浪 潮 模 拟 器 (全 卷 纪 传 版){Color.RESET}")
     print(f"{Color.GOLD}{'='*68}{Color.RESET}")
-    slow_print(" 一个人的命运，既要靠自我的奋斗，亦要看历史的进程。\n 时代洪流呼啸而过，偶发的幸与不幸如影随形。细水长流，步步为营，落子无悔。\n", 0.012)
+    print(" 一个人的命运，既要靠自我的奋斗，亦要看历史的进程。\n 时代洪流呼啸而过，偶发的幸与不幸如影随形。细水长流，步步为营，落子无悔。\n", 0.012)
 
     # 纪元模式选择
     print(f"{Color.CYAN}【 请选择入世时代纪元 】{Color.RESET}")
@@ -2178,8 +2244,7 @@ def main():
 
     while True:
         b_year, origin, trait = generate_random_destiny(epoch_mode)
-        timeline = PAST_TIMELINE if epoch_mode == "past" else FUTURE_TIMELINE
-        era_title, era_desc = timeline.get(b_year, ("时代初晓", ""))
+        era_title, era_desc = resolve_era_details(b_year, epoch_mode)
         
         print(f"\n{Color.CYAN}【 🎲 先天命格卡 · 随机摇号投胎 】{Color.RESET}")
         print(f"  纪元属性: {Color.BOLD}{'过去历史纪元' if epoch_mode == 'past' else '近未来科幻纪元'}{Color.RESET}")
@@ -2193,7 +2258,7 @@ def main():
         if cmd != 'r':
             break
         print(f"\n{Color.GRAY}重新祈求天命...{Color.RESET}\n")
-        time.sleep(0.3)
+        time.sleep(0.05)
 
     default_names = ["林栖", "陈远", "沈清弦", "陆明舟", "许念安", "周子墨", "星野", "艾柯", "顾长风"]
     name = input(f"\n{Color.CYAN}请输入入世姓名 (留空随机): {Color.RESET}").strip()
@@ -2205,8 +2270,8 @@ def main():
     total_stages = len(stage_pools)
     timeline = generate_random_timeline()
 
-    slow_print(f"\n命运之轮缓缓启动，{player.name} 踏入了 {player.birth_year} 年的人间...\n", 0.02)
-    time.sleep(0.8)
+    print(f"\n命运之轮缓缓启动，{player.name} 踏入了 {player.birth_year} 年的人间...\n", 0.02)
+    time.sleep(0.05)
 
     # 游戏主轮次
     for idx_stage, pool in enumerate(stage_pools, 1):
@@ -2233,7 +2298,7 @@ def main():
             player.intellect = max(20, min(100, player.intellect + eff.get("intellect", 0)))
             player.luck = max(10, min(100, player.luck + eff.get("luck", 0)))
             player.random_events.append((curr_year, player.age, re["title"]))
-            time.sleep(0.6)
+            time.sleep(0.05)
 
         print(f"{Color.BOLD}{Color.YELLOW}【{curr_year}年 · {stage['title']}】{Color.RESET}")
         print(f"{Color.WHITE}{stage['narrative']}{Color.RESET}\n")
@@ -2287,6 +2352,33 @@ def main():
             "is_key": chosen.get("is_key", False)
         }
         player.history.append(record)
+        # 实时动态轨迹演进研判
+        ch_text = (chosen['text'] + " " + chosen.get('tag_succ', '') + " " + chosen.get('tag_fail', '')).lower()
+        if any(w in ch_text for w in ["考编", "公务员", "体制", "军旅", "入伍", "纪检", "行政", "公职", "团长", "协调官", "防御", "上岸", "保供"]):
+            player.track_scores["体制政务"] += 2
+        elif any(w in ch_text for w in ["经商", "淘宝", "电商", "创业", "个体户", "操盘", "股市", "商海", "小行星", "矿业", "水务", "买房", "信托"]):
+            player.track_scores["商海实业"] += 2
+        elif any(w in ch_text for w in ["无线电", "实验室", "论文", "科研", "工程师", "算法", "智脑", "黑客", "聚变", "脑机", "量子"]):
+            player.track_scores["学术科技"] += 2
+        elif any(w in ch_text for w in ["乐队", "摇滚", "武侠", "自由", "海岛", "江湖", "茶楼", "房车", "诗社", "民宿"]):
+            player.track_scores["文艺江湖"] += 2
+        else:
+            player.track_scores["守拙布衣"] += 1
+
+        best_t = max(player.track_scores, key=player.track_scores.get)
+        player.career_track = best_t
+
+        if player.reputation >= 70 and player.wealth >= 18:
+            player.social_rank = "时代领军巨擘"
+        elif player.reputation >= 60:
+            player.social_rank = "德高望重栋梁"
+        elif player.wealth >= 25:
+            player.social_rank = "殷实一方富户"
+        elif player.wealth >= 5:
+            player.social_rank = "小康体面人家"
+        else:
+            player.social_rank = "风雨坚韧布衣"
+
         if chosen.get("is_key"):
             player.key_choices.append(record)
 
@@ -2295,7 +2387,7 @@ def main():
         print(f"{Color.GREEN}抉择回响：{Color.RESET}{fb}")
 
         input(f"\n{Color.GRAY}按回车继续步入岁月下一程...{Color.RESET}")
-        time.sleep(0.4)
+        time.sleep(0.05)
 
     if not player.death_reason:
         player.death_reason = "寿终正寝，在安详与温情中平静合眼"
