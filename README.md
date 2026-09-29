@@ -54,7 +54,27 @@
   典故词汇（科举、征辟、商号、票号、抄书、归隐、夜校、车间、聚变……）均已纳入研判。
 - 终身社会坐标随境遇实时变动：时代领军巨擘 → 德高望重栋梁 → 殷实一方富户 → 小康体面人家 → 风雨坚韧布衣。
 
-### 6. 深刻终局：人物一生总结系统
+### 6. 性别随机与女性专属历史处境（50/50 独立投胎）
+
+- **完全随机性别**：主角性别在投胎时完全随机（男 ♂ / 女 ♀ 各半），姓名池、尊长称谓（严父/慈母）、配偶称谓（妻子/丈夫）与子嗣（长子/长女）严格按性别与时代风俗动态匹配。
+- **全纪元女性处境事件库（40个专属事件，覆盖5大纪元）**：真实展现各时代女性的生存限制与个人尊严：
+  - *先秦汉唐*：机杼诵诗、及笄绾发与医门媒妁、妆奁账簿、织造字号、主母立家训。
+  - *宋韵明清*：绣绷与账本、花轿铜匙、独开绣坊、族中田产之争、主祭修谱。
+  - *近代破晓*：放足剪发与女学、女子师范、战火救护、同工同酬、夜校考学。
+  - *当代腾飞*：高考改命、外资白领、生育与职场两难、35岁危机、创业与单亲抚孤。
+  - *未来星海*：人造子宫与生育解绑、深空电梯排班、意识上传伦理、强AI共治协议。
+- 古典时代男子专属事件（如科举/从军）对女性角色适度降低命中权重，真实还原时代的社会结构。
+
+### 7. 家族谱系与至亲因缘演进系统
+
+- 人物不再是孤立攀登数值的符号，而是身处温润烟火与家族年轮中的活生生的人：
+  - **双亲生老病死**：按时代平均寿命与机缘推演父母寿夭，守制尽哀，铭刻失怙之痛。
+  - **红绳结发成家**：适龄时随财力、境遇与时代动态推演结缡，风雨同舟数十载。
+  - **生儿育女开枝**：婚后添丁，赋名赋字，记录抚育开销与膝下天伦之乐。
+  - **含饴弄孙与晚景**：年迈之时孙辈成群，香火绵延。
+  - **至亲时序贯通全局**：家族悲欢事件随岁月推进融入每一阶段叙事，终局形成完整的【家族谱系与至亲因缘】铭文。
+
+### 8. 深刻终局：人物一生总结系统
 
 - **六维数据终生量化**：生命健康、财富净值、学识心智、心境安宁、终生气运、声名威望。
   财富单位随纪元变化：**两金 / 两银 / 块银元 / 万元 / 信用点**，绝不让先秦人生出现「万元」。
@@ -117,35 +137,38 @@ python3 life_game.py
 
 ---
 
-## 内容维护与再生成（tools/）
+## 数据层架构与再生成（tools/）
 
-`index.html` 与 `life_game.py` 中的纪元内容由 `tools/` 下的数据模块**生成**，
-两边共享同一份内容源，确保 Web 与 CLI 叙事完全一致。
+本项目采用**引擎与数据层解耦**的先进架构：
+- 网页端引擎位于 [index.html](index.html)，数据层自动生成于 [data/epochs.js](data/epochs.js)（由 PWA Service Worker 离线缓存）。
+- 终端引擎位于 [life_game.py](life_game.py)，数据层自动生成于 [fsl_epochs.py](fsl_epochs.py)。
+- 双端共用 `tools/civ_*.py` 与 `tools/civ_women_*.py` 原始史实与科幻内容源，确保两端数值与文本绝对同步。
 
 ```
 tools/
-  civ_core.py            五大纪元配置、42 段连续时代表、JS/Python 代码生成器
-  civ_loader.py           分片装配与校验（8 地域 / 10 门第 / 16 阶段 / 每阶段 ≥2 事件）
-  civ_meta_<纪元>.py      该纪元的 8 地域 + 10 门第
-  civ_stages_<纪元>_<k>.py 该纪元第 4k..4k+3 个生命阶段的事件（每阶段 2 个）
-  build_5epoch_js.py      生成 index.html
-  build_5epoch_py.py      生成 life_game.py
-  verify_web.js           在 Node 中以最小 DOM 模拟跑通全流程自检
+  civ_core.py             五大纪元配置、43 段连续时代表、JS/Python 代码生成器
+  civ_loader.py            分片装配与校验（8 地域 / 10 门第 / 16 阶段 / 每阶段 ≥2 事件）
+  civ_meta_<纪元>.py       该纪元的 8 地域 + 10 门第
+  civ_stages_<纪元>_<k>.py  该纪元通用生命阶段事件池
+  civ_women_<纪元>.py       该纪元女性专属生命处境事件池（5 大纪元 × 8 阶段）
+  epoch_pack.py            双端代码包构建中枢（加载数据、生成事件与称谓）
+  build_epochs_data.py     生成 data/epochs.js
+  build_epochs_data_py.py  生成 fsl_epochs.py
+  verify_web.js            Node 虚拟 DOM 全流程自检（语法 + 校验 + 100条人生模拟）
 ```
 
-重新生成（会基于当前 `index.html` / `life_game.py` 原文进行注入，请先确保二者处于未注入状态，
-例如 `git checkout -- index.html life_game.py`）：
+重新生成两端数据层（修改 `tools/` 内容后随时执行）：
 
 ```bash
-python3 tools/build_5epoch_js.py   # 注入 index.html
-python3 tools/build_5epoch_py.py   # 注入 life_game.py
+python3 tools/build_epochs_data.py     # 刷新 data/epochs.js
+python3 tools/build_epochs_data_py.py  # 刷新 fsl_epochs.py
 ```
 
-自检：
+自检命令：
 
 ```bash
 python3 -c "import ast; ast.parse(open('life_game.py', encoding='utf-8').read()); print('OK')"
-node tools/verify_web.js           # 需 Node.js：语法检查 + 400 事件/800 选项校验 + 100 条完整人生模拟
+node tools/verify_web.js               # 语法检查 + 400通用事件 + 40女性专属事件 + 100条完整人生模拟
 ```
 
-> 注意：网页端若已安装为 PWA，更新后请在浏览器中刷新一次（Service Worker 缓存版本号已随内容递增）。
+> 注意：网页端若已安装为 PWA，更新后请在浏览器中刷新一次（Service Worker 缓存版本号为 `fushenglu-v6`）。

@@ -2,13 +2,28 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const ROOT = path.dirname(__dirname);
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-const scripts = html.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi);
+// 按出现顺序收集脚本：本地外链脚本从磁盘读入，CDN 等远端脚本跳过执行
+const scripts = [];
+{
+  const tagRe = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
+  let m;
+  while ((m = tagRe.exec(html)) !== null) {
+    const src = (m[1].match(/src=["']([^"']+)["']/) || [])[1];
+    if (src) {
+      if (/^(https?:)?\/\//.test(src)) { scripts.push({ label: src, external: true, code: '' }); continue; }
+      const file = path.join(ROOT, src.replace(/^\.\//, ''));
+      scripts.push({ label: src, code: fs.readFileSync(file, 'utf8') });
+    } else {
+      scripts.push({ label: 'inline#' + scripts.length, code: m[2] });
+    }
+  }
+}
 
 let synthOk = true;
 scripts.forEach((s, i) => {
-  const c = s.replace(/<script[\s\S]*?>/i, '').replace(/<\/script>/i, '');
-  try { new vm.Script(c, { filename: 's' + i }); console.log('Script ' + i + ' syntax: OK!'); }
-  catch (e) { synthOk = false; console.error('Script ' + i + ' ERROR:', e.message); }
+  if (s.external) return;
+  try { new vm.Script(s.code, { filename: s.label }); console.log('Script ' + i + ' (' + s.label + ') syntax: OK!'); }
+  catch (e) { synthOk = false; console.error('Script ' + i + ' (' + s.label + ') ERROR:', e.message); }
 });
 
 const els = {};
@@ -56,7 +71,7 @@ const ctx = {
 };
 vm.createContext(ctx);
 
-const code = scripts[1].replace(/<script[\s\S]*?>/i, '').replace(/<\/script>/i, '');
+const code = scripts.filter(s => !s.external).map(s => s.code).join('\n;\n');
 
 const harness = `;(function(){
 const R = {};
@@ -110,18 +125,21 @@ for (let t = 0; t < 100; t++) {
   selectedEpochMode = e.id;
   const d = generateRandomDestiny();
   currentDestinyDraft = d;
-  player.name = pickEpochName(e.id);
+  player.gender = d.gender;
+  player.name = pickEpochName(e.id, d.gender);
   player.epochMode = d.epochMode; player.birthYear = d.birthYear; player.birthMonth = d.birthMonth;
   player.origin = d.origin; player.trait = d.trait;
   player.health = d.health; player.wealth = d.wealth; player.intellect = d.intellect;
   player.happiness = d.happiness; player.luck = d.luck; player.reputation = d.rep;
-  player.tags = [d.origin.trait, d.trait.name];
+  player.tags = [d.origin.trait, d.trait.name, d.gender === 'female' ? '巾帼女史' : '须眉男儿'];
   player.age = 0; player.history = []; player.keyChoices = []; player.randomEventsTriggered = [];
   player.randomEvents = []; player.isDead = false; player.deathReason = '寿终正寝';
+  player.family = initializeFamily(player);
+  player.familyLogs = [];
   player.trackScores = { '体制政务': 0, '商海实业': 0, '学术科技': 0, '文艺江湖': 0, '守拙布衣': 0 };
   player.careerTrack = ''; player.socialRank = '';
 
-  const evs = assembleDynamicSessionEvents(d.birthYear);
+  const evs = assembleDynamicSessionEvents(d.birthYear, d.gender);
   activeEpochEvents = evs;
   for (let si = 0; si < evs.length; si++) {
     if (player.health <= 12) { player.deathReason = '积劳成疾，中年早逝'; break; }
@@ -129,6 +147,7 @@ for (let t = 0; t < 100; t++) {
     const x = evs[si];
     player.age = x.getAge();
     titles.add(x.title);
+    advanceFamily(player, player.age, d.birthYear + player.age);
     // 走真实的抉择结算管线（含人生轨迹研判与社会坐标评定）
     handleChoiceSelection(Math.floor(Math.random() * x.choices.length));
   }
@@ -138,6 +157,7 @@ for (let t = 0; t < 100; t++) {
   __getEl('end-lifespan').innerText = formatYearMonth(player.birthYear, player.birthMonth) + ' - ' + formatYearOnly(endYear);
   __getEl('end-val-wealth').innerText = player.wealth.toFixed(1) + ' ' + wealthUnit(player.epochMode);
   const reflRaw = generateEraReflection();
+  renderFamilyEnding();
   generateVividBiography();
   const arch = evaluateLifeArchetype();
   if (!arch || typeof arch.archetype !== 'string' || !arch.archetype) throw new Error('archetype missing for ' + e.id);

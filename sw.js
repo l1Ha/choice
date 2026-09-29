@@ -1,8 +1,9 @@
-const CACHE_NAME = 'fushenglu-v5';
+const CACHE_NAME = 'fushenglu-v6';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './data/epochs.js',
   './icon-192.png',
   './icon-512.png'
 ];
