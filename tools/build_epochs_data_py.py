@@ -42,7 +42,8 @@ def main():
     # 去掉 legacy 模块自身的编码声明，避免在同一文件里重复出现
     legacy = legacy.replace('# -*- coding: utf-8 -*-\n', '', 1)
     out = (HEADER + '\n' + legacy.rstrip() + '\n\n\n' + P.build_py_pack()
-           + '\n\n\n' + P.build_women_py() + '\n')
+           + '\n\n\n' + P.build_women_py()
+           + '\n\n\n' + P.build_random_events_py() + '\n')
     path = os.path.join(_ROOT, 'fsl_epochs.py')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(out)

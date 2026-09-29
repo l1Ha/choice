@@ -137,6 +137,11 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1 bg-zinc-900/80 px-1.5 py-0.5 rounded-md border border-zinc-700">
+          <button onclick="adjustFontSize(-1)" class="text-zinc-400 hover:text-amber-300 text-[11px] px-1 font-mono font-bold" title="字号缩小">A-</button>
+          <span class="text-zinc-600 text-[10px]">|</span>
+          <button onclick="adjustFontSize(1)" class="text-zinc-400 hover:text-amber-300 text-[11px] px-1 font-mono font-bold" title="字号放大">A+</button>
+        </div>
         <button onclick="openHallOfFame()" class="text-zinc-400 hover:text-amber-300 text-xs px-2.5 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition flex items-center">
           <span>🏛️ 轮回谱</span>
           <span id="top-badge-ach" class="ml-1 text-[10px] text-amber-300 font-mono">0</span>
@@ -3629,9 +3634,10 @@
       }
       document.getElementById('event-narrative').innerText = eventStory;
 
-      // --- 强随机事件判定机制 (30%概率触发突发事件) ---
+      // --- 强随机事件判定机制 (30%概率触发突发事件，严格按当前纪元事件池命中) ---
       const randomBox = document.getElementById('random-event-box');
-      const randPool = isFutureEpoch(getEpochIdForYear(year)) ? FUTURE_RANDOM_EVENTS : PAST_RANDOM_EVENTS;
+      const currEra = getEpochIdForYear(year);
+      const randPool = (typeof RANDOM_EVENT_POOLS !== 'undefined' && RANDOM_EVENT_POOLS[currEra]) || (isFutureEpoch(currEra) ? FUTURE_RANDOM_EVENTS : PAST_RANDOM_EVENTS);
 
       if (Math.random() < 0.32 && randPool.length > 0) {
         const randEvt = randPool[Math.floor(Math.random() * randPool.length)];
@@ -3651,11 +3657,14 @@
         randomBox.classList.add('hidden');
       }
 
+      // 动态生成本关选项（数量随机 2 ~ 4 项，融入先天特质、至亲伴侣与时代权衡）
+      const activeChoices = getDynamicChoicesForEvent(evtConfig, player, year);
+
       // 渲染选项列表
       const container = document.getElementById('choices-container');
       container.innerHTML = '';
 
-      evtConfig.choices.forEach((choice, idx) => {
+      activeChoices.forEach((choice, idx) => {
         const btn = document.createElement('button');
         btn.className = "choice-card w-full text-left p-4 sm:p-3.5 rounded-xl sm:rounded-lg bg-zinc-900/95 border border-zinc-800/90 hover:bg-zinc-800/90 active:bg-zinc-800 transition flex flex-col group cursor-pointer shadow-md touch-manipulation select-none";
         btn.onclick = () => handleChoiceSelection(idx);
@@ -3690,10 +3699,141 @@
       });
     }
 
+    // ==================== 随机选项数量扩展器 (2 ~ 4 项动态组合) ====================
+    function getDynamicChoicesForEvent(evtConfig, p, year) {
+      const baseChoices = evtConfig.choices.slice();
+      if (evtConfig._currentActiveChoices && evtConfig._currentActiveChoices.length >= 2) {
+        return evtConfig._currentActiveChoices;
+      }
+
+      // 数量随机：2项(25%)、3项(50%)、4项(25%)
+      const roll = Math.random();
+      const targetCount = roll < 0.25 ? 2 : (roll < 0.75 ? 3 : 4);
+      if (targetCount <= baseChoices.length) {
+        evtConfig._currentActiveChoices = baseChoices;
+        return baseChoices;
+      }
+
+      const extraChoices = [];
+      const eraId = p.epochMode;
+      const isAncientOrPremodern = (eraId === 'ancient' || eraId === 'premodern');
+      const isFuture = (eraId === 'future');
+
+      // 1. 特质破局路线 (Personal Trait Extra Choice)
+      if (p.trait) {
+        const tName = p.trait.name;
+        if (tName === "商海通达") {
+          extraChoices.push({
+            text: isAncientOrPremodern ? "动用私房余资托商帮掌柜打点，以商贾变通之法周旋暗通款曲" : (isFuture ? "调拨未上市的算力衍生品期权，通过暗网对冲掉眼前的危机缺口" : "敏锐把握市场供求失衡，借商业信息差反向操作，以小搏大破局"),
+            riskLevel: "商道融通 · 财帛破关",
+            successChance: (p) => Math.min(92, Math.max(25, 65 + (p.wealth > 3 ? 12 : 0))),
+            successFeedback: "商道流转自有其玄妙。虽折损了少许启动资财，却极巧妙地避开了正面风浪！",
+            failFeedback: "打点的本钱被中途盘剥截留，非但未能息事宁人，反倒折了微薄细软。",
+            successEffect: { wealth: -0.8, rep: 6, happiness: 4 },
+            failEffect: { wealth: -1.5, happiness: -6 },
+            tagSuccess: "以商破关",
+            tagFail: "折本失算",
+            isKey: true
+          });
+        } else if (tName === "灵光乍现" || tName === "洞若观火") {
+          extraChoices.push({
+            text: isAncientOrPremodern ? "闭门研析古籍律条，从朝廷典章与文契字缝中寻得先例据理力争" : (isFuture ? "调用深层神经逆向分析算法，直接推演博弈系统的底层判定漏洞" : "冷静避开所有情绪宣泄，直击事物核心本质，寻找制度规则内的破局点"),
+            riskLevel: "智计透辟 · 规矩破局",
+            successChance: (p) => Math.min(95, Math.max(25, 55 + Math.floor((p.intellect - 50) / 2))),
+            successFeedback: "文思泉涌，切中肯綮！你呈递的条陈无懈可击，令在场众人皆刮目相看。",
+            failFeedback: "即便看穿了关窍，人世间的成见与私利却比道理更坚硬，徒留一声叹息。",
+            successEffect: { intellect: 8, rep: 8, happiness: 6 },
+            failEffect: { happiness: -8, health: -4 },
+            tagSuccess: "算无遗策",
+            tagFail: "书生迂阔",
+            isKey: true
+          });
+        } else if (tName === "天生神力" || tName === "不屈不挠") {
+          extraChoices.push({
+            text: isAncientOrPremodern ? "凭一身强悍筋骨与血勇骨气，亲涉险地冲在人前，硬扛下时代磨砺" : (isFuture ? "启动义体应急超频过载协议，以生物电强行突破身体机能红线" : "凭着一股不服输的硬骨头韧劲，哪怕日夜熬煎也咬牙顶在一线硬拼到底"),
+            riskLevel: "血性刚猛 · 勇者突围",
+            successChance: (p) => Math.min(92, Math.max(25, 60 + Math.floor((p.health - 60) / 2))),
+            successFeedback: "凡人之躯竟爆发出惊人伟力！你生生用血肉之躯在绝境中凿出了一条大道！",
+            failFeedback: "血勇之气终敌不过无常造化，拼尽了全力依然伤痕累累，元气大伤。",
+            successEffect: { health: 4, rep: 12, happiness: 8 },
+            failEffect: { health: -14, happiness: -6 },
+            tagSuccess: "勇烈过人",
+            tagFail: "负创抱憾",
+            isKey: true
+          });
+        } else if (tName === "八面玲珑" || tName === "清心寡欲") {
+          extraChoices.push({
+            text: "备办薄礼登门拜望四邻旧故与长辈，温言软语，以和为贵借众人声势从中斡旋",
+            riskLevel: "谦冲自牧 · 柔顺克刚",
+            successChance: () => 100,
+            successFeedback: "做人留一线，日后好相见。你谦和圆融的处世之道抚平了剑拔弩张的争端。",
+            successEffect: { rep: 8, happiness: 8, wealth: -0.4 },
+            tagSuccess: "广结善缘",
+            isKey: false
+          });
+        }
+      }
+
+      // 2. 至亲伴侣患难共济选项 (Family Extra Choice)
+      if (extraChoices.length < 2 && p.family && p.family.spouse && p.family.spouse.alive) {
+        extraChoices.push({
+          text: `与结发${p.family.spouse.role}【${p.family.spouse.name}】秉烛夜话，二人同心，共分肩头风霜`,
+          riskLevel: "琴瑟同舟 · 患难结发",
+          successChance: (p) => Math.min(95, Math.max(30, 75 + (p.happiness > 60 ? 10 : 0))),
+          successFeedback: `夫妻俩相视一笑，无论世道如何寒凉，有了身边知冷知热的人，风雪亦觉温存。`,
+          failFeedback: `伴侣虽全力宽慰体贴，可眼前的沟坎实在太深，双双在长夜中对着残灯长吁短叹。`,
+          successEffect: { happiness: 12, health: 4, rep: 4 },
+          failEffect: { happiness: -8, health: -3 },
+          tagSuccess: "同甘共苦",
+          tagFail: "贫贱忧伤",
+          isKey: false
+        });
+      }
+
+      // 3. 抱朴守拙退隐选项 (Stoic / Retreat Choice)
+      if (extraChoices.length < 2) {
+        extraChoices.push({
+          text: isAncientOrPremodern ? "看淡虚名浮利，索性闭门谢客守拙自持，借半亩桑田清谈度日" : (isFuture ? "关闭社交神经流与算力推送，退回低能耗离线模式，静观世间喧嚣" : "索性断舍离，退居二线看淡内卷，陪着家人过好眼下一粥一饭"),
+          riskLevel: "抱朴守拙 · 避其锐芒",
+          successChance: () => 100,
+          successFeedback: "退一步天地自宽。不去赶那一时的喧嚣红利，倒在浮躁尘世中守住了一方清净心田。",
+          successEffect: { happiness: 12, health: 6, wealth: -0.6 },
+          tagSuccess: "守拙知足",
+          isKey: false
+        });
+      }
+
+      // 4. 破釜沉舟豪赌选项 (Radical High-Stakes Gamble)
+      if (extraChoices.length < 2) {
+        extraChoices.push({
+          text: isAncientOrPremodern ? "将全副家底抵押孤注一掷，破釜沉舟，誓要在这乱世浪潮中博个滔天富贵" : (isFuture ? "将全部算力资产全仓质押押注极端跃迁算法，生死在此一搏" : "抵押房车孤注一掷全力下注，破釜沉舟，搏击时代最激荡的风口"),
+          riskLevel: "孤注一掷 · 豪赌天命",
+          successChance: (p) => Math.min(82, Math.max(15, 45 + Math.floor((p.luck - 50) / 2))),
+          successFeedback: "天地逆转，竟真教你搏出了翻天覆地的造化！在悬崖边缘惊险过关，声名震动四方！",
+          failFeedback: "胜天半子终归太难。孤注一掷落了空，多年积攒的家底几乎折损殆尽，大伤元气。",
+          successEffect: { wealth: 18.0, rep: 16, happiness: 14, health: -6 },
+          failEffect: { wealth: -12.0, happiness: -15, health: -8, rep: -6 },
+          tagSuccess: "绝境翻盘",
+          tagFail: "折戟沉沙",
+          isKey: true
+        });
+      }
+
+      const result = baseChoices.slice();
+      for (const ec of extraChoices) {
+        if (result.length >= targetCount) break;
+        result.push(ec);
+      }
+
+      evtConfig._currentActiveChoices = result;
+      return result;
+    }
+
     function handleChoiceSelection(choiceIndex) {
       soundDecision(player.epochMode);
       const evtConfig = activeEpochEvents[currentEventIndex];
-      const choice = evtConfig.choices[choiceIndex];
+      const activeChoices = evtConfig._currentActiveChoices || evtConfig.choices;
+      const choice = activeChoices[choiceIndex];
 
       const baseChance = choice.successChance(player);
       const fateMod = calculateFateBondModifier(player, choice);
@@ -3716,11 +3856,13 @@
         player.tags.push(tag);
       }
 
+      const otherChoice = evtConfig.choices.find((_, i) => i !== choiceIndex);
       const historyEntry = {
         age: player.age,
         year: player.birthYear + player.age,
         title: evtConfig.title,
         choiceText: choice.text,
+        otherChoiceText: otherChoice ? otherChoice.text : "",
         isSuccess,
         roll,
         successChance,
@@ -4169,6 +4311,11 @@ function renderKeyTurningPoints() {
           ? '<span class="text-emerald-400 font-mono">稳妥必成</span>'
           : (kc.isSuccess ? `<span class="text-emerald-400 font-bold font-mono">掷骰成功 (${kc.roll}≤${kc.successChance}%)</span>` : `<span class="text-rose-400 font-bold font-mono">掷骰受挫 (${kc.roll}>${kc.successChance}%)</span>`);
 
+        let altBranchHTML = '';
+        if (kc.otherChoiceText) {
+          altBranchHTML = `<div class="text-[11px] text-zinc-500 pt-1.5 mt-1 border-t border-zinc-800/60 italic font-serif">未竞之路：“${kc.otherChoiceText}” · 终是一别两宽，未曾相逢。</div>`;
+        }
+
         item.innerHTML = `
           <div class="flex items-center justify-between text-amber-300 font-bold mb-1 font-mono">
             <span>${kc.year}年 (${kc.age}岁) · ${kc.title}</span>
@@ -4176,6 +4323,7 @@ function renderKeyTurningPoints() {
           </div>
           <div class="text-zinc-200 mb-1">抉择：${kc.choiceText}</div>
           <div class="text-zinc-400 text-[11px] leading-relaxed font-serif">${kc.feedback}</div>
+          ${altBranchHTML}
         `;
         container.appendChild(item);
       });
@@ -4679,7 +4827,29 @@ function renderKeyTurningPoints() {
       }
     }
 
-    // 初始化默认勾选过去
+    // ==================== 字体大小自适应与无障碍缩放 ====================
+    let currentFontScale = 0;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        currentFontScale = parseInt(localStorage.getItem('fushenglu_font_scale') || '0', 10);
+      }
+    } catch (e) {}
+
+    function adjustFontSize(delta) {
+      soundClick();
+      currentFontScale = Math.max(-2, Math.min(3, currentFontScale + delta));
+      try { if (typeof localStorage !== 'undefined') localStorage.setItem('fushenglu_font_scale', currentFontScale); } catch (e) {}
+      applyFontScale();
+    }
+    function applyFontScale() {
+      const basePx = 16 + currentFontScale * 1.5;
+      if (typeof document !== 'undefined' && document.documentElement && document.documentElement.style) {
+        document.documentElement.style.fontSize = `${basePx}px`;
+      }
+    }
+
+    // 初始化默认勾选过去与界面设置
+    applyFontScale();
     renderEpochCards();
     const defaultRadio = document.querySelector('input[name="epoch_mode"][value="' + selectedEpochMode + '"]');
     if (defaultRadio) defaultRadio.checked = true;

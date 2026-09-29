@@ -148,8 +148,10 @@ for (let t = 0; t < 100; t++) {
     player.age = x.getAge();
     titles.add(x.title);
     advanceFamily(player, player.age, d.birthYear + player.age);
-    // 走真实的抉择结算管线（含人生轨迹研判与社会坐标评定）
-    handleChoiceSelection(Math.floor(Math.random() * x.choices.length));
+    renderCurrentEvent();
+    const availableChoices = x._currentActiveChoices || x.choices;
+    // 走真实的抉择结算管线（随机挑选2~4个动态选项之一）
+    handleChoiceSelection(Math.floor(Math.random() * availableChoices.length));
   }
 
   const endYear = player.birthYear + player.age;

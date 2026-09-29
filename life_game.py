@@ -303,6 +303,129 @@ def calculate_fate_bond_modifier(player, choice):
     total = max(-10, min(15, total))
     return total, reasons
 
+
+def get_dynamic_choices_for_event(stage, player, curr_year):
+    base_choices = list(stage.get("choices", []))
+    if stage.get("_active_choices") and len(stage["_active_choices"]) >= 2:
+        return stage["_active_choices"]
+
+    roll = random.random()
+    target_count = 2 if roll < 0.25 else (3 if roll < 0.75 else 4)
+    if target_count <= len(base_choices):
+        stage["_active_choices"] = base_choices
+        return base_choices
+
+    extra_choices = []
+    era_id = player.epoch_mode
+    is_classical = is_classical_epoch(era_id)
+    is_future = is_future_epoch(era_id)
+
+    # 1. 先天特质专属破局
+    if getattr(player, "trait", None):
+        t_name = player.trait["name"]
+        if t_name == "商海通达":
+            extra_choices.append({
+                "text": "动用私房余资托商帮掌柜打点，以商贾变通之法周旋暗通款曲" if is_classical else ("调拨未上市的算力衍生品期权，通过暗网对冲掉眼前的危机缺口" if is_future else "敏锐把握市场供求失衡，借商业信息差反向操作，以小搏大破局"),
+                "risk_label": "商道融通 · 财帛破关",
+                "calc_chance": lambda p: min(92, max(25, 65 + (12 if p.wealth > 3 else 0))),
+                "succ_feedback": "商道流转自有其玄妙。虽折损了少许启动资财，却极巧妙地避开了正面风浪！",
+                "fail_feedback": "打点的本钱被中途盘剥截留，非但未能息事宁人，反倒折了微薄细软。",
+                "succ_eff": {"wealth": -0.8, "rep": 6, "happiness": 4},
+                "fail_eff": {"wealth": -1.5, "happiness": -6},
+                "tag_succ": "以商破关",
+                "tag_fail": "折本失算",
+                "is_key": True,
+            })
+        elif t_name in ("灵光乍现", "洞若观火"):
+            extra_choices.append({
+                "text": "闭门研析古籍律条，从朝廷典章与文契字缝中寻得先例据理力争" if is_classical else ("调用深层神经逆向分析算法，直接推演博弈系统的底层判定漏洞" if is_future else "冷静避开所有情绪宣泄，直击事物核心本质，寻找制度规则内的破局点"),
+                "risk_label": "智计透辟 · 规矩破局",
+                "calc_chance": lambda p: min(95, max(25, 55 + int((p.intellect - 50) / 2))),
+                "succ_feedback": "文思泉涌，切中肯綮！你呈递的条陈无懈可击，令在场众人皆刮目相看。",
+                "fail_feedback": "即便看穿了关窍，人世间的成见与私利却比道理更坚硬，徒留一声叹息。",
+                "succ_eff": {"intellect": 8, "rep": 8, "happiness": 6},
+                "fail_eff": {"happiness": -8, "health": -4},
+                "tag_succ": "算无遗策",
+                "tag_fail": "书生迂阔",
+                "is_key": True,
+            })
+        elif t_name in ("天生神力", "不屈不挠"):
+            extra_choices.append({
+                "text": "凭一身强悍筋骨与血勇骨气，亲涉险地冲在人前，硬扛下时代磨砺" if is_classical else ("启动义体应急超频过载协议，以生物电强行突破身体机能红线" if is_future else "凭着一股不服输的硬骨头韧劲，哪怕日夜熬煎也咬牙顶在一线硬拼到底"),
+                "risk_label": "血性刚猛 · 勇者突围",
+                "calc_chance": lambda p: min(92, max(25, 60 + int((p.health - 60) / 2))),
+                "succ_feedback": "凡人之躯竟爆发出惊人伟力！你生生用血肉之躯在绝境中凿出了一条大道！",
+                "fail_feedback": "血勇之气终敌不过无常造化，拼尽了全力依然伤痕累累，元气大伤。",
+                "succ_eff": {"health": 4, "rep": 12, "happiness": 8},
+                "fail_eff": {"health": -14, "happiness": -6},
+                "tag_succ": "勇烈过人",
+                "tag_fail": "负创抱憾",
+                "is_key": True,
+            })
+        elif t_name in ("八面玲珑", "清心寡欲"):
+            extra_choices.append({
+                "text": "备办薄礼登门拜望四邻旧故与长辈，温言软语，以和为贵借众人声势从中斡旋",
+                "risk_label": "谦冲自牧 · 柔顺克刚",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "做人留一线，日后好相见。你谦和圆融的处世之道抚平了剑拔弩张的争端。",
+                "succ_eff": {"rep": 8, "happiness": 8, "wealth": -0.4},
+                "tag_succ": "广结善缘",
+                "is_key": False,
+            })
+
+    # 2. 至亲伴侣患难共济路线
+    fam = getattr(player, "family", None)
+    if len(extra_choices) < 2 and fam and fam.get("spouse") and fam["spouse"].get("alive"):
+        s = fam["spouse"]
+        extra_choices.append({
+            "text": f"与结发{s['role']}【{s['name']}】秉烛夜话，二人同心，共分肩头风霜",
+            "risk_label": "琴瑟同舟 · 患难结发",
+            "calc_chance": lambda p: min(95, max(30, 75 + (10 if p.happiness > 60 else 0))),
+            "succ_feedback": f"夫妻俩相视一笑，无论世道如何寒凉，有了身边知冷知热的人，风雪亦觉温存。",
+            "fail_feedback": f"伴侣虽全力宽慰体贴，可眼前的沟坎实在太深，双双在长夜中对着残灯长吁短叹。",
+            "succ_eff": {"happiness": 12, "health": 4, "rep": 4},
+            "fail_eff": {"happiness": -8, "health": -3},
+            "tag_succ": "同甘共苦",
+            "tag_fail": "贫贱忧伤",
+            "is_key": False,
+        })
+
+    # 3. 抱朴守拙退隐路线
+    if len(extra_choices) < 2:
+        extra_choices.append({
+            "text": "看淡虚名浮利，索性闭门谢客守拙自持，借半亩桑田清谈度日" if is_classical else ("关闭社交神经流与算力推送，退回低能耗离线模式，静观世间喧嚣" if is_future else "索性断舍离，退居二线看淡内卷，陪着家人过好眼下一粥一饭"),
+            "risk_label": "抱朴守拙 · 避其锐芒",
+            "calc_chance": lambda p: 100,
+            "succ_feedback": "退一步天地自宽。不去赶那一时的喧嚣红利，倒在浮躁尘世中守住了一方清净心田。",
+            "succ_eff": {"happiness": 12, "health": 6, "wealth": -0.6},
+            "tag_succ": "守拙知足",
+            "is_key": False,
+        })
+
+    # 4. 破釜沉舟豪赌路线
+    if len(extra_choices) < 2:
+        extra_choices.append({
+            "text": "将全副家底抵押孤注一掷，破釜沉舟，誓要在这乱世浪潮中博个滔天富贵" if is_classical else ("将全部算力资产全仓质押押注极端跃迁算法，生死在此一搏" if is_future else "抵押房车孤注一掷全力下注，破釜沉舟，搏击时代最激荡的风口"),
+            "risk_label": "孤注一掷 · 豪赌天命",
+            "calc_chance": lambda p: min(82, max(15, 45 + int((p.luck - 50) / 2))),
+            "succ_feedback": "天地逆转，竟真教你搏出了翻天覆地的造化！在悬崖边缘惊险过关，声名震动四方！",
+            "fail_feedback": "胜天半子终归太难。孤注一掷落了空，多年积攒的家底几乎折损殆尽，大伤元气。",
+            "succ_eff": {"wealth": 18.0, "rep": 16, "happiness": 14, "health": -6},
+            "fail_eff": {"wealth": -12.0, "happiness": -15, "health": -8, "rep": -6},
+            "tag_succ": "绝境翻盘",
+            "tag_fail": "折戟沉沙",
+            "is_key": True,
+        })
+
+    result = list(base_choices)
+    for ec in extra_choices:
+        if len(result) >= target_count:
+            break
+        result.append(ec)
+
+    stage["_active_choices"] = result
+    return result
+
 # 过去纪元 16 大关卡
 
 LIFE_STAGE_BRACKETS = [
@@ -573,8 +696,8 @@ def run_game_loop(player, start_stage, total_stages, timeline):
                 print(f"{Color.GREEN}【🏡 至亲时序】{fl}{Color.RESET}")
             print()
 
-        # 突发强随机事件（按年代选择历史/未来事件库）
-        rand_pool = FUTURE_RANDOM_EVENTS if is_future_epoch(era_id) else PAST_RANDOM_EVENTS
+        # 突发强随机事件（严格按所属大纪元取用专属微观事件）
+        rand_pool = RANDOM_EVENT_POOLS.get(era_id, FUTURE_RANDOM_EVENTS if is_future_epoch(era_id) else PAST_RANDOM_EVENTS)
         if random.random() < 0.32:
             re = random.choice(rand_pool)
             print(f"{Color.PURPLE}【 🎲 命运无常 · 偶发事件 】{re['title']}{Color.RESET}")
@@ -592,8 +715,10 @@ def run_game_loop(player, start_stage, total_stages, timeline):
         print(f"{Color.BOLD}{Color.YELLOW}【{curr_year}年 · {stage['title']}】{Color.RESET}")
         print(f"{Color.WHITE}{stage['narrative']}{Color.RESET}\n")
 
+        active_choices = get_dynamic_choices_for_event(stage, player, curr_year)
+
         print(f"{Color.CYAN}面临抉择：{Color.RESET}")
-        for idx, c in enumerate(stage["choices"], 1):
+        for idx, c in enumerate(active_choices, 1):
             base_chance = c["calc_chance"](player)
             fate_bonus, reasons = calculate_fate_bond_modifier(player, c)
             eff_chance = 100 if base_chance >= 100 else min(95, max(15, base_chance + fate_bonus))
@@ -602,13 +727,13 @@ def run_game_loop(player, start_stage, total_stages, timeline):
             print(f"  {idx}. {c['text']}  {badge} ({c['risk_label']})")
 
         while True:
-            c_input = input(f"\n{Color.GOLD}请选择 [1-{len(stage['choices'])}]: {Color.RESET}").strip()
-            if c_input.isdigit() and 1 <= int(c_input) <= len(stage["choices"]):
+            c_input = input(f"\n{Color.GOLD}请选择 [1-{len(active_choices)}]: {Color.RESET}").strip()
+            if c_input.isdigit() and 1 <= int(c_input) <= len(active_choices):
                 chosen_idx = int(c_input) - 1
                 break
             print(f"{Color.RED}输入无效，请重新选择。{Color.RESET}")
 
-        chosen = stage["choices"][chosen_idx]
+        chosen = active_choices[chosen_idx]
         base_chance = chosen["calc_chance"](player)
         fate_bonus, reasons = calculate_fate_bond_modifier(player, chosen)
         chance = 100 if base_chance >= 100 else min(95, max(15, base_chance + fate_bonus))
@@ -634,11 +759,13 @@ def run_game_loop(player, start_stage, total_stages, timeline):
         if tag and tag not in player.tags:
             player.tags.append(tag)
 
+        other_choice = active_choices[1 - chosen_idx]["text"] if (len(active_choices) > 1 and chosen_idx < len(active_choices)) else ""
         record = {
             "year": curr_year,
             "age": player.age,
             "title": stage["title"],
             "choice_text": chosen["text"],
+            "other_choice": other_choice,
             "is_success": is_success,
             "roll": roll,
             "chance": chance,
@@ -828,6 +955,8 @@ def render_terminal_ending(player):
         print(f"  {idx}. [{kc['year']}年 · {kc['age']}岁] {kc['title']} ({chance_str} ➔ {status_str})")
         print(f"     决策: {Color.YELLOW}{kc['choice_text']}{Color.RESET}")
         print(f"     回响: {Color.GRAY}{kc['feedback']}{Color.RESET}")
+        if kc.get("other_choice"):
+            print(f"     未竞: {Color.DIM}“{kc['other_choice']}” · 终是一别两宽，未曾相逢。{Color.RESET}")
 
     print(f"\n{Color.GOLD}{'='*68}{Color.RESET}")
     print(f"{Color.DIM}大浪淘沙，唯心自守。愿你在人间的每一程都无怨无悔。{Color.RESET}\n")

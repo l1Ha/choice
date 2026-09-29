@@ -429,3 +429,41 @@ def build_women_py():
         L.append("    },")
     L.append("}")
     return "\n".join(L)
+
+
+def build_random_events_js():
+    import civ_random_events as R
+    L = []
+    L.append("    // ==================== 文明五大纪元专属突发偶发事件库 ====================")
+    L.append("    const RANDOM_EVENT_POOLS = {")
+    for eid, evts in R.RANDOM_EVENT_POOLS.items():
+        L.append("      %s: [" % C.js_str(eid))
+        for ev in evts:
+            eff_parts = []
+            for k, v in ev["effect"].items():
+                eff_parts.append("%s: %s" % (k, "%g" % v))
+            eff_str = "{ " + ", ".join(eff_parts) + " }"
+            L.append("        { id: %s, title: %s, tag: %s, desc: %s, effect: %s },"
+                     % (C.js_str(ev["id"]), C.js_str(ev["title"]), C.js_str(ev["tag"]), C.js_str(ev["desc"]), eff_str))
+        L.append("      ],")
+    L.append("    };")
+    return "\n".join(L)
+
+
+def build_random_events_py():
+    import civ_random_events as R
+    L = []
+    L.append("# ==================== 文明五大纪元专属突发偶发事件库 ====================")
+    L.append("RANDOM_EVENT_POOLS = {")
+    for eid, evts in R.RANDOM_EVENT_POOLS.items():
+        L.append("    %s: [" % C.py_str(eid))
+        for ev in evts:
+            eff_parts = []
+            for k, v in ev["effect"].items():
+                eff_parts.append('"%s": %s' % (k, "%g" % v))
+            eff_str = "{" + ", ".join(eff_parts) + "}"
+            L.append('        {"id": %s, "title": %s, "tag": %s, "desc": %s, "effect": %s},'
+                     % (C.py_str(ev["id"]), C.py_str(ev["title"]), C.py_str(ev["tag"]), C.py_str(ev["desc"]), eff_str))
+        L.append("    ],")
+    L.append("}")
+    return "\n".join(L)

@@ -35,7 +35,7 @@ HEADER = '''/* =================================================================
 def main():
     P.load_data()
     P.load_women()
-    out = HEADER + P.build_js_pack() + "\n\n" + P.build_women_js() + "\n"
+    out = HEADER + P.build_js_pack() + "\n\n" + P.build_women_js() + "\n\n" + P.build_random_events_js() + "\n"
     path = os.path.join(_ROOT, 'data', 'epochs.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(out)
