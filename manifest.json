@@ -1,0 +1,22 @@
+{
+  "name": "浮生录 · 时代人生模拟器",
+  "short_name": "浮生录",
+  "description": "通过一次次不可逆的抉择，体验大时代下的小人物史诗与未来科幻人生。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0b0e",
+  "theme_color": "#12141a",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
