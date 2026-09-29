@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>浮生录 · 时代浪潮与真实人生模拟器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+    
+    body {
+      font-family: 'Noto Serif SC', serif;
+      background-color: #0b0c0f;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .font-sans-sc {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    .ink-border {
+      border: 1px solid rgba(226, 232, 240, 0.12);
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
+    }
+    
+    .choice-card {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .choice-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(212, 175, 55, 0.6);
+      box-shadow: 0 10px 25px -5px rgba(212, 175, 55, 0.15);
+    }
+
+    @keyframes diceRoll {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .dice-rolling {
+      animation: diceRoll 0.6s ease-in-out;
+    }
+
+    @keyframes floatUpFade {
+      0% { opacity: 0; transform: translateY(12px); }
+      20% { opacity: 1; transform: translateY(0); }
+      80% { opacity: 1; transform: translateY(-5px); }
+      100% { opacity: 0; transform: translateY(-18px); }
+    }
+    .stat-pop {
+      animation: floatUpFade 2s ease-out forwards;
+    }
+
+    /* 时代徽章波纹 */
+    .era-pulse {
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.25);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0c0d10; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-900 selection:text-amber-100">
+
+  <!-- 顶部状态栏 -->
+  <header id="top-bar" class="w-full bg-[#12141a]/95 backdrop-blur border-b border-zinc-800/80 sticky top-0 z-50 py-3 px-4 md:px-8 transition-all duration-300">
+    <div class="max-w-4xl mx-auto flex items-center justify-between font-sans-sc">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-widest text-amber-200/90 font-serif">浮生录</span>
+        <!-- 时代与年份标识 -->
+        <span id="display-era-badge" class="hidden text-xs px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/60 era-pulse font-mono">
+          1985 · 浪潮初起
+        </span>
+      </div>
+      
+      <!-- 实时属性指标 -->
+      <div id="stats-container" class="hidden flex items-center space-x-3 md:space-x-5 text-xs md:text-sm font-mono">
+        <div class="flex items-center space-x-1" title="健康">
+          <span class="text-red-400">♥</span>
+          <span id="val-health" class="font-bold text-zinc-200">100</span>
+        </div>
+        <div class="flex items-center space-x-1" title="财富总额 (万元)">
+          <span class="text-amber-400">￥</span>
+          <span id="val-wealth" class="font-bold text-zinc-200">0万</span>
+        </div>
+        <div class="flex items-center space-x-1" title="认知心智">
+          <span class="text-sky-400">✦</span>
+          <span id="val-intellect" class="font-bold text-zinc-200">50</span>
+        </div>
+        <div class="flex items-center space-x-1" title="心境安宁">
+          <span class="text-emerald-400">☼</span>
+          <span id="val-happiness" class="font-bold text-zinc-200">60</span>
+        </div>
+        <div class="flex items-center space-x-1" title="天命气运 (影响随机偶发事件)">
+          <span class="text-purple-400">🎲</span>
+          <span id="val-luck" class="font-bold text-zinc-200">50</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded border border-zinc-700 hover:border-amber-400/50 transition">
+          🔊 音效: 开
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主交互视窗 -->
+  <main class="flex-grow flex items-center justify-center p-3 md:p-8">
+    <div class="w-full max-w-3xl">
+
+      <!-- 欢迎/天命投胎创角视窗 -->
+      <section id="screen-intro" class="bg-[#14161f] ink-border rounded-xl p-5 md:p-9 text-center relative overflow-hidden">
+        <div class="absolute -top-24 -left-24 w-60 h-60 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="text-xs uppercase tracking-widest text-amber-500/80 font-mono mb-2">CHRONICLE OF DESTINY</div>
+        <h1 class="text-3xl md:text-5xl font-black text-amber-100 tracking-wider mb-3">
+          浮 生 录
+        </h1>
+        <p class="text-zinc-400 text-xs md:text-sm leading-relaxed max-w-xl mx-auto mb-6 font-sans-sc">
+          一个人的命运，既要靠自我的奋斗，亦要看历史的进程。<br>
+          时代洪流呼啸而过，偶发的幸与不幸如影随形。每一次抉择皆有胜率与代价，唯心自守，落子无悔。
+        </p>
+
+        <!-- 随机投胎抽卡卡片 -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 max-w-lg mx-auto mb-6 text-left font-sans-sc relative">
+          <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2">
+            <span class="text-xs font-bold text-amber-300 flex items-center">
+              <span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-ping"></span>
+              【 先 天 命 格 卡 · 随 机 投 胎 】
+            </span>
+            <button onclick="rollNewDestiny()" class="text-xs px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-amber-500/40 transition flex items-center">
+              <span id="dice-icon" class="mr-1">🎲</span> 重新摇号投胎
+            </button>
+          </div>
+
+          <!-- 投胎预览数据 -->
+          <div class="space-y-3 text-xs md:text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">出生年份与时代：</span>
+              <span id="init-era-text" class="font-bold text-amber-200">1982年 · 改革开放初潮</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-zinc-400">降生家庭背景：</span>
+              <span id="init-origin-text" class="font-bold text-zinc-200">三线工业国企职工家庭</span>
+            </div>
+            <div class="flex items-start justify-between">
+              <span class="text-zinc-400 flex-shrink-0">家庭底色机缘：</span>
+              <span id="init-desc-text" class="text-right text-zinc-300 text-xs ml-4">父母手捧铁饭碗，家属大院邻里相濡以沫，但隐隐面临未知的重组大潮。</span>
+            </div>
+
+            <!-- 初始天赋属性条 -->
+            <div class="border-t border-zinc-800/80 pt-3">
+              <div class="text-[11px] text-zinc-400 mb-2">先天气质与体魄（随机 Roll 点）：</div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
+                <div class="bg-zinc-800/60 p-2 rounded border border-zinc-700/50">
+                  <div class="text-zinc-400 text-[10px]">体魄根基</div>
+                  <div id="init-stat-health" class="font-bold text-red-300">88</div>
+                </div>
+                <div class="bg-zinc-800/60 p-2 rounded border border-zinc-700/50">
+                  <div class="text-zinc-400 text-[10px]">初始家资</div>
+                  <div id="init-stat-wealth" class="font-bold text-amber-300">2.5万</div>
+                </div>
+                <div class="bg-zinc-800/60 p-2 rounded border border-zinc-700/50">
+                  <div class="text-zinc-400 text-[10px]">悟性灵慧</div>
+                  <div id="init-stat-intellect" class="font-bold text-sky-300">56</div>
+                </div>
+                <div class="bg-zinc-800/60 p-2 rounded border border-zinc-700/50">
+                  <div class="text-zinc-400 text-[10px]">天命气运</div>
+                  <div id="init-stat-luck" class="font-bold text-purple-300">62</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 先天随机特质标签 -->
+            <div class="border-t border-zinc-800/80 pt-2 flex items-center justify-between">
+              <span class="text-zinc-400 text-xs">先天特质词条：</span>
+              <span id="init-trait-text" class="text-xs px-2 py-0.5 rounded bg-purple-900/40 text-purple-200 border border-purple-700/50 font-medium">
+                [ 敏锐嗅觉：对时代风向格外敏感 ]
+              </span>
+            </div>
+          </div>
+
+          <!-- 姓名输入 -->
+          <div class="mt-4 pt-3 border-t border-zinc-800 flex items-center space-x-2">
+            <span class="text-xs text-zinc-400 flex-shrink-0">入世姓名：</span>
+            <input type="text" id="input-name" placeholder="请输入姓名（留空随机）" maxlength="10"
+              class="w-full bg-zinc-800/90 border border-zinc-700 focus:border-amber-400 rounded px-2.5 py-1 text-zinc-100 outline-none text-xs">
+          </div>
+        </div>
+
+        <button onclick="startGame()" class="px-8 py-3 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-zinc-950 font-bold rounded-lg tracking-widest text-sm md:text-base shadow-lg shadow-amber-900/40 transition transform hover:-translate-y-0.5 active:translate-y-0">
+          领受天命 · 步入人间
+        </button>
+      </section>
+
+      <!-- 游戏主交互视窗 -->
+      <section id="screen-game" class="hidden bg-[#14161f] ink-border rounded-xl p-5 md:p-8 relative">
+        
+        <!-- 时代背景横幅 (带历史缩影) -->
+        <div id="era-banner" class="bg-gradient-to-r from-amber-950/40 via-zinc-900/90 to-amber-950/40 border border-amber-700/40 rounded-lg p-3 mb-5 font-sans-sc">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="text-amber-400 font-bold flex items-center">
+              <span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1.5 animate-pulse"></span>
+              【 时代浪潮 · <span id="era-year">1992</span> 】
+            </span>
+            <span id="era-tag" class="text-amber-300/80 font-mono text-[11px]">南巡讲话 · 淘金巨澜</span>
+          </div>
+          <p id="era-background-desc" class="text-zinc-400 text-xs leading-relaxed">
+            历史的齿轮急速转动，春天的故事传遍大江南北，无数人扔下铁饭碗，南下闯荡……
+          </p>
+        </div>
+
+        <!-- 年龄与状态栏 -->
+        <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3 mb-5 font-sans-sc">
+          <div class="flex items-baseline space-x-3">
+            <span id="display-age" class="text-2xl md:text-3xl font-black text-amber-200 font-serif">10 岁</span>
+            <span id="display-period" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-medium">少年时光</span>
+          </div>
+          <div id="stat-change-notify" class="h-6 text-xs flex items-center space-x-2 font-mono">
+            <!-- 动态数值飘动 -->
+          </div>
+        </div>
+
+        <!-- 突发强随机事件提示栏（当遭遇随机风浪时触发） -->
+        <div id="random-event-box" class="hidden bg-purple-950/30 border border-purple-600/40 rounded-lg p-3 mb-5 text-xs text-purple-200 font-sans-sc animate-fade-in">
+          <div class="flex items-center justify-between font-bold text-purple-300 mb-1">
+            <span class="flex items-center">
+              <span class="mr-1.5">🎲</span> 命运无常 · 偶发事件
+            </span>
+            <span id="random-event-tag" class="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/60 border border-purple-500/50">天降机缘</span>
+          </div>
+          <div id="random-event-desc" class="text-zinc-300 leading-relaxed">
+            你偶遇了当年同乡的一位发小，对方在沿海做外贸小有成就，邀请你参与一个小额配资……
+          </div>
+        </div>
+
+        <!-- 剧情情景描述 -->
+        <div class="mb-6">
+          <h2 id="event-title" class="text-base md:text-lg font-bold text-zinc-100 mb-2 tracking-wide flex items-center">
+            <span class="w-1.5 h-4 bg-amber-500 mr-2.5 rounded-full inline-block"></span>
+            <span id="event-title-text">人生的关口</span>
+          </h2>
+          <div id="event-narrative" class="text-zinc-300 text-xs md:text-sm leading-relaxed md:leading-loose whitespace-pre-line bg-zinc-900/50 p-4 rounded-lg border border-zinc-800/60">
+            情景加载中...
+          </div>
+        </div>
+
+        <!-- 选项列表 -->
+        <div id="choices-container" class="space-y-3 mb-6">
+          <!-- 动态注入带有概率或稳健标识的按钮 -->
+        </div>
+
+        <!-- 历程足迹简报 (折叠/展开) -->
+        <div class="border-t border-zinc-800/70 pt-3">
+          <div class="text-xs text-zinc-500 font-sans-sc flex items-center justify-between cursor-pointer select-none" onclick="toggleHistory()">
+            <span class="flex items-center">
+              <svg class="w-3.5 h-3.5 mr-1 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              人生记忆痕迹 (<span id="history-count">0</span>)
+            </span>
+            <span id="history-toggle-text" class="text-[11px] text-amber-500/80 hover:underline">点击展开</span>
+          </div>
+          <div id="history-log" class="hidden mt-2.5 max-h-36 overflow-y-auto space-y-2 text-xs text-zinc-400 font-sans-sc pr-2">
+            <!-- 历史记录 -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 终局结算页面：人物一生总结与时代回响 -->
+      <section id="screen-ending" class="hidden bg-[#14161f] ink-border rounded-xl p-5 md:p-9 relative overflow-hidden">
+        
+        <!-- 顶部称号与享年 -->
+        <div class="text-center mb-6 border-b border-zinc-800 pb-5">
+          <div class="text-xs uppercase tracking-widest text-amber-500/80 font-mono mb-1">EPITAPH & ERA CHRONICLE</div>
+          <h1 class="text-2xl md:text-4xl font-black text-amber-100 font-serif tracking-wider mb-2">
+            <span id="end-player-name">某某</span> 的一生总结
+          </h1>
+          <p id="end-lifespan" class="text-zinc-400 text-xs md:text-sm font-sans-sc">1982 - 2062 · 享年 80 岁 · 寿终正寝</p>
+        </div>
+
+        <!-- 人生宿命评定与墓志铭 -->
+        <div class="bg-gradient-to-b from-zinc-900 to-zinc-900/70 border border-amber-600/30 rounded-xl p-5 mb-6 text-center shadow-lg">
+          <div class="text-xs text-amber-400 font-bold tracking-widest mb-1 font-sans-sc">【 宿 命 评 定 】</div>
+          <div id="end-archetype" class="text-xl md:text-2xl font-black text-amber-200 tracking-wide mb-2 font-serif">
+            时代弄潮翁
+          </div>
+          <blockquote id="end-quote" class="text-zinc-300 italic text-xs md:text-sm leading-relaxed px-4 py-2 border-t border-b border-zinc-800">
+            “你乘上了历史的帆，也尝尽了退潮的寒，人间这一遭，未曾虚度。”
+          </blockquote>
+        </div>
+
+        <!-- 时代缩影与历史沉浮评定 (核心亮点) -->
+        <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4 mb-6 font-sans-sc">
+          <div class="text-xs font-bold text-amber-300/90 mb-2 flex items-center justify-between">
+            <span>【 时代长河中的个人坐标 】</span>
+            <span class="text-[11px] text-zinc-400">大历史 × 小人物</span>
+          </div>
+          <div id="end-era-reflection" class="text-xs md:text-sm text-zinc-300 leading-relaxed font-serif">
+            你出生于改革开放初期，少年目睹了国企重组与南巡狂潮，青年正值千禧入世与互联网起飞……
+          </div>
+        </div>
+
+        <!-- 六维属性量化与印记 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 items-center font-sans-sc">
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4">
+            <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+              <span>终生数值结算</span>
+              <span class="text-amber-400 text-[10px]">终生量化</span>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>生命健康 (Health)</span>
+                  <span id="end-val-health" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-health" class="bg-red-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>积累财富 (Wealth)</span>
+                  <span id="end-val-wealth" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-wealth" class="bg-amber-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>学识智识 (Wisdom)</span>
+                  <span id="end-val-intellect" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-intellect" class="bg-sky-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>内心平静 (Peace)</span>
+                  <span id="end-val-happiness" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-happiness" class="bg-emerald-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>终生天命气运 (Fortune)</span>
+                  <span id="end-val-luck" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-luck" class="bg-purple-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 标签与运气统计 -->
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between h-full">
+            <div>
+              <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2.5">人生印记与性格纹理</div>
+              <div id="end-tags-container" class="flex flex-wrap gap-1.5 mb-3">
+                <!-- 动态标签 -->
+              </div>
+            </div>
+            <div id="end-luck-summary" class="text-xs text-purple-300/90 border-t border-zinc-800/80 pt-2 font-mono">
+              🎲 天命判定：时来运转（成功避开多处风浪陷阱）
+            </div>
+          </div>
+        </div>
+
+        <!-- 详细生平小说纪传 -->
+        <div class="mb-6">
+          <h3 class="text-sm md:text-base font-bold text-amber-200 tracking-wide mb-2.5 flex items-center">
+            <span class="w-1.5 h-3.5 bg-amber-500 mr-2 rounded-full inline-block"></span>
+            生平纪传 · 时代的回响
+          </h3>
+          <div id="end-biography" class="text-zinc-300 text-xs md:text-sm leading-relaxed md:leading-loose whitespace-pre-line bg-zinc-900/40 p-4 rounded-lg border border-zinc-800/60 font-serif">
+            正在生成个人纪传...
+          </div>
+        </div>
+
+        <!-- 命运分水岭复盘 -->
+        <div class="mb-6 font-sans-sc">
+          <h3 class="text-xs md:text-sm font-bold text-zinc-300 tracking-wide mb-2.5 flex items-center">
+            <span class="w-1.5 h-3 bg-zinc-500 mr-2 rounded-full inline-block"></span>
+            命运关键分水岭（选择与概率实录）
+          </h3>
+          <div id="end-key-turning-points" class="space-y-2">
+            <!-- 关键选择复盘 -->
+          </div>
+        </div>
+
+        <!-- 底部操作按钮 -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3 border-t border-zinc-800 font-sans-sc">
+          <button onclick="restartGame()" class="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm transition">
+            开启另一轮轮回
+          </button>
+          <button onclick="copySummary()" class="w-full sm:w-auto px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded text-xs md:text-sm transition">
+            复制人生纪传档案
+          </button>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="text-center py-3 text-[11px] text-zinc-600 font-sans-sc border-t border-zinc-900">
+    《浮生录》· 真实人生与时代风云模拟 · 大浪淘沙，唯心自守
+  </footer>
+
+  <script>
+    // --- 离线 Web Audio 音效引擎 ---
+    let audioCtx = null;
+    let audioEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.08) {
+      if (!audioEnabled) return;
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function soundClick() { playTone(420, 'sine', 0.08, 0.05); }
+    function soundDice() { playTone(540, 'triangle', 0.08, 0.06); setTimeout(() => playTone(680, 'sine', 0.1, 0.08), 80); }
+    function soundDecision() { playTone(240, 'triangle', 0.35, 0.12); setTimeout(() => playTone(360, 'sine', 0.3, 0.08), 70); }
+    function soundCrisis() { playTone(160, 'sawtooth', 0.45, 0.1); }
+    function soundEnding() {
+      playTone(220, 'sine', 0.8, 0.1);
+      setTimeout(() => playTone(277.18, 'sine', 0.8, 0.08), 200);
+      setTimeout(() => playTone(329.63, 'sine', 1.0, 0.08), 400);
+    }
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('btn-audio').innerText = audioEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
+    }
+
+    // --- 时代与历史浪潮设定 (从1975至2025+) ---
+    const ERA_TIMELINE = {
+      1975: { name: "文革晚期与初苏", desc: "物质匮乏凭票供应，广播里播放着样板戏，老百姓在狭小的平房里期盼着春天的微光。" },
+      1982: { name: "改革春风与倒爷潮", desc: "包产到户在全国推行，沿海小商品市场萌动，喇叭裤与邓丽君的磁带在年轻人中流传开来。" },
+      1988: { name: "物价闯关与商品狂潮", desc: "价格双轨制松动，民间出现抢购风潮，敢于'下海'做贸易的胆大者开始积累第一桶金。" },
+      1992: { name: "南方谈话与全民下海", desc: "春天的故事响彻神州，大批体制内干部与知识分子下海经商，海南与特区迎来了淘金的狂澜。" },
+      1998: { name: "国企改革与下岗大潮", desc: "阵痛蔓延，千百万产业工人被迫下岗买断工龄，'重头再来'的歌声在大街小巷回荡。" },
+      2001: { name: "加入WTO与世界工厂", desc: "中国正式入世，沿海外贸代工厂如雨后春笋，无数农村青年南下进厂打工，中国经济开始狂飙。" },
+      2008: { name: "北京奥运与四万亿投资", desc: "鸟巢的烟火照亮夜空，四万亿刺激计划出台，房地产狂潮与高铁网络全面铺开。" },
+      2014: { name: "移动互联与大众创业", desc: "智能手机与微信普及，移动支付颠覆传统，'大众创业、万众创新'催生了无数风口神话。" },
+      2020: { name: "突发疫情与行业洗牌", desc: "居家隔离与健康码，教培、地产与互联巨头相继迎来监管风暴，考公与稳健成为全社会的共识。" },
+      2026: { name: "AI时代与老龄化深度", desc: "生成式人工智能颠覆各行各业，社会老龄化加速，面对不确定的未来，普通人寻找心安之所。" }
+    };
+
+    // 随机出生年代池
+    const BIRTH_YEARS = [1976, 1982, 1988, 1994];
+
+    // 随机家庭背景池 (8种不同阶层与时代底色)
+    const RANDOM_ORIGINS = [
+      {
+        id: "worker_soep",
+        title: "三线内陆国企职工家庭",
+        desc: "父母在大型国营机械厂当技术工，住在家属大院。厂里有自己的医院、学校与电影院，看似稳如泰山，实则暗藏巨浪。",
+        statMod: { health: 90, wealth: 2.5, intellect: 52, luck: 50, happiness: 65, rep: 45 },
+        trait: "大院情怀",
+        traitDesc: "习惯集体生活，重情义，面对变故时适应慢但韧性强"
+      },
+      {
+        id: "rural_tiller",
+        title: "黄土丘陵偏远农村",
+        desc: "祖辈世代躬耕于贫瘠的麦田或梯田。父母起早贪黑，面容沧桑，最大的执念就是供你'读书跳出农门'。",
+        statMod: { health: 94, wealth: 0.3, intellect: 48, luck: 52, happiness: 55, rep: 35 },
+        trait: "野草劲骨",
+        traitDesc: "吃苦耐劳能力拉满，抗压极强，金钱焦虑感重"
+      },
+      {
+        id: "intellect_family",
+        title: "省城中学/大学教师家庭",
+        desc: "家里有一整面墙的旧书和文学期刊，父母讲求体面修养，自幼要求你每日练字读书，家庭氛围温和但期望极高。",
+        statMod: { health: 84, wealth: 6.0, intellect: 65, luck: 54, happiness: 58, rep: 55 },
+        trait: "书香灵慧",
+        traitDesc: "认知与思考深刻，但有时过于清高，缺乏世俗市侩的狠劲"
+      },
+      {
+        id: "merchant_coastal",
+        title: "沿海敢闯个体户",
+        desc: "父母最早一批在村头摆摊贩卖布匹电器，常年在火车硬座与催账酒桌上穿梭，从小在算盘和现金堆里长大。",
+        statMod: { health: 88, wealth: 12.0, intellect: 54, luck: 58, happiness: 60, rep: 48 },
+        trait: "市井嗅觉",
+        traitDesc: "天生对商业利益极具敏感度，敢赌敢拼，行事灵活"
+      },
+      {
+        id: "border_soldier",
+        title: "军人转业基层公务人员",
+        desc: "父亲转业在基层司法或粮站，母亲在供销社。家教甚严，凡事讲求规矩章程，人情世故熟稔。",
+        statMod: { health: 92, wealth: 4.0, intellect: 55, luck: 50, happiness: 62, rep: 52 },
+        trait: "端方稳重",
+        traitDesc: "行事严谨有章法，体制敏感度高，不喜冒险"
+      },
+      {
+        id: "single_mother",
+        title: "单亲下岗缝纫女工家庭",
+        desc: "母亲一个人在路边支起缝纫机踩踏板，指甲缝里常有针眼与红肿。你很小就知道生活没有退路。",
+        statMod: { health: 86, wealth: 0.8, intellect: 53, luck: 45, happiness: 50, rep: 38 },
+        trait: "早慧逆境",
+        traitDesc: "极度早熟懂事，观察察言观色极强，内心缺乏安全感"
+      }
+    ];
+
+    // 随机先天天赋词条 (Trait Pool)
+    const RANDOM_TRAITS = [
+      { name: "天生神力", effectDesc: "体魄异常健硕，抗病力强", mod: { health: +8 } },
+      { name: "灵光乍现", effectDesc: "悟性出众，学东西极快", mod: { intellect: +8 } },
+      { name: "福泽深厚", effectDesc: "冥冥中自有运气眷顾，常能逢凶化吉", mod: { luck: +12 } },
+      { name: "钝感心安", effectDesc: "不善内耗，神经大条，心境极其不易崩溃", mod: { happiness: +10 } },
+      { name: "商海通达", effectDesc: "对财富流转天生亲和，初始多带微薄启动金", mod: { wealth: +3 } },
+      { name: "多愁善感", effectDesc: "艺术天赋高但容易焦虑内耗", mod: { intellect: +5, happiness: -5 } }
+    ];
+
+    const DEFAULT_NAMES = ["陈远", "林栖", "陆明舟", "沈清弦", "许念安", "周子墨", "苏晚亭", "顾长风", "宋平", "江海平"];
+
+    // --- 角色状态 ---
+    let player = {
+      name: "林栖",
+      birthYear: 1982,
+      origin: null,
+      trait: null,
+      age: 0,
+      health: 90,
+      wealth: 2.0,
+      intellect: 50,
+      happiness: 60,
+      luck: 50,
+      reputation: 40,
+      tags: [],
+      history: [],
+      keyChoices: [],
+      randomEventsTriggered: [],
+      isDead: false,
+      deathReason: ""
+    };
+
+    let currentDestinyDraft = null;
+
+    // 生成随机天命投胎方案
+    function generateRandomDestiny() {
+      const birthYear = BIRTH_YEARS[Math.floor(Math.random() * BIRTH_YEARS.length)];
+      const origin = RANDOM_ORIGINS[Math.floor(Math.random() * RANDOM_ORIGINS.length)];
+      const trait = RANDOM_TRAITS[Math.floor(Math.random() * RANDOM_TRAITS.length)];
+      
+      // 随机波动
+      const deltaHealth = Math.floor(Math.random() * 9) - 4;
+      const deltaIntellect = Math.floor(Math.random() * 9) - 4;
+      const deltaLuck = Math.floor(Math.random() * 15) - 7;
+
+      const health = Math.max(70, Math.min(100, origin.statMod.health + (trait.mod.health || 0) + deltaHealth));
+      const wealth = Math.max(0.1, +(origin.statMod.wealth + (trait.mod.wealth || 0) + (Math.random() * 1.5 - 0.7)).toFixed(1));
+      const intellect = Math.max(40, Math.min(95, origin.statMod.intellect + (trait.mod.intellect || 0) + deltaIntellect));
+      const happiness = Math.max(40, Math.min(95, origin.statMod.happiness + (trait.mod.happiness || 0)));
+      const luck = Math.max(25, Math.min(95, origin.statMod.luck + (trait.mod.luck || 0) + deltaLuck));
+
+      return {
+        birthYear,
+        origin,
+        trait,
+        health,
+        wealth,
+        intellect,
+        happiness,
+        luck,
+        rep: origin.statMod.rep
+      };
+    }
+
+    function rollNewDestiny() {
+      soundDice();
+      const dice = document.getElementById('dice-icon');
+      if (dice) {
+        dice.classList.add('dice-rolling');
+        setTimeout(() => dice.classList.remove('dice-rolling'), 600);
+      }
+
+      currentDestinyDraft = generateRandomDestiny();
+
+      const yearInfo = ERA_TIMELINE[currentDestinyDraft.birthYear] || { name: "时代更迭", desc: "" };
+      document.getElementById('init-era-text').innerText = `${currentDestinyDraft.birthYear}年 · ${yearInfo.name}`;
+      document.getElementById('init-origin-text').innerText = currentDestinyDraft.origin.title;
+      document.getElementById('init-desc-text').innerText = currentDestinyDraft.origin.desc;
+      
+      document.getElementById('init-stat-health').innerText = currentDestinyDraft.health;
+      document.getElementById('init-stat-wealth').innerText = `${currentDestinyDraft.wealth}万`;
+      document.getElementById('init-stat-intellect').innerText = currentDestinyDraft.intellect;
+      document.getElementById('init-stat-luck').innerText = currentDestinyDraft.luck;
+
+      document.getElementById('init-trait-text').innerText = `[ ${currentDestinyDraft.trait.name}：${currentDestinyDraft.trait.effectDesc} ]`;
+    }
+
+    // --- 强随机偶发事件库 (在岁月流转中概率触发) ---
+    const RANDOM_EVENT_POOL = [
+      {
+        id: "re_lottery",
+        title: "街头彩票小奖",
+        tag: "微幸眷顾",
+        desc: "你在路过街角报刊亭时随手刮了张福利彩票，竟中了二等奖！虽不是巨款，却解了燃眉之急。",
+        effect: { wealth: +1.5, happiness: +8, luck: -3 }
+      },
+      {
+        id: "re_illness_scare",
+        title: "深夜急性阑尾炎",
+        tag: "病痛突袭",
+        desc: "毫无预兆的急性剧痛让你半夜被救护车送进急诊。冰冷的手术室让你真切体会到生命的脆弱与无助。",
+        effect: { health: -10, wealth: -0.8, happiness: -5, luck: 0 }
+      },
+      {
+        id: "re_friend_scam",
+        title: "熟人借贷失联",
+        tag: "人情冷暖",
+        desc: "一位昔日称兄道弟的同窗称'资金周转不开'向你借钱，几个月后微信拉黑、电话空号，彻底人间蒸发。",
+        effect: { wealth: -2.0, happiness: -10, intellect: +4, luck: -2 }
+      },
+      {
+        id: "re_mentor",
+        title: "贵人偶然提携",
+        tag: "贵人相助",
+        desc: "一次偶然的业务交集，一位德高望重的前辈对你的真诚与踏实大加赞赏，私下为你指点迷津并引荐了关键资源。",
+        effect: { intellect: +8, happiness: +6, rep: +10, luck: +5 }
+      },
+      {
+        id: "re_stock_bubble",
+        title: "跟风炒股剧震",
+        tag: "股海沉浮",
+        desc: "大盘行情一片大好，满街都在谈论牛市。你没忍住跟风买入，不久后遭遇连续跌停，深刻体会到'韭菜'之痛。",
+        effect: { wealth: -3.5, happiness: -8, intellect: +5, luck: -3 }
+      }
+    ];
+
+    // --- 宏大时代剧本分支 (结合历史事件与强随机概率判定) ---
+    const EPOCH_EVENTS = [
+      {
+        getAge: (birthYear) => 9,
+        getYear: (birthYear) => birthYear + 9,
+        period: "童年光景",
+        title: "工厂的汽笛与街头的录音机",
+        narrative: (p, year) => {
+          return `那是 ${year} 年。时代正经历着翻天覆地的转变。\n电视机里播放着南巡谈话或改革新闻，大街小巷的小卖部开始播放港台金曲。\n\n你所在的家庭面临一次关键变化：厂里/村里掀起了一股'停薪留职'或'承包经营'的风潮，父母也在犹豫是否要走出舒适圈，家里经常弥漫着焦虑与期待交织的烟草味。`;
+        },
+        choices: [
+          {
+            text: "在家庭会议上鼓励父母：'隔壁叔叔都去特区做生意了，咱们也试一试！'",
+            riskLevel: "高风险 · 时代博弈",
+            successChance: (p) => 50 + (p.luck > 50 ? 15 : -10),
+            successFeedback: "【概率判定成功！】父母咬牙借钱承包了小门市，恰逢消费浪潮起飞，家里资产直接翻了数倍！你第一次坐上了小轿车。",
+            failFeedback: "【概率判定失败！】因缺乏做生意经验，遭遇货源骗子，本金几乎赔光。父母不得不打零工还债，家境一度极其清苦。",
+            successEffect: { wealth: +12, happiness: +8, intellect: +5, luck: +5 },
+            failEffect: { wealth: -6, happiness: -12, intellect: +3, luck: -5 },
+            tagSuccess: "踩中风口",
+            tagFail: "早尝败绩",
+            isKey: true
+          },
+          {
+            text: "劝父母求稳：'大锅饭虽然不富裕，但有医保和退休金，还是稳妥为先'",
+            riskLevel: "稳健防守 · 确定收益",
+            successChance: () => 100,
+            successFeedback: "父母听取了安稳的意见，保住了铁饭碗。生活没有大富大贵，但每日有热汤热饭，你在安宁中完成了童年学业。",
+            successEffect: { wealth: +1.5, happiness: +5, intellect: +3, luck: 0 },
+            tagSuccess: "求稳自守",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 15,
+        getYear: (birthYear) => birthYear + 15,
+        period: "少年初成",
+        title: "中考分流与网吧时代的诱惑",
+        narrative: (p, year) => {
+          return `时维 ${year} 年。互联网浪潮正如野火般蔓延，《传奇》、QQ聊天室与街头黑网吧在同龄人间极度盛行。\n\n中考的残酷淘汰就在眼前，班主任严肃宣称：'今年只有45%的人能考上高中，其余全部分流去技校'。`;
+        },
+        choices: [
+          {
+            text: "抵制一切诱惑，拔掉网线，夜夜死磕模拟试卷至凌晨两点",
+            riskLevel: "苦行僧式应试 · 成功率 80%",
+            successChance: (p) => 80 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【判定成功】你以全区前50名的亮眼成绩考入省重点中学！县城挂起红榜，全家扬眉吐气。",
+            failFeedback: "【判定失败】临场考试突发胃痉挛，发挥失常压线进了普通中学，你体会到命运偶尔的残酷捉弄。",
+            successEffect: { intellect: +12, happiness: +6, health: -4, rep: +10 },
+            failEffect: { intellect: +6, happiness: -8, health: -6, rep: 0 },
+            tagSuccess: "做题精英",
+            tagFail: "考场蹉跎",
+            isKey: true
+          },
+          {
+            text: "对死记硬背厌烦，偷偷钻研电脑编程与网站制作，视其为未来钥匙",
+            riskLevel: "异类探索 · 成功率 60%",
+            successChance: (p) => 60 + Math.floor((p.intellect - 50) / 2) + (p.luck > 55 ? 10 : 0),
+            successFeedback: "【判定成功】你自学搭建的个人网站在早期互联网爆火，中考凭借计算机特长获得降分录取，开启了技术奇才之路！",
+            failFeedback: "【判定失败】功课彻底被耽误，中考失利只能进入职专。父母痛心疾首，周围人投来鄙夷目光。",
+            successEffect: { intellect: +16, wealth: +3, happiness: +10, luck: +5 },
+            failEffect: { intellect: +4, wealth: -1, happiness: -12, rep: -6 },
+            tagSuccess: "极客先锋",
+            tagFail: "歧路少年",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 18,
+        getYear: (birthYear) => birthYear + 18,
+        period: "成人之门",
+        title: "千禧年入世志愿表：热门还是铁饭碗？",
+        narrative: (p, year) => {
+          return `那是 ${year} 年。中国加入WTO，经济与全球化深度接轨，外贸、金融与软件专业成了最炙手可热的字眼。\n\n你的高考成绩公布，排在全省前列。摆在面前的是两张完全不同的人生通行证。`;
+        },
+        choices: [
+          {
+            text: "豪赌时代热门：报考沿海名校的'计算机科学'或'国际金融/外贸'",
+            riskLevel: "浪潮之巅 · 潜力无限",
+            successChance: (p) => 70 + (p.luck > 50 ? 10 : -5),
+            successFeedback: "【判定大获成功】你完美踩中了中国互联网与外贸黄金二十年的超级上升通道，视野与人脉跃升至顶级圈层！",
+            failFeedback: "【判定受挫】由于高校扩招过猛，课程体系陈旧，毕业时遭遇行业周期调整，陷入激烈内卷。",
+            successEffect: { intellect: +15, wealth: +5, happiness: +8, rep: +10 },
+            failEffect: { intellect: +8, wealth: -2, happiness: -6, rep: +2 },
+            tagSuccess: "时代弄潮儿",
+            tagFail: "被风口灼伤",
+            isKey: true
+          },
+          {
+            text: "坚守传统防线：报考本地公费师范或军校医科，笃定旱涝保收",
+            riskLevel: "避风港湾 · 绝对确定",
+            successChance: () => 100,
+            successFeedback: "【稳步推进】父母长舒一口气，学费全免且毕业即包分配编制。你站在象牙塔内，冷眼看外界商海起伏。",
+            successEffect: { intellect: +7, wealth: +2, happiness: +8, rep: +8 },
+            tagSuccess: "体制坚盾",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 24,
+        getYear: (birthYear) => birthYear + 24,
+        period: "立足之战",
+        title: "北京奥运前后的双轨抉择",
+        narrative: (p, year) => {
+          return `来到 ${year} 年。大城市的房价正在蠢蠢欲动，四万亿计划出台，各行各业都散发着金钱与野心的躁动气息。\n\n你已经在职场摸爬滚打了两年，面对新的升迁和创业机遇，你站在十字路口。`;
+        },
+        choices: [
+          {
+            text: "与大学同窗辞职合伙，在一间逼仄的民房里创办移动互联软件/电商工作室",
+            riskLevel: "命悬一线创业 · 成功率 45%",
+            successChance: (p) => 45 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 15 : -10),
+            successFeedback: "【创业大捷】你们开发的应用在应用商店冲上榜首，成功拿到数百万天使轮融资，年纪轻轻实现阶层跨越！",
+            failFeedback: "【创业爆雷】合伙人理念不合携款跑路，工作室资金链断裂欠下二十余万债务，你一度只能靠泡面和花呗度日。",
+            successEffect: { wealth: +38, intellect: +14, happiness: +12, health: -8, rep: +15 },
+            failEffect: { wealth: -18, intellect: +8, happiness: -16, health: -10, rep: -5 },
+            tagSuccess: "独角兽奇迹",
+            tagFail: "破产重击",
+            isKey: true
+          },
+          {
+            text: "进入老牌外企或大型国企，按部就班熬资历，利用稳定收入尽早上车购房",
+            riskLevel: "稳扎稳打 · 资产沉淀",
+            successChance: () => 100,
+            successFeedback: "【确定性兑现】你在房价暴涨前夕咬牙付了首付。数年后房产增值数倍，成为你一生中最正确的资产决策。",
+            successEffect: { wealth: +20, happiness: +6, health: +2, rep: +8 },
+            tagSuccess: "早早上车",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 32,
+        getYear: (birthYear) => birthYear + 32,
+        period: "负重而立",
+        title: "繁荣狂欢下的杠杆抉择",
+        narrative: (p, year) => {
+          return `时间来到 ${year} 年。房产中介的电话每天打爆你的手机，理财P2P和消费贷满天飞。\n\n你的家庭到了换大房子或博取更高资产配置的关头，伴侣和长辈都在催促你做决定。`;
+        },
+        choices: [
+          {
+            text: "加满杠杆，掏空六个钱包并抵押贷款，抢购一线核心区千万学区房",
+            riskLevel: "极高杠杆 · 成功率 50%",
+            successChance: (p) => 50 + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【判定成功】踩在政策收紧前最后一波暴涨，资产账面大增，孩子获得了顶尖名校入读资格。",
+            failFeedback: "【高位套牢】买在历史最高点，随后行业下行房价腰斩，每月两万五的月供成为压在全家脖子上的绞索。",
+            successEffect: { wealth: +30, happiness: -5, rep: +12 },
+            failEffect: { wealth: -35, happiness: -22, health: -10, rep: -4 },
+            tagSuccess: "杠杆豪赌",
+            tagFail: "高位接盘",
+            isKey: true
+          },
+          {
+            text: "保持清醒，拒绝过度杠杆，将积蓄配置于国债、大额存单与自身健康",
+            riskLevel: "守拙持重 · 抵御风暴",
+            successChance: () => 100,
+            successFeedback: "【从容避险】亲友曾笑你胆小保守，但随后几年暴雷潮与裁员潮来袭时，全家唯独你手握充沛现金流，从容不迫。",
+            successEffect: { wealth: +10, happiness: +12, health: +6, rep: +6 },
+            tagSuccess: "现金为王",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 42,
+        getYear: (birthYear) => birthYear + 42,
+        period: "中年险滩",
+        title: "大厂毕业、降本增效与疫情寒冬",
+        narrative: (p, year) => {
+          return `时值 ${year} 年。宏观经济遭遇深度调整，教培、地产、大厂相继裁员收缩。\n\n你所在的团队被整编，HR手里拿着补偿协议；与此同时，家中老人的慢性病开销与孩子的高中补习费如两座大山。`;
+        },
+        choices: [
+          {
+            text: "拿着补偿金彻底告别内卷，利用多年专业积累转行做独立顾问/自媒体出海",
+            riskLevel: "中年破局 · 成功率 55%",
+            successChance: (p) => 55 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【逆风翻盘】凭借深厚的实操经验，你单干的首年收入就超过了大厂总包，并且重新掌控了时间自由！",
+            failFeedback: "【再遭冷水】独立赛道竞争极度白热化，接单艰难，不得不消耗积蓄贴补家用，焦虑得夜夜失眠。",
+            successEffect: { wealth: +22, happiness: +15, health: +2, rep: +15 },
+            failEffect: { wealth: -12, happiness: -16, health: -8, rep: -2 },
+            tagSuccess: "绝处逢生",
+            tagFail: "中年受困",
+            isKey: true
+          },
+          {
+            text: "放下身段委曲求全，接受降薪40%调去偏远分支机构或传统国企边缘岗位",
+            riskLevel: "忍辱负重 · 稳保基本盘",
+            successChance: () => 100,
+            successFeedback: "【家庭顶梁柱】虽然没了当年的荣光与高薪，但五险一金未断，你默默用被踩碎的自尊撑住了老人和孩子的安稳生活。",
+            successEffect: { wealth: +6, happiness: -6, health: -4, rep: +8 },
+            tagSuccess: "家庭脊梁",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 55,
+        getYear: (birthYear) => birthYear + 55,
+        period: "知命之年",
+        title: "AI时代的黄昏与心脑血管警钟",
+        narrative: (p, year) => {
+          return `岁月流转至 ${year} 年。人工智能已经接管了大部分日常智力工作，满街都是自动驾驶与智能机器人。\n\n年过半百的你，体检单上密密麻麻的红字警示着心脑血管风险，身边甚至开始有老友突发心梗离世。`;
+        },
+        choices: [
+          {
+            text: "全面放权退居二线，戒掉所有烟酒与无效社交，每日太极慢跑，寄情山水书法",
+            riskLevel: "修身养命 · 确定延寿",
+            successChance: () => 100,
+            successFeedback: "指标大幅好转，轻盈与平和重新回到身体里。世俗的功名利禄彻底放下，内心前所未有的安详。",
+            successEffect: { health: +20, happiness: +15, wealth: -2, rep: +4 },
+            tagSuccess: "养生得道",
+            isKey: false
+          },
+          {
+            text: "依然不服老，趁着AI新风口再投一笔私房钱开办创新工作室，欲证自身价值",
+            riskLevel: "烈士暮年 · 成功率 40%",
+            successChance: (p) => 40 + (p.intellect > 70 ? 15 : 0) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【老当益壮】你的行业沉淀与新工具碰撞出火花，成为行业敬仰的'教父级'导师，名利双收！",
+            failFeedback: "【身体亮红灯】精力不济被年轻人算计，更因熬夜连轴转突发房颤住进ICU抢救，捡回一条命后彻底认输。",
+            successEffect: { wealth: +25, intellect: +10, rep: +20, health: -8 },
+            failEffect: { wealth: -15, health: -28, happiness: -15, rep: 0 },
+            tagSuccess: "老骥伏枥",
+            tagFail: "心力交瘁",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: (birthYear) => 78,
+        getYear: (birthYear) => birthYear + 78,
+        period: "夕阳晚钟",
+        title: "老伴病榻前的执手告别",
+        narrative: (p, year) => {
+          return `那是 ${year} 年的冬天，斜阳洒在阳台的老藤椅上。\n\n相守半生的老伴因器官衰竭躺在病榻上，握着你满是老年斑的手，目光柔和而依依不舍。医生轻声向你询问最终的治疗意愿。`;
+        },
+        choices: [
+          {
+            text: "尊重老伴生前心愿，选择安宁疗护体面告别，握着爱人的手静静倾听呼吸",
+            riskLevel: "从容辞世 · 慈悲释怀",
+            successChance: () => 100,
+            successFeedback: "在安静温暖的阳光和昔日老歌声中，爱人安详闭眼。没有冰冷管线的折磨，泪水中有哀伤更有相守一生的感恩。",
+            successEffect: { intellect: +8, happiness: +6, rep: +10 },
+            tagSuccess: "体面告别",
+            isKey: true
+          },
+          {
+            text: "拼尽一切积蓄送进ICU，插管抢救，无论付出多少代价只求多留一天",
+            riskLevel: "生死执念 · 倾力而为",
+            successChance: () => 100,
+            successFeedback: "你在ICU门外守了近一个月，耗尽了晚年积蓄。虽然结局依旧，但你确信自己尽了凡人的最后一分心力。",
+            successEffect: { wealth: -20, happiness: -14, health: -10, rep: +5 },
+            tagSuccess: "生死执念",
+            isKey: true
+          }
+        ]
+      }
+    ];
+
+    // --- 游戏运行态 ---
+    let currentEventIndex = 0;
+
+    function startGame() {
+      initAudio();
+      soundClick();
+
+      const nameInput = document.getElementById('input-name').value.trim();
+      player.name = nameInput || DEFAULT_NAMES[Math.floor(Math.random() * DEFAULT_NAMES.length)];
+
+      player.birthYear = currentDestinyDraft.birthYear;
+      player.origin = currentDestinyDraft.origin;
+      player.trait = currentDestinyDraft.trait;
+      player.health = currentDestinyDraft.health;
+      player.wealth = currentDestinyDraft.wealth;
+      player.intellect = currentDestinyDraft.intellect;
+      player.happiness = currentDestinyDraft.happiness;
+      player.luck = currentDestinyDraft.luck;
+      player.reputation = currentDestinyDraft.rep;
+
+      player.tags = [player.origin.trait, player.trait.name];
+      player.age = 0;
+      player.history = [];
+      player.keyChoices = [];
+      player.randomEventsTriggered = [];
+      player.isDead = false;
+      currentEventIndex = 0;
+
+      // 切换视图
+      document.getElementById('screen-intro').classList.add('hidden');
+      document.getElementById('screen-ending').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('top-bar').classList.remove('hidden');
+      document.getElementById('stats-container').classList.remove('hidden');
+      document.getElementById('display-era-badge').classList.remove('hidden');
+
+      updateUIStats();
+      renderCurrentEvent();
+    }
+
+    function updateUIStats(changes = null) {
+      document.getElementById('val-health').innerText = Math.round(player.health);
+      document.getElementById('val-wealth').innerText = player.wealth >= 0 ? `${player.wealth.toFixed(1)}万` : `负债${Math.abs(player.wealth).toFixed(1)}万`;
+      document.getElementById('val-intellect').innerText = Math.round(player.intellect);
+      document.getElementById('val-happiness').innerText = Math.round(player.happiness);
+      document.getElementById('val-luck').innerText = Math.round(player.luck);
+
+      const currentYear = player.birthYear + player.age;
+      document.getElementById('display-era-badge').innerText = `${currentYear}年 · ${player.age}岁`;
+
+      // 浮动数值反馈
+      const notifyBox = document.getElementById('stat-change-notify');
+      if (changes) {
+        let texts = [];
+        if (changes.health) texts.push(`<span class="${changes.health > 0 ? 'text-emerald-400' : 'text-red-400'}">${changes.health > 0 ? '+' : ''}${changes.health}♥</span>`);
+        if (changes.wealth) texts.push(`<span class="${changes.wealth > 0 ? 'text-amber-400' : 'text-rose-400'}">${changes.wealth > 0 ? '+' : ''}${changes.wealth.toFixed(1)}万</span>`);
+        if (changes.happiness) texts.push(`<span class="${changes.happiness > 0 ? 'text-emerald-300' : 'text-zinc-400'}">${changes.happiness > 0 ? '+' : ''}${changes.happiness}☼</span>`);
+        if (changes.intellect) texts.push(`<span class="${changes.intellect > 0 ? 'text-sky-300' : 'text-zinc-400'}">${changes.intellect > 0 ? '+' : ''}${changes.intellect}✦</span>`);
+        if (changes.luck) texts.push(`<span class="${changes.luck > 0 ? 'text-purple-300' : 'text-zinc-500'}">${changes.luck > 0 ? '+' : ''}${changes.luck}🎲</span>`);
+        
+        notifyBox.innerHTML = texts.join(' ');
+        notifyBox.classList.remove('stat-pop');
+        void notifyBox.offsetWidth;
+        notifyBox.classList.add('stat-pop');
+      } else {
+        notifyBox.innerHTML = '';
+      }
+    }
+
+    function renderCurrentEvent() {
+      if (currentEventIndex >= EPOCH_EVENTS.length) {
+        endLife("寿终正寝，在儿孙簇拥与安详中辞世");
+        return;
+      }
+
+      const evtConfig = EPOCH_EVENTS[currentEventIndex];
+      const age = evtConfig.getAge(player.birthYear);
+      const year = evtConfig.getYear(player.birthYear);
+      player.age = age;
+
+      // 突发健康衰竭检定
+      if (player.health <= 15) {
+        endLife("终因长期高压透支、积劳成疾，在壮年抱憾猝然离世");
+        return;
+      }
+
+      // 更新时代横幅
+      document.getElementById('era-year').innerText = year;
+      const eraKey = Object.keys(ERA_TIMELINE).reverse().find(y => year >= parseInt(y)) || 1982;
+      const eraInfo = ERA_TIMELINE[eraKey];
+      document.getElementById('era-tag').innerText = eraInfo.name;
+      document.getElementById('era-background-desc').innerText = eraInfo.desc;
+
+      document.getElementById('display-age').innerText = `${age} 岁`;
+      document.getElementById('display-period').innerText = evtConfig.period;
+      document.getElementById('event-title-text').innerText = evtConfig.title;
+      document.getElementById('event-narrative').innerText = evtConfig.narrative(player, year);
+
+      // --- 强随机事件判定机制 (30%概率触发突发事件) ---
+      const randomBox = document.getElementById('random-event-box');
+      if (Math.random() < 0.35 && RANDOM_EVENT_POOL.length > 0) {
+        const randEvt = RANDOM_EVENT_POOL[Math.floor(Math.random() * RANDOM_EVENT_POOL.length)];
+        randomBox.classList.remove('hidden');
+        document.getElementById('random-event-tag').innerText = randEvt.tag;
+        document.getElementById('random-event-desc').innerText = randEvt.desc;
+
+        // 应用随机事件影响
+        player.wealth = parseFloat((player.wealth + (randEvt.effect.wealth || 0)).toFixed(1));
+        player.health = Math.max(10, Math.min(100, player.health + (randEvt.effect.health || 0)));
+        player.happiness = Math.max(10, Math.min(100, player.happiness + (randEvt.effect.happiness || 0)));
+        player.intellect = Math.max(20, Math.min(100, player.intellect + (randEvt.effect.intellect || 0)));
+        player.luck = Math.max(10, Math.min(100, player.luck + (randEvt.effect.luck || 0)));
+
+        player.randomEventsTriggered.push({ age, title: randEvt.title, tag: randEvt.tag, desc: randEvt.desc });
+        updateUIStats();
+      } else {
+        randomBox.classList.add('hidden');
+      }
+
+      // 渲染选项列表（含概率标记）
+      const container = document.getElementById('choices-container');
+      container.innerHTML = '';
+
+      evtConfig.choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "choice-card w-full text-left p-3.5 rounded-lg bg-zinc-900/90 border border-zinc-800 hover:bg-zinc-800/80 transition flex flex-col group cursor-pointer";
+        btn.onclick = () => handleChoiceSelection(idx);
+
+        const chanceRate = choice.successChance(player);
+        const chanceBadge = chanceRate >= 100 
+          ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 font-mono">稳妥必成</span>`
+          : `<span class="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-mono">成功率约 ${Math.min(95, Math.max(15, chanceRate))}%</span>`;
+
+        btn.innerHTML = `
+          <div class="flex items-start justify-between w-full mb-1">
+            <div class="flex items-center space-x-2">
+              <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-zinc-800 text-amber-300 text-xs font-mono font-bold group-hover:bg-amber-500 group-hover:text-zinc-950 transition">
+                ${idx + 1}
+              </span>
+              <span class="text-xs text-zinc-400 font-sans-sc font-medium">${choice.riskLevel}</span>
+            </div>
+            ${chanceBadge}
+          </div>
+          <div class="text-xs md:text-sm text-zinc-200 group-hover:text-amber-200 font-medium transition leading-snug pl-7">
+            ${choice.text}
+          </div>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function handleChoiceSelection(choiceIndex) {
+      soundDecision();
+      const evtConfig = EPOCH_EVENTS[currentEventIndex];
+      const choice = evtConfig.choices[choiceIndex];
+
+      // 现场掷骰检定
+      const successChance = choice.successChance(player);
+      const roll = Math.floor(Math.random() * 100) + 1;
+      const isSuccess = roll <= successChance;
+
+      const effect = isSuccess ? choice.successEffect : choice.failEffect;
+      const feedback = isSuccess ? choice.successFeedback : choice.failFeedback;
+      const tag = isSuccess ? choice.tagSuccess : choice.tagFail;
+
+      // 结算属性变化
+      player.health = Math.max(0, Math.min(100, player.health + (effect.health || 0)));
+      player.wealth = parseFloat((player.wealth + (effect.wealth || 0)).toFixed(1));
+      player.intellect = Math.max(0, Math.min(100, player.intellect + (effect.intellect || 0)));
+      player.happiness = Math.max(0, Math.min(100, player.happiness + (effect.happiness || 0)));
+      player.luck = Math.max(0, Math.min(100, player.luck + (effect.luck || 0)));
+      player.reputation = Math.max(0, Math.min(100, player.reputation + (effect.rep || 0)));
+
+      if (tag && !player.tags.includes(tag)) {
+        player.tags.push(tag);
+      }
+
+      // 记录历史
+      const historyEntry = {
+        age: player.age,
+        year: player.birthYear + player.age,
+        title: evtConfig.title,
+        choiceText: choice.text,
+        isSuccess,
+        roll,
+        successChance,
+        feedback,
+        isKey: choice.isKey
+      };
+      player.history.push(historyEntry);
+
+      if (choice.isKey) {
+        player.keyChoices.push(historyEntry);
+      }
+
+      updateHistoryUI();
+      updateUIStats(effect);
+
+      // 显示带有掷骰判定结果的反馈框
+      showDiceFeedbackModal(evtConfig, choice, historyEntry);
+    }
+
+    function showDiceFeedbackModal(evtConfig, choice, historyEntry) {
+      const isGuaranteed = historyEntry.successChance >= 100;
+      const diceNotice = isGuaranteed 
+        ? `<div class="text-[11px] text-emerald-400 font-mono mb-2">【 命运契约 · 确定性达成 】</div>`
+        : `<div class="text-[11px] text-amber-400 font-mono mb-2 flex items-center justify-between">
+             <span>🎲 命运掷骰：出目 ${historyEntry.roll} / 胜率基准 ${historyEntry.successChance}%</span>
+             <span class="font-bold ${historyEntry.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${historyEntry.isSuccess ? '★ 顺遂如愿' : '✕ 天不遂人'}</span>
+           </div>`;
+
+      const container = document.getElementById('choices-container');
+      container.innerHTML = `
+        <div class="bg-zinc-800/90 border border-amber-600/40 rounded-lg p-4 shadow-xl animate-fade-in font-sans-sc">
+          ${diceNotice}
+          <div class="text-xs text-zinc-300 font-medium mb-2 border-b border-zinc-700/60 pb-1.5">抉择：${choice.text}</div>
+          <div class="text-xs md:text-sm text-zinc-200 leading-relaxed pt-1 mb-4 font-serif">
+            ${historyEntry.feedback}
+          </div>
+          <button onclick="nextEvent()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm tracking-wider transition">
+            步入岁月下一程 ➔
+          </button>
+        </div>
+      `;
+    }
+
+    function nextEvent() {
+      soundClick();
+      currentEventIndex++;
+      renderCurrentEvent();
+    }
+
+    function updateHistoryUI() {
+      document.getElementById('history-count').innerText = player.history.length;
+      const logContainer = document.getElementById('history-log');
+      logContainer.innerHTML = '';
+      player.history.slice().reverse().forEach(h => {
+        const item = document.createElement('div');
+        item.className = "p-2 bg-zinc-900/60 rounded border border-zinc-800/60";
+        item.innerHTML = `
+          <div class="flex items-center justify-between text-[11px] text-amber-400/90 mb-0.5 font-mono">
+            <span>${h.year}年 · ${h.age}岁 · ${h.title}</span>
+            <span class="${h.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${h.isSuccess ? '成' : '败'}</span>
+          </div>
+          <div class="text-zinc-300 text-xs">${h.choiceText}</div>
+        `;
+        logContainer.appendChild(item);
+      });
+    }
+
+    function toggleHistory() {
+      const log = document.getElementById('history-log');
+      const toggleText = document.getElementById('history-toggle-text');
+      if (log.classList.contains('hidden')) {
+        log.classList.remove('hidden');
+        toggleText.innerText = '点击收起';
+      } else {
+        log.classList.add('hidden');
+        toggleText.innerText = '点击展开';
+      }
+    }
+
+    // --- 终局结算与历史回响评价 ---
+    function endLife(deathReason) {
+      soundEnding();
+      player.isDead = true;
+      player.deathReason = deathReason;
+
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-ending').classList.remove('hidden');
+      document.getElementById('stats-container').classList.add('hidden');
+
+      const endYear = player.birthYear + player.age;
+      document.getElementById('end-player-name').innerText = player.name;
+      document.getElementById('end-lifespan').innerText = `${player.birthYear} - ${endYear} · 享年 ${player.age} 岁 · ${deathReason}`;
+
+      // 结算属性量化
+      document.getElementById('end-val-health').innerText = `${Math.round(player.health)} / 100`;
+      document.getElementById('end-val-wealth').innerText = `${player.wealth.toFixed(1)} 万元`;
+      document.getElementById('end-val-intellect').innerText = `${Math.round(player.intellect)} / 100`;
+      document.getElementById('end-val-happiness').innerText = `${Math.round(player.happiness)} / 100`;
+      document.getElementById('end-val-luck').innerText = `${Math.round(player.luck)} / 100`;
+
+      document.getElementById('bar-health').style.width = `${Math.min(100, Math.max(5, player.health))}%`;
+      document.getElementById('bar-wealth').style.width = `${Math.min(100, Math.max(5, (player.wealth + 20) / 120 * 100))}%`;
+      document.getElementById('bar-intellect').style.width = `${Math.min(100, Math.max(5, player.intellect))}%`;
+      document.getElementById('bar-happiness').style.width = `${Math.min(100, Math.max(5, player.happiness))}%`;
+      document.getElementById('bar-luck').style.width = `${Math.min(100, Math.max(5, player.luck))}%`;
+
+      // 渲染标签
+      const tagBox = document.getElementById('end-tags-container');
+      tagBox.innerHTML = '';
+      player.tags.forEach(t => {
+        const badge = document.createElement('span');
+        badge.className = "px-2 py-0.5 rounded bg-zinc-800 text-amber-200/90 border border-zinc-700 text-xs font-sans-sc";
+        badge.innerText = `# ${t}`;
+        tagBox.appendChild(badge);
+      });
+
+      // 运气评价
+      const luckSummary = document.getElementById('end-luck-summary');
+      if (player.luck >= 65) {
+        luckSummary.innerText = "🎲 气运总结：天选之子 · 多次在时代凶险分水岭化险为夷，时运相伴";
+      } else if (player.luck <= 40) {
+        luckSummary.innerText = "🎲 气运总结：造化弄人 · 数次遭遇天意戏谑，凭肉身血肉生生抗过时代寒冬";
+      } else {
+        luckSummary.innerText = "🎲 气运总结：悲喜参半 · 既尝过风口的甜头，亦咽下过退潮的苦果，真实无欺";
+      }
+
+      // 宿命评价
+      const archetypeData = evaluateLifeArchetype();
+      document.getElementById('end-archetype').innerText = archetypeData.archetype;
+      document.getElementById('end-quote').innerText = `“${archetypeData.epitaph}”`;
+
+      // 时代坐标综述
+      document.getElementById('end-era-reflection').innerText = generateEraReflection();
+
+      // 生平纪传
+      generateBiography(archetypeData);
+
+      // 命运分水岭复盘
+      renderKeyTurningPoints();
+    }
+
+    function evaluateLifeArchetype() {
+      const h = player.health;
+      const w = player.wealth;
+      const hap = player.happiness;
+      const i = player.intellect;
+
+      if (w >= 50 && hap >= 55) {
+        return {
+          archetype: "时代弄潮翁 · 功成身退",
+          epitaph: "你踩准了时代每一朵最具生机的浪花，既饱览了财富的壮阔，又未曾迷失于物欲的深壑。世事如棋，落子无悔。"
+        };
+      } else if (w >= 30 && hap < 45) {
+        return {
+          archetype: "负重攀登者 · 时代苦行僧",
+          epitaph: "在狂飙的城市化与债务大山中，你用肩膀扛起了几代人的体面与产证，却在深夜的加班室里耗尽了青春的灵气。"
+        };
+      } else if (hap >= 70 && w < 25) {
+        return {
+          archetype: "旷达布衣 · 自在散人",
+          epitaph: "世人慌慌张张图碎银几两，而你早早参透了内卷的荒诞。向青山借清风，虽无万贯财，胸中自安然。"
+        };
+      } else if (i >= 80) {
+        return {
+          archetype: "清醒明哲者 · 孤峰观澜",
+          epitaph: "你以澄澈的智识洞穿了时代周期演进的规律，在浮华中冷眼旁观，在下行中从容不迫。懂得了历史，因而悲悯。"
+        };
+      } else if (player.age < 50) {
+        return {
+          archetype: "断弦流星 · 孤勇悲歌",
+          epitaph: "生命这根弦绷得太紧，你在时代的烈火中疾驰，走得太急太烈。人间热闹非凡，而你已悄然化作微尘。"
+        };
+      } else {
+        return {
+          archetype: "人间守望者 · 平凡的伟力",
+          epitaph: "你没有成为站在风口的神话，也没有沦为时代尘埃的叹息。在岗位上尽责，在家人身旁尽心，平凡而坚韧地走完了真诚的一生。"
+        };
+      }
+    }
+
+    function generateEraReflection() {
+      const originTitle = player.origin ? player.origin.title : "工薪家庭";
+      return `${player.name}降生于 ${player.birthYear} 年（${originTitle}）。这一生恰逢共和国历史上最激荡磅礴的现代化转型半世纪：亲历了沿海商品经济萌芽、国企下岗阵痛、千禧入世的万国来朝、四万亿与房地产狂飙十年、移动互联的风口造富、以至疫情之后的去杠杆沉淀与AI大潮呼啸而至。\n在历史这面巨大的棱镜下，所有的个人努力都深深印刻着时代的风速。`;
+    }
+
+    function generateBiography(summary) {
+      let bio = `${player.name}自幼带着【${player.origin ? player.origin.trait : '平实'}】与【${player.trait ? player.trait.name : '坚韧'}】的生命底色步入人世。\n\n`;
+
+      player.history.forEach(h => {
+        bio += `在 ${h.year} 年（${h.age}岁）的【${h.title}】风浪中，${player.name}做出了“${h.choiceText}”的决断。${h.feedback}\n\n`;
+      });
+
+      if (player.randomEventsTriggered.length > 0) {
+        bio += `漫长旅途中，亦有数道猝不及防的命运掷骰：${player.randomEventsTriggered.map(r => `在${r.age}岁遭遇【${r.title}】`).join('、')}。人生的不可预测，在主角身上留下了不可磨灭的纹理。\n\n`;
+      }
+
+      bio += `临终盖棺定论：累计财富净值 ${player.wealth.toFixed(1)} 万元，学识智识 ${Math.round(player.intellect)}，心境安宁度 ${Math.round(player.happiness)}，天命气运 ${Math.round(player.luck)}。\n人间这一趟，山川日月皆知你曾深情走过。`;
+
+      document.getElementById('end-biography').innerText = bio;
+    }
+
+    function renderKeyTurningPoints() {
+      const container = document.getElementById('end-key-turning-points');
+      container.innerHTML = '';
+
+      if (player.keyChoices.length === 0) {
+        container.innerHTML = '<div class="text-xs text-zinc-500">平淡中行过，未见激烈对决。</div>';
+        return;
+      }
+
+      player.keyChoices.forEach(kc => {
+        const item = document.createElement('div');
+        item.className = "p-3 bg-zinc-900/60 rounded border border-zinc-800 text-xs";
+        const resultBadge = kc.successChance >= 100 
+          ? '<span class="text-emerald-400">稳妥定规</span>'
+          : (kc.isSuccess ? `<span class="text-emerald-400 font-bold">掷骰成功 (${kc.roll}≤${kc.successChance}%)</span>` : `<span class="text-rose-400 font-bold">掷骰受挫 (${kc.roll}>${kc.successChance}%)</span>`);
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between text-amber-300 font-bold mb-1 font-mono">
+            <span>${kc.year}年 (${kc.age}岁) · ${kc.title}</span>
+            ${resultBadge}
+          </div>
+          <div class="text-zinc-200 mb-1">抉择：${kc.choiceText}</div>
+          <div class="text-zinc-400 text-[11px] leading-relaxed">${kc.feedback}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function restartGame() {
+      soundClick();
+      rollNewDestiny();
+      document.getElementById('screen-ending').classList.add('hidden');
+      document.getElementById('screen-intro').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function copySummary() {
+      soundClick();
+      const archetype = document.getElementById('end-archetype').innerText;
+      const epitaph = document.getElementById('end-quote').innerText;
+      const eraRef = document.getElementById('end-era-reflection').innerText;
+      const bio = document.getElementById('end-biography').innerText;
+
+      const fullText = `【浮生录 · 人物生平档案与时代回响】\n主角：${player.name}（${document.getElementById('end-lifespan').innerText}）\n宿命评定：${archetype}\n墓志铭：${epitaph}\n\n【时代坐标】\n${eraRef}\n\n【生平纪传】\n${bio}\n\n—— 大浪淘沙，唯心自守。`;
+
+      navigator.clipboard.writeText(fullText).then(() => {
+        alert("人生纪传档案已成功复制到剪贴板！");
+      }).catch(() => {
+        alert("复制失败，请手动截屏或选择文本。");
+      });
+    }
+
+    // 页面初次加载自动初始化一次天命
+    rollNewDestiny();
+  </script>
+</body>
+</html>
