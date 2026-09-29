@@ -243,6 +243,37 @@ class Player:
         print(f"{Color.GOLD}{'='*68}{Color.RESET}\n")
 
 # 过去纪元 16 大关卡
+
+LIFE_STAGE_BRACKETS = [
+    {"id": 0, "min_age": 5, "max_age": 7, "period": "幼年启蒙"},
+    {"id": 1, "min_age": 9, "max_age": 11, "period": "童年韶光"},
+    {"id": 2, "min_age": 14, "max_age": 16, "period": "少年分流"},
+    {"id": 3, "min_age": 17, "max_age": 19, "period": "成人立志"},
+    {"id": 4, "min_age": 20, "max_age": 22, "period": "青春韶华"},
+    {"id": 5, "min_age": 23, "max_age": 25, "period": "初涉人世"},
+    {"id": 6, "min_age": 26, "max_age": 29, "period": "成家立业"},
+    {"id": 7, "min_age": 30, "max_age": 33, "period": "三十而立"},
+    {"id": 8, "min_age": 34, "max_age": 38, "period": "负重前行"},
+    {"id": 9, "min_age": 39, "max_age": 42, "period": "中年险滩"},
+    {"id": 10, "min_age": 43, "max_age": 47, "period": "动荡考验"},
+    {"id": 11, "min_age": 49, "max_age": 53, "period": "知命之年"},
+    {"id": 12, "min_age": 56, "max_age": 61, "period": "花甲在望"},
+    {"id": 13, "min_age": 64, "max_age": 69, "period": "桑榆晚景"},
+    {"id": 14, "min_age": 72, "max_age": 76, "period": "古稀沧桑"},
+    {"id": 15, "min_age": 78, "max_age": 83, "period": "夕阳辞章"}
+]
+
+def generate_random_timeline():
+    timeline = []
+    prev_age = 0
+    for b in LIFE_STAGE_BRACKETS:
+        min_v = max(prev_age + 1, b["min_age"])
+        max_v = max(min_v, b["max_age"])
+        assigned = random.randint(min_v, max_v)
+        timeline.append(assigned)
+        prev_age = assigned
+    return timeline
+
 PAST_STAGES = [
     {
         "age_rel": 6,
@@ -1155,6 +1186,939 @@ def generate_random_destiny(epoch_mode):
     trait = random.choice(RANDOM_TRAITS)
     return b_year, origin, trait
 
+
+# -*- coding: utf-8 -*-
+PAST_ALT_STAGES_PY = [
+    # Stage 0
+    {
+        "period": "幼年启蒙",
+        "title": "供销社的玻璃糖罐与弄堂嬉戏",
+        "narrative": "弄堂里回荡着竹椅摇晃与叫卖麦芽糖的梆子声。长辈想教你毛笔临帖与古文，而邻里伙伴正在街上翻花绳捉迷藏。",
+        "choices": [
+            {
+                "text": "跟随长辈在八仙桌前研墨临帖，背诵千字文与珠算口诀",
+                "risk_label": "书香开蒙 · 涵养心性",
+                "calc_chance": lambda p: 80 + (10 if p.intellect > 50 else 0),
+                "succ_feedback": "字迹清秀端正，长辈欣慰，早早培养出专注力与耐得住寂寞的定力。",
+                "succ_eff": {"intellect": 8, "happiness": 4, "rep": 5},
+                "fail_feedback": "顽皮好动打翻了墨水瓶弄脏新衣挨了板子，但多少记住了几篇古训。",
+                "fail_eff": {"intellect": 3, "happiness": -4, "rep": 1},
+                "tag_succ": "临池学书",
+                "tag_fail": "顽皮受戒",
+                "is_key": False
+            },
+            {
+                "text": "混迹弄堂巷尾，当孩子王领着大伙拍洋画、滚铁环疯玩",
+                "risk_label": "野蛮生长 · 市井天性",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "成了胡同里最机灵的小首领，交际能力强，皮实耐摔身体棒。",
+                "succ_eff": {"health": 6, "happiness": 8, "intellect": 2},
+                "tag_succ": "巷尾霸王",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 1
+    {
+        "period": "童年韶光",
+        "title": "集市小摊与万元户浪潮",
+        "narrative": "集市上摆满了喇叭裤、蛤蟆镜和电子表，个体户渐渐受人眼热。表哥邀你放学后一起帮他在校门外摆摊卖磁带和圆珠笔。",
+        "choices": [
+            {
+                "text": "放学后帮表哥看摊吆喝、算账收钱，体会商海微澜",
+                "risk_label": "市井试水 · 成功率 65%",
+                "calc_chance": lambda p: 65 + (15 if p.luck > 50 else -5),
+                "succ_feedback": "货品被同龄人一抢而空！分到人生第一笔零花钱，早早树立商业嗅觉。",
+                "succ_eff": {"wealth": 3.0, "intellect": 6, "happiness": 5, "luck": 3},
+                "fail_feedback": "遭遇学校纪检抓包，货物被扣，回家被父母好一顿训斥。",
+                "fail_eff": {"wealth": -1.0, "happiness": -8, "intellect": 2, "rep": -3},
+                "tag_succ": "地摊财商",
+                "tag_fail": "出师不利",
+                "is_key": True
+            },
+            {
+                "text": "拒绝摆摊，专心待在家中阅读少儿科普读物《十万个为什么》",
+                "risk_label": "规矩求知 · 笃定平稳",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "远离街头喧嚣，沉浸在百科常识中，打下了扎实科学基础。",
+                "succ_eff": {"intellect": 7, "happiness": 5, "health": 2},
+                "tag_succ": "求知幼苗",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 2
+    {
+        "period": "少年分流",
+        "title": "少年宫无线电队还是街头武侠梦",
+        "narrative": "录像厅放着港台武侠片，少年宫正选拔无线电测向学员。初三升高中关口，技术钻研与仗剑走天涯在你心中碰撞。",
+        "choices": [
+            {
+                "text": "报名少年宫无线电队，夜夜自学焊电路板与收发摩尔斯码",
+                "risk_label": "技术硬派 · 成功率 75%",
+                "calc_chance": lambda p: int(75 + (p.intellect - 50) / 2),
+                "succ_feedback": "在全省科技竞赛中斩获二等奖，获省重点高中降分录取！",
+                "succ_eff": {"intellect": 14, "rep": 8, "happiness": 5, "health": -2},
+                "fail_feedback": "焊接时不慎烫伤手指电路击穿，虽参赛失利但掌握了扎实电工基础。",
+                "fail_eff": {"intellect": 5, "happiness": -6, "health": -4},
+                "tag_succ": "无线电极客",
+                "tag_fail": "烙铁微痕",
+                "is_key": True
+            },
+            {
+                "text": "沉迷租书摊金庸古龙武侠小说，与发小结拜兄弟快意恩仇",
+                "risk_label": "浪漫不羁 · 豪爽义气",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "虽文化课受轻微影响，但结交了过命发小，性格变得极其豪爽讲义气。",
+                "succ_eff": {"happiness": 10, "intellect": -2, "rep": 5},
+                "tag_succ": "江湖义气",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 3
+    {
+        "period": "成人立志",
+        "title": "外企代表处热潮还是军旅铸钢魂",
+        "narrative": "跨国企业在沿海设代表处高薪招聘白领，征兵横幅也在广场招展。是学好外语冲刺外企，还是投笔从戎进军营淬炼？",
+        "choices": [
+            {
+                "text": "报考外语或国际商务，通宵苦练英语口语与商务礼仪衝刺涉外企业",
+                "risk_label": "涉外先锋 · 成功率 65%",
+                "calc_chance": lambda p: 65 + (10 if p.intellect > 50 else 0) + (5 if p.luck > 50 else -5),
+                "succ_feedback": "一口流利外语让你在校招中脱颖而出，拿到高薪外企管培资格！",
+                "succ_eff": {"wealth": 5.0, "intellect": 12, "rep": 10, "happiness": 5},
+                "fail_feedback": "当年外贸岗位缩减竞争白热化只拿到普通文秘，但眼界已然拓宽。",
+                "fail_eff": {"wealth": 1.0, "intellect": 6, "happiness": -6, "rep": 2},
+                "tag_succ": "外企菁英",
+                "tag_fail": "涉外求索",
+                "is_key": True
+            },
+            {
+                "text": "响应国家号召应征入伍，进入野战部队或技术兵种磨砺钢铁意志",
+                "risk_label": "戎装风华 · 淬炼筋骨",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "在严明纪律中褪去稚嫩，铸就磐石般毅力与体魄，立三等功入党！",
+                "succ_eff": {"health": 15, "intellect": 5, "happiness": 8, "rep": 12},
+                "tag_succ": "铁血铸魂",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 4
+    {
+        "period": "青春韶华",
+        "title": "实验室夜灯还是摇滚校园乐队",
+        "narrative": "校园广播放着朴树的歌，长发吉他手在草坪受人追捧，重点实验室灯火通明。是押注科研论文，还是组乐队燃烧热血？",
+        "choices": [
+            {
+                "text": "跟随导师泡在重点实验室熬夜做实验跑数据，冲刺核心期刊论文",
+                "risk_label": "学术登攀 · 成功率 70%",
+                "calc_chance": lambda p: int(70 + (p.intellect - 50) / 2),
+                "succ_feedback": "论文成功被核心期刊收录！拿到特等奖学金并锁定学术保研资格！",
+                "succ_eff": {"intellect": 16, "rep": 8, "wealth": 2.0, "health": -4},
+                "fail_feedback": "实验仪器突发故障半年心血白费，科研路充满坎坷考验。",
+                "fail_eff": {"intellect": 6, "happiness": -10, "health": -6},
+                "tag_succ": "学术新星",
+                "tag_fail": "重做实验",
+                "is_key": True
+            },
+            {
+                "text": "担任校园摇滚乐队乐手，走穴高校巡演，在吉他失真中宣泄热血",
+                "risk_label": "摇滚狂潮 · 激情燃烧",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "原创曲目在大学城风靡一时，收获无数掌声与热烈爱慕，无悔青春！",
+                "succ_eff": {"happiness": 16, "rep": 6, "wealth": -1.0},
+                "tag_succ": "摇滚青年",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 5
+    {
+        "period": "初涉人世",
+        "title": "外包代工厂驻厂还是股市红马甲",
+        "narrative": "世界工厂流水线日夜轰鸣，证券营业部人头攒动。是扎根实体制造一线做工程师，还是去证券咨询做穿梭行情的操盘手？",
+        "choices": [
+            {
+                "text": "投身合资制造大厂担任现场工程师，深入车间把控精密工业标准",
+                "risk_label": "硬核制造 · 确定成长",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "吃透了全套精密工业标准与供应链管理，成为无可替代的技术骨干。",
+                "succ_eff": {"wealth": 5.0, "intellect": 10, "health": 2, "rep": 8},
+                "tag_succ": "工业脊梁",
+                "is_key": True
+            },
+            {
+                "text": "进入民间配资与投资咨询室，学习K线缠论尝试做职业操盘手",
+                "risk_label": "资本刀尖 · 成功率 45%",
+                "calc_chance": lambda p: int(45 + (15 if p.luck > 50 else -10) + (p.intellect - 50) / 2),
+                "succ_feedback": "精准捕捉几只重组大牛股，账户本金在半年内暴涨三倍！",
+                "succ_eff": {"wealth": 22.0, "intellect": 12, "happiness": 8, "luck": 6},
+                "fail_feedback": "突遭黑天鹅连续跌停穿仓清洗，在营业部门前抽了一整盒劣质烟。",
+                "fail_eff": {"wealth": -8.0, "happiness": -16, "health": -8, "rep": -4},
+                "tag_succ": "操盘黑马",
+                "tag_fail": "股海折戟",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 6
+    {
+        "period": "成家立业",
+        "title": "淘宝电商档口还是体制内安稳考编",
+        "narrative": "服装数码小商品通过网线发往全国，双十一狂欢启幕；父母催你考编。是租车库开淘宝店，还是备战省考谋安稳？",
+        "choices": [
+            {
+                "text": "在城中村租民房做淘宝电商，日夜打包发货搏击电商红利",
+                "risk_label": "电商淘金 · 成功率 55%",
+                "calc_chance": lambda p: int(55 + (15 if p.luck > 50 else -5) + (p.intellect - 50) / 2),
+                "succ_feedback": "打中爆款日出万单，快递车天天堵在楼下，短短两年累积惊人财富！",
+                "succ_eff": {"wealth": 30.0, "intellect": 10, "happiness": 8, "health": -6, "rep": 10},
+                "fail_feedback": "代工厂质量翻车遭遇退货潮和平台扣保，押进的几万本金血本无归。",
+                "fail_eff": {"wealth": -6.0, "intellect": 5, "happiness": -12, "health": -8},
+                "tag_succ": "电商弄潮",
+                "tag_fail": "库存挤压",
+                "is_key": True
+            },
+            {
+                "text": "专心闭门苦读申论行测，在公务员省考中突围入编捧上金饭碗",
+                "risk_label": "金榜入仕 · 成功率 75%",
+                "calc_chance": lambda p: int(75 + (p.intellect - 50) / 2),
+                "succ_feedback": "以面试第一被市直机关录用！父母在亲友圈扬眉吐气，社会地位稳固。",
+                "succ_eff": {"wealth": 4.0, "rep": 18, "happiness": 12, "health": 4},
+                "fail_feedback": "笔试入围但面试被反超，只得委身街道编外临聘，心绪郁结。",
+                "fail_eff": {"wealth": 1.5, "rep": 4, "happiness": -6},
+                "tag_succ": "体制栋梁",
+                "tag_fail": "省考饮恨",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 7
+    {
+        "period": "三十而立",
+        "title": "跨国派驻海外淘金还是深耕家乡人脉",
+        "narrative": "基建出海如火如荼，海外驻外岗位开出三倍年薪；老家亲友劝你留在本地深耕圈子。远赴海外荒原还是经营温情人脉？",
+        "choices": [
+            {
+                "text": "签下海外派驻军令状，奔赴艰苦海外工地独当一面赚取高薪",
+                "risk_label": "海外征途 · 成功率 65%",
+                "calc_chance": lambda p: 65 + (10 if p.health > 60 else -10) + (10 if p.luck > 50 else 0),
+                "succ_feedback": "在异国克服风沙成功交付重大跨国标段，攒下巨额现金并获擢升！",
+                "succ_eff": {"wealth": 25.0, "rep": 15, "intellect": 10, "health": -6, "happiness": 4},
+                "fail_feedback": "在热带感染严重登革热，工程又因政局波动搁浅，只得提前回国。",
+                "fail_eff": {"wealth": 6.0, "health": -18, "happiness": -14, "rep": 2},
+                "tag_succ": "海外拓荒巨子",
+                "tag_fail": "异域惊涛",
+                "is_key": True
+            },
+            {
+                "text": "留在本地合伙开茶楼，以茶会友深耕地方政商人脉网络",
+                "risk_label": "市井人情 · 稳扎稳打",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "成了熟人网络的节点，办事总能找到门路，家庭其乐融融。",
+                "succ_eff": {"wealth": 6.0, "rep": 12, "happiness": 10, "health": 2},
+                "tag_succ": "人情达人",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 8
+    {
+        "period": "负重前行",
+        "title": "民间借贷风暴还是理财信托踩雷",
+        "narrative": "民间借贷与高息理财野蛮生长，动辄12%以上利息动人心魄；亲戚登门借巨资。是相信高息熟人借贷，还是存大额存单？",
+        "choices": [
+            {
+                "text": "坚决抵制任何高息诱惑，把全家积蓄拆分存入国有行大额存单与国债",
+                "risk_label": "绝对防守 · 锁定本金",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "不少熟人在暴雷中血本无归，唯独你家现金秋毫无损，被奉为远见楷模！",
+                "succ_eff": {"wealth": 8.0, "happiness": 14, "rep": 8},
+                "tag_succ": "定海神针",
+                "is_key": True
+            },
+            {
+                "text": "看在重利与旧交情面上借出重金吃高息，甚至抵押部分房产跟进",
+                "risk_label": "贪婪博弈 · 成功率 35%",
+                "calc_chance": lambda p: 35 + (15 if p.luck > 60 else -10),
+                "succ_feedback": "在崩塌前三个月敏锐嗅到风险强行收回本息，狠狠大赚了一笔！",
+                "succ_eff": {"wealth": 25.0, "happiness": 10, "luck": 6},
+                "fail_feedback": "实控人卷款潜逃，催收群哭声一片，多年血汗钱灰飞烟灭，一夜白头。",
+                "fail_eff": {"wealth": -25.0, "happiness": -22, "health": -14, "rep": -8},
+                "tag_succ": "险峰收割",
+                "tag_fail": "雷暴劫难",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 9
+    {
+        "period": "中年险滩",
+        "title": "合伙人反目还是技术转型破局",
+        "narrative": "四十岁中年危机降临，昔日合伙人在利益分配上产生巨大裂痕并转移客户。是打官司清算旧友，还是钻研新技术破局？",
+        "choices": [
+            {
+                "text": "请专业商业律师对簿公堂，坚决捍卫合法知识产权与股东权益",
+                "risk_label": "法槌对决 · 成功率 65%",
+                "calc_chance": lambda p: 65 + (10 if p.intellect > 50 else 0) + (10 if p.luck > 50 else -10),
+                "succ_feedback": "一审全额支持诉求，追回数百万赔偿并夺回控制权，树立铁血威名！",
+                "succ_eff": {"wealth": 15.0, "rep": 15, "happiness": 6, "health": -6},
+                "fail_feedback": "诉讼拖延数年耗尽心力，执行时对方金蝉脱壳，赢了官司输了钱。",
+                "fail_eff": {"wealth": -6.0, "rep": 4, "happiness": -15, "health": -10},
+                "tag_succ": "铁腕维权",
+                "tag_fail": "赢了官司输了钱",
+                "is_key": True
+            },
+            {
+                "text": "放下执念断舍离，以四十岁之躯从零自学新架构和数字化工具破局",
+                "risk_label": "涅槃重生 · 大器晚成",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "行业底蕴融合新工具，开发出低成本高敏捷新业务，赢得满堂彩！",
+                "succ_eff": {"intellect": 15, "wealth": 8.0, "happiness": 10, "rep": 12},
+                "tag_succ": "中年涅槃",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 10
+    {
+        "period": "动荡考验",
+        "title": "实体供应链断裂与社区团购互助",
+        "narrative": "外部物流受阻工厂停工，邻里蔬菜药品短缺。是闭门自保消耗存粮，还是站出来担当社区团长组织平价保供？",
+        "choices": [
+            {
+                "text": "挺身而出担当民间保供团长，对接农贸批发为整小区协调平价物资",
+                "risk_label": "侠者仁心 · 成功率 80%",
+                "calc_chance": lambda p: 80 + (10 if p.luck > 50 else 0),
+                "succ_feedback": "在最紧张的日子守护了数百户餐桌与急用药，成为公认的定盘星！",
+                "succ_eff": {"rep": 25, "happiness": 15, "health": -4, "wealth": 1.0},
+                "fail_feedback": "途中遭遇损耗个别人不理解还冷嘲热讽，深刻体会到人性的复杂。",
+                "fail_eff": {"rep": 8, "happiness": -10, "health": -6},
+                "tag_succ": "邻里英雄",
+                "tag_fail": "仁心微凉",
+                "is_key": True
+            },
+            {
+                "text": "紧闭大门严格消杀，在室内健身陪伴家人读书下棋安稳度日",
+                "risk_label": "韬光养晦 · 恬淡自守",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "全家平安度过危机没有染病，反而难得修复了因忙碌疏离的亲情。",
+                "succ_eff": {"health": 8, "happiness": 12, "intellect": 4},
+                "tag_succ": "阖家平安",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 11
+    {
+        "period": "知命之年",
+        "title": "老宅拆迁谈判还是乡村民宿退隐",
+        "narrative": "城市规划到了近郊老宅，拆迁办开出安置方案；乡村归园田居兴起。是紧咬条件博弈拆迁，还是拿补偿归隐山水？",
+        "choices": [
+            {
+                "text": "请专业评估团队据理力争，坚守合法红线博弈拿下最优安置方案",
+                "risk_label": "拆迁博弈 · 成功率 65%",
+                "calc_chance": lambda p: int(65 + (15 if p.luck > 50 else -5) + (p.intellect - 50) / 2),
+                "succ_feedback": "拿到多套核心地段商铺与大笔安家现金，为家族彻底奠定财富基业！",
+                "succ_eff": {"wealth": 35.0, "happiness": 10, "rep": 10},
+                "fail_feedback": "僵持过久开发商绕道更改规划，拆迁搁浅成为死角，空耗心血。",
+                "fail_eff": {"wealth": 2.0, "happiness": -15, "rep": -4},
+                "tag_succ": "旧城红利",
+                "tag_fail": "画地为牢",
+                "is_key": True
+            },
+            {
+                "text": "承包青山绿水旁的一方老农院改造为茶舍民宿，回归清静自然",
+                "risk_label": "山水归隐 · 怡然自乐",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "晨起看山雾暮落听松涛，民宿成文人雅客秘境，内心宽阔宁静。",
+                "succ_eff": {"health": 12, "happiness": 18, "wealth": 4.0, "rep": 6},
+                "tag_succ": "山居雅士",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 12
+    {
+        "period": "花甲在望",
+        "title": "大病保单理赔与海外尖端医疗",
+        "narrative": "年近六旬大检中查出早期结节，现代微创质子治疗费用昂贵。是动用商业重疾险赴顶尖专科彻底手术，还是保守调养？",
+        "choices": [
+            {
+                "text": "启动全球重疾绿通，接受顶尖专家主刀的机器人微创手术切除病灶",
+                "risk_label": "现代医学 · 成功率 85%",
+                "calc_chance": lambda p: 85 + (10 if p.wealth > 20 else 0),
+                "succ_feedback": "手术极其成功完全切除未扩散！劫后余生全家相拥喜极而泣！",
+                "succ_eff": {"health": 15, "happiness": 12, "wealth": -8.0, "rep": 5},
+                "fail_feedback": "虽切除病灶但术后出现长期低烧，休养大半年方才复原，耗资巨大。",
+                "fail_eff": {"health": -5, "happiness": -12, "wealth": -15.0},
+                "tag_succ": "劫后安康",
+                "tag_fail": "医海波折",
+                "is_key": True
+            },
+            {
+                "text": "遍访名老中医按古方长期调理，搭配每日八段锦太极拳修心",
+                "risk_label": "国医调神 · 顺天应命",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "脏腑功能逐渐平衡，复查结节未再进展，心态愈发超脱淡定。",
+                "succ_eff": {"health": 8, "happiness": 12, "intellect": 4, "wealth": -1.5},
+                "tag_succ": "养生真谛",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 13
+    {
+        "period": "桑榆晚景",
+        "title": "老年大学诗社还是自驾房车巡游",
+        "narrative": "退居二线天高云淡。是购置轻型房车和老伴周游全国名山大川，还是在老年书画社担任社长著书立说？",
+        "choices": [
+            {
+                "text": "添置房车带上老伴顺着国道出发，丈量祖国的三江源与海岸线",
+                "risk_label": "壮心不已 · 成功率 80%",
+                "calc_chance": lambda p: 80 + (10 if p.health > 50 else -10),
+                "succ_feedback": "在戈壁与椰林间留下潇洒足迹，短视频分享收获数十万点赞艳羡！",
+                "succ_eff": {"happiness": 20, "health": 5, "rep": 8, "wealth": -4.0},
+                "fail_feedback": "高原偏僻路段故障受冻受了虚惊，但携手看遍了最美的星空。",
+                "fail_eff": {"happiness": 5, "health": -8, "wealth": -6.0},
+                "tag_succ": "银发骑士",
+                "tag_fail": "风雨同舟",
+                "is_key": False
+            },
+            {
+                "text": "坐镇市老年文联，主编回忆录《小城往事与家族印记》著书立说",
+                "risk_label": "文脉流芳 · 雅致从容",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "回忆录被市图书馆正式馆藏，留下温润长存的精神遗产。",
+                "succ_eff": {"rep": 20, "intellect": 10, "happiness": 12},
+                "tag_succ": "文林耆宿",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 14
+    {
+        "period": "古稀沧桑",
+        "title": "家族信托安排还是平分助幼孙",
+        "narrative": "年逾古稀儿孙绕膝。面对一生的积累：是找专业信托设立家族教育保障基金，还是直接取现贴补晚辈？",
+        "choices": [
+            {
+                "text": "设立规范家族信托基金，锁定教育与医疗兜底，防止败家挥霍",
+                "risk_label": "长治久安 · 成功率 90%",
+                "calc_chance": lambda p: int(90 + (p.intellect - 50) / 2),
+                "succ_feedback": "家族规矩森严有序，即便后辈失利亦有源源不断的兜底保障！",
+                "succ_eff": {"rep": 15, "wealth": 5.0, "happiness": 8},
+                "fail_feedback": "急于套现的后辈心生怨怼，家宴上少了几分纯粹温情。",
+                "fail_eff": {"rep": 5, "happiness": -8, "wealth": 2.0},
+                "tag_succ": "门阀根基",
+                "tag_fail": "家和微隙",
+                "is_key": True
+            },
+            {
+                "text": "看淡钱财，拿出大部分积蓄为晚辈付清首付学费，愿他们轻装前行",
+                "risk_label": "慈爱倾囊 · 满堂欢笑",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "儿孙感念至深承欢膝下，四世同堂欢声笑语，人间至乐莫过于此。",
+                "succ_eff": {"happiness": 18, "rep": 10, "wealth": -15.0},
+                "tag_succ": "仁厚长者",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 15
+    {
+        "period": "夕阳辞章",
+        "title": "院落斜阳与安详辞世",
+        "narrative": "八十余载春秋白驹过隙，院里老槐树落叶纷飞。儿孙在堂屋轻声说话，最后的时刻正悄然到来。",
+        "choices": [
+            {
+                "text": "握住至亲挚爱的双手，留下最后的微笑与平安叮嘱，从容合眼",
+                "risk_label": "圆满归宿 · 慈祥辞章",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "呼吸渐渐平静。留给世界一世的清白与温厚，在敬意与爱戴中远行。",
+                "succ_eff": {"happiness": 20, "rep": 20},
+                "tag_succ": "德泽流芳",
+                "is_key": True
+            },
+            {
+                "text": "凝望窗外云卷云舒，默念一生的苦难与荣光，问心无愧，静谧而去",
+                "risk_label": "天地无言 · 纯净超脱",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "生如夏花死如秋叶，坦然走完了凡人真实而波澜壮阔的一生。",
+                "succ_eff": {"intellect": 20, "happiness": 20},
+                "tag_succ": "大化归真",
+                "is_key": True
+            }
+        ]
+    }
+]
+
+FUTURE_ALT_STAGES_PY = [
+    # Stage 0
+    {
+        "period": "神经初萌",
+        "title": "次级穹顶的人造雨林与全息启蒙",
+        "narrative": "城市被恒温穹顶笼罩。社区推行全息视网膜投射自然课，但有微弱视神经疲劳风险。是否参与？",
+        "choices": [
+            {
+                "text": "参加全息高阶认知训练，提前掌握天体物理与量子矩阵启蒙图景",
+                "risk_label": "超前启智 · 成功率 80%",
+                "calc_chance": lambda p: 80 + (10 if p.intellect > 50 else 0),
+                "succ_feedback": "突触活跃度远超同龄人，被评为次级穹顶优等生！",
+                "succ_eff": {"intellect": 10, "rep": 6, "health": -2},
+                "fail_feedback": "强光照射引起轻度视疲劳，但知识储备依然领先。",
+                "fail_eff": {"intellect": 4, "health": -4, "happiness": -4},
+                "tag_succ": "全息神童",
+                "tag_fail": "视神经微损",
+                "is_key": False
+            },
+            {
+                "text": "摘掉头盔，在真实的生态土培农场抓泥鳅采草菇，保持碳基幼年本真",
+                "risk_label": "质朴碳基 · 天性安宁",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "保留了对真实泥土植物的嗅觉记忆，呼吸机能极优。",
+                "succ_eff": {"health": 8, "happiness": 10, "intellect": 2},
+                "tag_succ": "泥土芬芳",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 1
+    {
+        "period": "能量与配额",
+        "title": "合成藻类牧场还是聚变堆巡检学徒",
+        "narrative": "地下藻类农场成为主粮基地，聚变堆招聘少年观察员。是培育发光藻株，还是去聚变堆实习核物理？",
+        "choices": [
+            {
+                "text": "申请进入聚变堆少年观测站，协助监测等离子体约束波动",
+                "risk_label": "高能前沿 · 成功率 65%",
+                "calc_chance": lambda p: int(65 + (15 if p.luck > 50 else -10) + (p.intellect - 50) / 2),
+                "succ_feedback": "成功协助校准一次磁岛扰动，获深空能源署颁发少年银星勋章！",
+                "succ_eff": {"intellect": 14, "rep": 10, "wealth": 3.0, "happiness": 5},
+                "fail_feedback": "微量辐射传感器警报长鸣，虽无损伤但被勒令休学调养。",
+                "fail_eff": {"intellect": 5, "happiness": -10, "health": -6},
+                "tag_succ": "聚变雏鹰",
+                "tag_fail": "辐射惊悸",
+                "is_key": True
+            },
+            {
+                "text": "在地下水耕藻类农场照料发光藻株，享受温和湿润的恒温环境",
+                "risk_label": "绿色安宁 · 稳健生存",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "收获大批高品质合成蛋白质块，家庭碳税享受一年减免。",
+                "succ_eff": {"wealth": 2.5, "health": 6, "happiness": 6},
+                "tag_succ": "绿藻清芬",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 2
+    {
+        "period": "矩阵分流",
+        "title": "黑客地下暗网协议还是近轨防御志愿役",
+        "narrative": "轨道拦截舰队征召士兵，民间暗网流传暗光去中心化协议。是穿戴外骨骼参军，还是黑客地下室破译巨企中继？",
+        "choices": [
+            {
+                "text": "深入暗网钻研零日漏洞，打破寡头企业的算力垄断",
+                "risk_label": "黑客漫游 · 成功率 60%",
+                "calc_chance": lambda p: int(60 + (p.intellect - 50) / 2 + (10 if p.luck > 50 else -10)),
+                "succ_feedback": "成功开源免审查算力分发协议，成为暗网受敬仰的英雄！",
+                "succ_eff": {"intellect": 18, "rep": 12, "wealth": 5.0, "happiness": 6},
+                "fail_feedback": "遭智脑反向追踪封锁网络权限，自费巨款更换视网膜Mac。",
+                "fail_eff": {"wealth": -4.0, "intellect": 6, "happiness": -12, "rep": -6},
+                "tag_succ": "矩阵破壁者",
+                "tag_fail": "虚拟流亡",
+                "is_key": True
+            },
+            {
+                "text": "应征入伍近轨防御志愿役，在失重营锤炼格斗与电磁炮操控",
+                "risk_label": "轨道卫士 · 确定硬朗",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "结实肌肉与出色前庭神经让你成为优秀战士，享有全额津贴。",
+                "succ_eff": {"health": 12, "rep": 8, "wealth": 3.0, "happiness": 4},
+                "tag_succ": "轨道尖兵",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 3
+    {
+        "period": "成年生死",
+        "title": "深空殖民先驱还是地底避难城工程师",
+        "narrative": "火星永久农业穹顶招募拓荒先锋，地底万米热能城扩建。是单程航向红色星球，还是在母星深处建地堡？",
+        "choices": [
+            {
+                "text": "签署拓荒公约登上殖民飞船，向火星红色星球进发",
+                "risk_label": "星际拓荒 · 成功率 55%",
+                "calc_chance": lambda p: 55 + (10 if p.health > 60 else -10) + (10 if p.luck > 50 else 0),
+                "succ_feedback": "安全穿越辐射带降落火星！在风沙中立下第一块领地标石！",
+                "succ_eff": {"rep": 22, "intellect": 14, "happiness": 10, "wealth": 10.0},
+                "fail_feedback": "休眠舱冷凝液微漏神经反应受损，抵达后转入后勤基地。",
+                "fail_eff": {"health": -14, "happiness": -12, "wealth": 2.0, "rep": 6},
+                "tag_succ": "火星先锋",
+                "tag_fail": "休眠后遗症",
+                "is_key": True
+            },
+            {
+                "text": "留在母星地下万米任地热电站主管技师，享稳固高薪与最高避险",
+                "risk_label": "地下壁垒 · 固若金汤",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "地热能源无尽，过着无风无雨的安稳生活，成全家避风港。",
+                "succ_eff": {"wealth": 8.0, "health": 6, "happiness": 8, "rep": 6},
+                "tag_succ": "熔岩掌灯人",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 4
+    {
+        "period": "青春与情感",
+        "title": "神经共感网络恋情还是独身算力苦修",
+        "narrative": "青年流行突触共感恋爱，喜怒哀乐100%互通。是向伴侣敞开全部意识，还是断开接口做独立高冷的思考者？",
+        "choices": [
+            {
+                "text": "接入神经共感协议，与心仪伴侣实现灵魂层面的同频共振",
+                "risk_label": "灵魂交融 · 成功率 65%",
+                "calc_chance": lambda p: 65 + (10 if p.happiness > 50 else -10),
+                "succ_feedback": "在数据海中找到最纯净的灵魂底色，成终身灵境眷侣！",
+                "succ_eff": {"happiness": 18, "rep": 6, "health": 4},
+                "fail_feedback": "对方隐匿的抑郁情感波冲垮了情绪防火墙，失恋后大病数月。",
+                "fail_eff": {"happiness": -20, "health": -10, "intellect": 4},
+                "tag_succ": "灵犀共振",
+                "tag_fail": "情感过载",
+                "is_key": False
+            },
+            {
+                "text": "锁死脑波防火墙保持精神孤立，将所有算力投入科研物理",
+                "risk_label": "冷峻独行 · 智性巅峰",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "冰冷大脑爆发惊人生产力，以单作者发表多篇重量报告。",
+                "succ_eff": {"intellect": 16, "wealth": 4.0, "happiness": 2},
+                "tag_succ": "纯粹理性",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 5
+    {
+        "period": "初涉宇宙",
+        "title": "太空垃圾打捞船长还是空间站安保主管",
+        "narrative": "低轨漂浮数十万件残骸，拾荒者被誉为星轨淘金客。是贷款买二手拖船打捞，还是在联合空间站任警卫？",
+        "choices": [
+            {
+                "text": "贷款购买二手拖船，深入残骸墓地搜寻高价值军用残骸与密钥",
+                "risk_label": "轨道拾金 · 成功率 50%",
+                "calc_chance": lambda p: int(50 + (15 if p.luck > 50 else -10) + (p.intellect - 50) / 2),
+                "succ_feedback": "捞获未损绝密量子发生器！军工天价回购还清船贷！",
+                "succ_eff": {"wealth": 28.0, "rep": 12, "happiness": 8, "luck": 6},
+                "fail_feedback": "微陨石贯穿推进舱，打捞失败倒赔巨额施救费。",
+                "fail_eff": {"wealth": -12.0, "happiness": -14, "health": -8},
+                "tag_succ": "星轨掘金客",
+                "tag_fail": "太空白卷",
+                "is_key": True
+            },
+            {
+                "text": "受聘联合空间站警卫署，负责飞船出入港识别与违禁排查",
+                "risk_label": "守望哨卡 · 确定薪饷",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "薪酬优厚稳定，目睹各色飞船穿梭，生活规律安全。",
+                "succ_eff": {"wealth": 6.0, "rep": 8, "health": 4, "happiness": 6},
+                "tag_succ": "星空港警",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 6
+    {
+        "period": "立业与资产",
+        "title": "小行星采矿股权还是火星冷凝水专营权",
+        "narrative": "小行星稀土丰收，火星冷凝水水源开采权拍卖。是押宝高风险富铂小行星，还是竞标刚需火星水务？",
+        "choices": [
+            {
+                "text": "孤注一掷竞标火星北极冷凝水处理厂，垄断千万穹顶水源",
+                "risk_label": "刚需命脉 · 成功率 70%",
+                "calc_chance": lambda p: 70 + (10 if p.wealth > 10 else 0) + (10 if p.luck > 50 else -10),
+                "succ_feedback": "火星人口暴增水价飞涨，每日进账数万能量点，富甲一方！",
+                "succ_eff": {"wealth": 40.0, "rep": 16, "happiness": 10},
+                "fail_feedback": "深井含硫严重超标设备腐蚀报废，被迫接受重组吞并。",
+                "fail_eff": {"wealth": -15.0, "happiness": -15, "rep": -4},
+                "tag_succ": "火星水神",
+                "tag_fail": "毒泉折戟",
+                "is_key": True
+            },
+            {
+                "text": "将资金分散配置近地轨道物流ETF追求稳健低波动收益",
+                "risk_label": "分散防御 · 稳若磐石",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "避开探矿破产潮，资产稳步复利增长，现金流源源不绝。",
+                "succ_eff": {"wealth": 12.0, "happiness": 8, "rep": 4},
+                "tag_succ": "稳健资管",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 7
+    {
+        "period": "繁衍与伦理",
+        "title": "定制完美人造子宫婴儿还是自然受孕抗体传承",
+        "narrative": "育儿中心提供人造子宫与基因优化套餐；自然受孕保留母体温存。是订购完美试管婴儿，还是十月怀胎自然分娩？",
+        "choices": [
+            {
+                "text": "掏空积蓄选购顶级智力与抗辐射套餐置入人造母舱孕育",
+                "risk_label": "新人类契约 · 成功率 80%",
+                "calc_chance": lambda p: 80 + (10 if p.intellect > 50 else 0),
+                "succ_feedback": "宝宝免疫地表所有已知病毒且数理直觉超凡，轰动社区！",
+                "succ_eff": {"intellect": 10, "rep": 12, "happiness": 8, "wealth": -10.0},
+                "fail_feedback": "代谢基因拮抗引起轻度内分泌紊乱，需长期注射调谐制剂。",
+                "fail_eff": {"wealth": -12.0, "happiness": -12, "health": -4},
+                "tag_succ": "智力新星之父",
+                "tag_fail": "基因调试苦旅",
+                "is_key": True
+            },
+            {
+                "text": "顺应自然规律受孕分娩，让生命在温暖心跳羊水中破晓",
+                "risk_label": "碳基温情 · 顺应天道",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "在产房握住婴儿温热小手泪水滑落，爱意任何冰冷仪器无法比拟。",
+                "succ_eff": {"happiness": 18, "health": 6, "rep": 6},
+                "tag_succ": "大地之母",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 8
+    {
+        "period": "意识存续",
+        "title": "记忆冷备份保险还是纯生物大脑防护",
+        "narrative": "数字永生推出微雕冷备份，遭遇意外三分钟克隆至义体。是每年缴重金保费买复活底牌，还是坚守肉身孤勇？",
+        "choices": [
+            {
+                "text": "每年缴纳重金保费每日快照上传，买下一份死而复生的底牌",
+                "risk_label": "数字备胎 · 绝对防备",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "直面深空风暴内心毫无恐惧，拥有超越死亡威胁的从容。",
+                "succ_eff": {"happiness": 12, "rep": 8, "wealth": -6.0},
+                "tag_succ": "云端有底",
+                "is_key": True
+            },
+            {
+                "text": "拒绝将隐秘思维托付巨头服务器，加装物理头盔坚守纯净",
+                "risk_label": "独立灵魂 · 傲然卓立",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "思维从未被算法窃取分析，保留了最崇高的人格独立尊严。",
+                "succ_eff": {"intellect": 14, "happiness": 12, "rep": 10},
+                "tag_succ": "思维堡垒",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 9
+    {
+        "period": "义体与衰老",
+        "title": "全钛合金人工心脏改造还是干细胞再生修复",
+        "narrative": "四十余岁出现心肌衰老。是移植磁悬浮全人工核能心脏永动机，还是采用自体干细胞慢慢克隆长出温热心肌？",
+        "choices": [
+            {
+                "text": "移植磁悬浮人工核能心脏，彻底终结心律失常与疲惫感",
+                "risk_label": "机械强袭 · 成功率 85%",
+                "calc_chance": lambda p: 85 + (10 if p.wealth > 15 else -10),
+                "succ_feedback": "输出功率极其平稳，极限气压下心率随心调节，体能重回巅峰！",
+                "succ_eff": {"health": 20, "wealth": -8.0, "rep": 8},
+                "fail_feedback": "遭遇太阳黑子活动时胸膛微热杂音，需每月去车间微调阀门。",
+                "fail_eff": {"health": 4, "wealth": -12.0, "happiness": -10},
+                "tag_succ": "钢铁之心",
+                "tag_fail": "磁悬浮异响",
+                "is_key": True
+            },
+            {
+                "text": "采用温和干细胞原位注射修复，保留原生肉体自然搏动",
+                "risk_label": "生物温养 · 纯粹自然",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "虽然恢复期长达三月，但胸腔跳动的依然是热乎原装心，踏实安宁。",
+                "succ_eff": {"health": 10, "happiness": 12, "wealth": -3.0},
+                "tag_succ": "生生不息",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 10
+    {
+        "period": "硅基巨变",
+        "title": "强人工智能自治特区还是旧人类自治地下城",
+        "narrative": "全球算力超脑接管司法与生产，人类面临站队。是融入超脑统筹的极高效率新世界，还是退居旧人类自由邦？",
+        "choices": [
+            {
+                "text": "接受超脑调度，成为链接人类情感与机器决策的首席共情官",
+                "risk_label": "桥梁使者 · 成功率 75%",
+                "calc_chance": lambda p: 75 + (15 if p.intellect > 60 else 0),
+                "succ_feedback": "在冰冷机械与民意间搭建缓冲带，获得双边世界的崇高礼遇！",
+                "succ_eff": {"rep": 24, "wealth": 15.0, "intellect": 12, "happiness": 6},
+                "fail_feedback": "人类骂你硅基走狗，机械中枢嫌你效率低下，精神压力倍增。",
+                "fail_eff": {"rep": -6, "happiness": -16, "health": -8, "wealth": 4.0},
+                "tag_succ": "碳硅桥梁",
+                "tag_fail": "夹缝游魂",
+                "is_key": True
+            },
+            {
+                "text": "退往拒绝算法统治的自由海岛，靠发电机吉他过自给自足生活",
+                "risk_label": "文明遗民 · 诗意栖居",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "在真实的篝火旁唱歌写诗，饱尝了作为人的至纯欢愉。",
+                "succ_eff": {"happiness": 20, "health": 6, "rep": 10, "wealth": -4.0},
+                "tag_succ": "自由遗民",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 11
+    {
+        "period": "代际抉择",
+        "title": "孩子的恒星际飞船船票：启程飞向比邻星",
+        "narrative": "首艘恒星际巨舰启航飞向半人马座，航程八十年，孩子通过遴选。是变卖财产支持 Ta 飞向星河，还是劝 Ta 留下相守？",
+        "choices": [
+            {
+                "text": "变卖家产为孩子购置顶级休眠舱，目送飞船化作星海微光",
+                "risk_label": "星海远嫁 · 成功率 85%",
+                "calc_chance": lambda p: 85 + (10 if p.luck > 50 else 0),
+                "succ_feedback": "起航全息画面里孩子敬了崇高军礼，人类铭记这一瞬间！",
+                "succ_eff": {"rep": 20, "happiness": 12, "intellect": 10, "wealth": -15.0},
+                "fail_feedback": "加速突遭星尘冲撞警报，虽化解但让你彻夜痛哭难眠。",
+                "fail_eff": {"happiness": -14, "health": -10, "wealth": -15.0, "rep": 8},
+                "tag_succ": "星海之父",
+                "tag_fail": "牵肠挂肚",
+                "is_key": True
+            },
+            {
+                "text": "泪流满面劝孩子留在母星共同生活，享受天伦乐事",
+                "risk_label": "人间炊烟 · 暖意融融",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "孩子成家生儿育女。无论宇宙多大，家人的餐桌永远最暖。",
+                "succ_eff": {"happiness": 16, "health": 6, "rep": 4},
+                "tag_succ": "母星天伦",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 12
+    {
+        "period": "天地惊变",
+        "title": "近地轨道伽马射线暴余波与地表辐射防御",
+        "narrative": "超新星伽马射线扫过太阳系外围，行星护盾激荡。身为资深顾问：是冒辐射去护盾塔手动锁死偏转阀，还是进掩体？",
+        "choices": [
+            {
+                "text": "穿铅合金防辐射服爬上塔顶手动锁死磁通偏转阀力挽狂澜",
+                "risk_label": "舍身力挽 · 成功率 80%",
+                "calc_chance": lambda p: int(80 + (p.intellect - 50) / 2 + (10 if p.health > 50 else -10)),
+                "succ_feedback": "最后三十秒恢复地表护盾！数十万人免遭辐射，全城为你鸣礼炮！",
+                "succ_eff": {"rep": 30, "happiness": 16, "intellect": 10, "health": -6},
+                "fail_feedback": "抢修成功但手套破损吸收过量射线，术后休养整整半年。",
+                "fail_eff": {"rep": 18, "health": -18, "happiness": -8},
+                "tag_succ": "护盾英雄",
+                "tag_fail": "射线烙痕",
+                "is_key": True
+            },
+            {
+                "text": "引导全家退入最深层铅防护掩体，安静等待风暴自然消退",
+                "risk_label": "合规避险 · 平安无虞",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "掩体厚实，全家平安走出地底，看着重现蔚蓝的天空百感交集。",
+                "succ_eff": {"health": 8, "happiness": 10, "intellect": 2},
+                "tag_succ": "平安避险",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 13
+    {
+        "period": "暮年归隐",
+        "title": "月球静海疗养院还是地表生态园艺",
+        "narrative": "月球1/6低重力基地对老年心肺骨骼极好。步入花甲暮年：是移居月球轻盈漫步，还是留在母星修剪古老真实的盆景花卉？",
+        "choices": [
+            {
+                "text": "移居月球静海低重力基地，像鸟一样漫步滑翔摆脱关节磨损",
+                "risk_label": "月海飞羽 · 舒适延寿",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "身躯重获轻盈自由，骨骼压力骤减，身体机能大幅回春！",
+                "succ_eff": {"health": 18, "happiness": 16, "wealth": -6.0},
+                "tag_succ": "月海漫步",
+                "is_key": False
+            },
+            {
+                "text": "留在母星阳光小镇培植真实花木，给来访孩童讲述深空传奇",
+                "risk_label": "落叶归根 · 岁月温润",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "花园成社区绿洲，孩子们绕在膝前倾听星海传奇，安详自足。",
+                "succ_eff": {"rep": 16, "happiness": 18, "health": 8},
+                "tag_succ": "绿意守望",
+                "is_key": True
+            }
+        ]
+    },
+    # Stage 14
+    {
+        "period": "记忆回响",
+        "title": "神经记忆解密开源还是随身封存",
+        "narrative": "世界历史档案馆征集第一人称意识流。面对一生的爱恨：是公开一生脑电波录像供人类查阅，还是封存私人晶体？",
+        "choices": [
+            {
+                "text": "将经历情绪与技术手记无保留上传至人类公共文明记忆库",
+                "risk_label": "文明奉献 · 名垂青史",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "亿万后辈感知到了你的真实心跳与泪水，成文明不朽拼图！",
+                "succ_eff": {"rep": 30, "intellect": 15, "happiness": 15},
+                "tag_succ": "文明记忆基石",
+                "is_key": True
+            },
+            {
+                "text": "将包含私人秘密的量子晶体锁入合金小盒，沉入湖底留住私密",
+                "risk_label": "守密自珍 · 独善其身",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "带着神秘与尊严，守住了最纯洁私密的精神自留地。",
+                "succ_eff": {"happiness": 18, "intellect": 10},
+                "tag_succ": "永恒秘语",
+                "is_key": False
+            }
+        ]
+    },
+    # Stage 15
+    {
+        "period": "终幕升维",
+        "title": "戴森球光芒与静谧合眼",
+        "narrative": "窗外戴森金环环绕恒星熠熠生辉，八十年风雪见证人类迈向星河巅峰。最后的时刻，心跳如渐落晚钟平静庄严。",
+        "choices": [
+            {
+                "text": "拒绝虚幻代码，在挚爱温暖握手中将肉体骨灰撒入深空微风",
+                "risk_label": "碳基尊严 · 壮烈归真",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "原子源于星尘归于星尘，在恒星风吹拂下飘向宇宙，坦荡无悔！",
+                "succ_eff": {"happiness": 25, "rep": 25},
+                "tag_succ": "星尘归真",
+                "is_key": True
+            },
+            {
+                "text": "闭上双眼，将一生爱与痛化为纯净正弦波融入戴森球共振节奏",
+                "risk_label": "恒星脉动 · 融于浩瀚",
+                "calc_chance": lambda p: 100,
+                "succ_feedback": "整颗太阳的光芒仿佛为你呼吸，化作浩瀚星辰中永不熄灭的光！",
+                "succ_eff": {"intellect": 25, "happiness": 25},
+                "tag_succ": "光流同辉",
+                "is_key": True
+            }
+        ]
+    }
+]
+
+
+PAST_STAGE_POOLS = [
+    [PAST_STAGES[i], PAST_ALT_STAGES_PY[i]] for i in range(16)
+]
+
+FUTURE_STAGE_POOLS = [
+    [FUTURE_STAGES[i], FUTURE_ALT_STAGES_PY[i]] for i in range(16)
+]
+
 def main():
     clear_screen()
     print(f"{Color.GOLD}{'='*68}{Color.RESET}")
@@ -1208,21 +2172,22 @@ def main():
         name = random.choice(default_names)
 
     player = Player(name, epoch_mode, b_year, origin, trait)
-    active_stages = PAST_STAGES if epoch_mode == "past" else FUTURE_STAGES
-    total_stages = len(active_stages)
+    stage_pools = PAST_STAGE_POOLS if epoch_mode == "past" else FUTURE_STAGE_POOLS
+    total_stages = len(stage_pools)
+    timeline = generate_random_timeline()
 
     slow_print(f"\n命运之轮缓缓启动，{player.name} 踏入了 {player.birth_year} 年的人间...\n", 0.02)
     time.sleep(0.8)
 
     # 游戏主轮次
-    for idx_stage, stage in enumerate(active_stages, 1):
+    for idx_stage, pool in enumerate(stage_pools, 1):
         if player.health <= 12:
             player.death_reason = "积劳成疾，在时代长风中过早抱憾离世"
             break
 
-        player.age = stage["age_rel"]
+        stage = random.choice(pool)
+        player.age = timeline[idx_stage - 1]
         curr_year = player.birth_year + player.age
-
         player.show_dashboard(idx_stage, total_stages)
 
         # 突发强随机事件

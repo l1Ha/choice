@@ -773,11 +773,13 @@
       }
     ];
 
-    // --- 过去纪元 16 大阶段剧本 (1976-1994 起步) ---
-    const PAST_EPOCH_EVENTS = [
+    // --- 过去纪元 16 大阶段随机事件库 (每个阶段均有多样化历史情境可供动态抽取) ---
+    const PAST_STAGE_POOLS = [
+      // 阶段 1 候选事件池
+      [
       {
-        getAge: () => 6,
-        getYear: (b) => b + 6,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "幼年启蒙",
         title: "大院门槛与小城清晨",
         narrative: (p, y) => `时维 ${y} 年。清晨空气中飘着蜂窝煤和油条的烟气，邻居叔叔骑着凤凰牌二八大杠按着车铃飞驰而过。\n\n到了入小学的年纪，父母在为是否要托关系托人送你去条件更好的中心小学而争执不休。`,
@@ -806,8 +808,41 @@
         ]
       },
       {
-        getAge: () => 10,
-        getYear: (b) => b + 10,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "幼年启蒙",
+        title: "供销社的玻璃糖罐与弄堂嬉戏",
+        narrative: (p, y) => `时维 ${y} 年。弄堂里回荡着竹椅摇晃与叫卖麦芽糖的梆子声，供销社玻璃罐里的五彩水果糖散发着甜蜜的诱惑。\n\n到了开蒙年纪，外公想教你毛笔楷书与古文小调，而邻居孩子正在大街上学唱翻花绳新歌谣。`,
+        choices: [
+          {
+            text: "静心跟随长辈在八仙桌前研墨临帖，背诵千字文与珠算口诀",
+            riskLevel: "书香开蒙 · 涵养心性",
+            successChance: (p) => 80 + (p.intellect > 50 ? 10 : 0),
+            successFeedback: "【墨香初染】字迹清秀端正，长辈欣慰不已，早早培养出专注力与耐得住寂寞的定力。",
+            failFeedback: "【顽皮好动】手忙脚乱打翻了墨水瓶弄脏了新衣，挨了一顿板子，但多少记住了几篇古训。",
+            successEffect: { intellect: +8, happiness: +4, rep: +5 },
+            failEffect: { intellect: +3, happiness: -4, rep: +1 },
+            tagSuccess: "临池学书",
+            tagFail: "顽皮受戒",
+            isKey: false
+          },
+          {
+            text: "成天混迹在弄堂巷尾，当孩子王领着大伙拍洋画、滚铁环、捉迷藏",
+            riskLevel: "野蛮生长 · 市井天性",
+            successChance: () => 100,
+            successFeedback: "混成了胡同里最机灵的小首领，交际能力极强，皮实耐摔，身体素质锻炼得格外棒。",
+            successEffect: { health: +6, happiness: +8, intellect: +2 },
+            tagSuccess: "巷尾霸王",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 2 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "童年韶光",
         title: "黑白电视机与时代的裂隙",
         narrative: (p, y) => `那是 ${y} 年。大街上的录音机开始放起港台歌曲，万元户与下海淘金的故事在大人嘴里传得神乎其神。\n\n家里面临一次抉择：有亲戚邀约父母一起合伙去深圳/特区贩运小商品。`,
@@ -836,8 +871,41 @@
         ]
       },
       {
-        getAge: () => 15,
-        getYear: (b) => b + 15,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "童年韶光",
+        title: "集市小摊与万元户浪潮",
+        narrative: (p, y) => `那是 ${y} 年。集市上摆满了从南方运来的喇叭裤、蛤蟆镜和电子表，'个体户'三个字正从被侧目变为令人眼热的代名词。\n\n表哥从沿海带回一批录音带和圆珠笔，想在学校门外摆地摊，叫你放学后一起帮着张罗。`,
+        choices: [
+          {
+            text: "放学后积极帮表哥看摊吆喝，学着算账收钱，体会商海微澜",
+            riskLevel: "市井试水 · 成功率 65%",
+            successChance: (p) => 65 + (p.luck > 50 ? 15 : -5),
+            successFeedback: "【第一桶小钱】货品被同龄人一抢而空！你分到了人生的第一笔零花钱，早早树立起朴素的商业嗅觉。",
+            failFeedback: "【撞见老师】遭遇学校纪律检查被当场抓包，货物被暂扣，回家被父母好一顿数落。",
+            successEffect: { wealth: +3.0, intellect: +6, happiness: +5, luck: +3 },
+            failEffect: { wealth: -1.0, happiness: -8, intellect: +2, rep: -3 },
+            tagSuccess: "地摊财商",
+            tagFail: "出师不利",
+            isKey: true
+          },
+          {
+            text: "严词拒绝投机倒把，专心待在家中看少儿画报与科普读物《十万个为什么》",
+            riskLevel: "规矩求知 · 笃定平稳",
+            successChance: () => 100,
+            successFeedback: "远离了街头的喧嚣，沉浸在科学与求知的殿堂中，打下了扎实的百科常识基础。",
+            successEffect: { intellect: +7, happiness: +5, health: +2 },
+            tagSuccess: "求知幼苗",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 3 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "少年分流",
         title: "中考独木桥与网吧的幽光",
         narrative: (p, y) => `时值 ${y} 年。互联网和黑网吧正在城镇蔓延，《传奇》与红警让无数同龄人沉迷。\n\n中考录取率只有四成多，班主任敲着黑板强调：'考不上普高，一辈子就定格在流水线或技校'。`,
@@ -869,8 +937,41 @@
         ]
       },
       {
-        getAge: () => 18,
-        getYear: (b) => b + 18,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "少年分流",
+        title: "少年宫无线电队还是街头武侠梦",
+        narrative: (p, y) => `时值 ${y} 年。录像厅里整夜放映着港台武侠片，而市少年宫正首次选拔无线电测向与航模兴趣班学员。\n\n面对初三升高中的紧要当口，你内心的热情正在技术钻研与仗剑走天涯的幻想间碰撞。`,
+        choices: [
+          {
+            text: "咬牙报名少年宫无线电队，夜夜自学焊电路板、调晶体管与收发摩尔斯码",
+            riskLevel: "技术硬派 · 成功率 75%",
+            successChance: (p) => 75 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【省赛斩获】凭借精湛的电路组装手艺在全省少年科技竞赛中斩获二等奖，获重点高中降分录取！",
+            failFeedback: "【元件短路】焊接时不慎烫伤手指且电路板击穿，虽然参赛失利，但掌握了实打实的电工物理基础。",
+            successEffect: { intellect: +14, rep: +8, happiness: +5, health: -2 },
+            failEffect: { intellect: +5, happiness: -6, health: -4 },
+            tagSuccess: "无线电极客",
+            tagFail: "烙铁微痕",
+            isKey: true
+          },
+          {
+            text: "沉迷租书摊金庸古龙武侠小说，与狐朋狗友结拜兄弟，自封仗义游侠",
+            riskLevel: "快意恩仇 · 浪漫不羁",
+            successChance: () => 100,
+            successFeedback: "虽然文化课成绩受到轻微冲击，但结交了几个甘苦与共的过命发小，性格变得豪爽讲义气。",
+            successEffect: { happiness: +10, intellect: -2, rep: +5 },
+            tagSuccess: "江湖义气",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 4 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "成人立志",
         title: "千禧年高考：热门风口还是体制包分配？",
         narrative: (p, y) => `时维 ${y} 年。中国正式加入WTO，外贸与互联网巨浪扑面而来，满城热议与国际接轨。\n\n高考放榜，你的分数允许你做出决定未来二十年命运的抉择。`,
@@ -899,8 +1000,41 @@
         ]
       },
       {
-        getAge: () => 21,
-        getYear: (b) => b + 21,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "成人立志",
+        title: "外企代表处热潮还是军旅铸钢魂",
+        narrative: (p, y) => `时维 ${y} 年。跨国500强企业纷纷在北上广深设立代表处，高薪白领的写字楼让无数青年神往；与此同时征兵大旗在广场招展。\n\n走向社会的关口摆在眼前：是学好商务外语冲刺外企，还是投笔从戎进军营淬炼筋骨？`,
+        choices: [
+          {
+            text: "报考外语或国际商务，通宵苦练英语口语与商务礼仪，一心冲刺涉外企业",
+            riskLevel: "涉外先锋 · 成功率 65%",
+            successChance: (p) => 65 + (p.intellect > 50 ? 10 : 0) + (p.luck > 50 ? 5 : -5),
+            successFeedback: "【涉外Offer】一口纯正流利的外语让你在校招中脱颖而出，拿到高薪外企管培生资格，出入高端写字楼！",
+            failFeedback: "【岗位饱和】当年外贸行业微调岗位缩减，竞争白热化只拿到普通文秘岗，但眼界已然拓宽。",
+            successEffect: { wealth: +5.0, intellect: +12, rep: +10, happiness: +5 },
+            failEffect: { wealth: +1.0, intellect: +6, happiness: -6, rep: +2 },
+            tagSuccess: "外企菁英",
+            tagFail: "涉外求索",
+            isKey: true
+          },
+          {
+            text: "响应国家号召报名应征入伍，进入野战部队或技术兵种磨砺钢铁意志",
+            riskLevel: "戎装风华 · 淬炼筋骨",
+            successChance: () => 100,
+            successFeedback: "在严明的纪律与摸爬滚打中，你褪去稚嫩铸就了磐石般的毅力与体魄，立下三等功并光荣入党！",
+            successEffect: { health: +15, intellect: +5, happiness: +8, rep: +12 },
+            tagSuccess: "铁血铸魂",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 5 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "青春韶华",
         title: "大学时光：考研考证还是青涩爱恋？",
         narrative: (p, y) => `那是 ${y} 年。随身听里放着周杰伦的磁带，大学校园里栀子花开。\n\n你遇到了让你心动的那个 Ta，同时大三专业考研与考证的压力如影随形。`,
@@ -932,8 +1066,41 @@
         ]
       },
       {
-        getAge: () => 24,
-        getYear: (b) => b + 24,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "青春韶华",
+        title: "实验室夜灯还是摇滚校园乐队",
+        narrative: (p, y) => `那是 ${y} 年。校园广播里播放着朴树的《白桦林》，长发吉他手在草坪上引起尖叫，而重点实验室的荧光管整夜不熄。\n\n二十岁出头的年纪，是把全部精力押注在学术科研论文，还是组建一支地下乐队燃烧摇滚青春？`,
+        choices: [
+          {
+            text: "跟随导师泡在重点实验室熬夜做实验、跑数据，发表学术核心期刊论文",
+            riskLevel: "学术登攀 · 成功率 70%",
+            successChance: (p) => 70 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【学刊录用】论文成功被国家级核心期刊收录，不仅拿到特等奖学金，更为未来学术保研铺平道路！",
+            failFeedback: "【数据跑飞】实验仪器在关键时刻故障，半年成果付诸东流不得不推倒重来，科研路充满坎坷。",
+            successEffect: { intellect: +16, rep: +8, wealth: +2.0, health: -4 },
+            failEffect: { intellect: +6, happiness: -10, health: -6 },
+            tagSuccess: "学术新星",
+            tagFail: "重做实验",
+            isKey: true
+          },
+          {
+            text: "担任校园摇滚乐队贝斯手/主唱，走穴高校巡演，在躁动的吉他失真中宣泄热血",
+            riskLevel: "摇滚狂潮 · 激情燃烧",
+            successChance: () => 100,
+            successFeedback: "你们的原创曲目在几所大学风靡一时，收获了无数掌声与热烈的青春爱慕，留下一生无悔的浪漫狂欢。",
+            successEffect: { happiness: +16, rep: +6, wealth: -1.0 },
+            tagSuccess: "摇滚青年",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 6 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "初涉人世",
         title: "北京奥运前夜：大城市的蚁族还是小城归客？",
         narrative: (p, y) => `时值 ${y} 年。鸟巢与水立方正在拔地而起，整个国家充满昂扬雄心，大城市的房价正如火箭般蓄势。\n\n毕业两年，逼仄的地下室与拥挤的早高峰地铁消磨着你，是坚守还是退居老家？`,
@@ -962,8 +1129,41 @@
         ]
       },
       {
-        getAge: () => 27,
-        getYear: (b) => b + 27,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "初涉人世",
+        title: "外包代工厂驻厂还是股市红马甲",
+        narrative: (p, y) => `时值 ${y} 年。世界工厂的流水线日夜轰鸣，珠三角与长三角到处是招工集装箱；同时证券营业部里人头攒动。\n\n步入社会的初试炼：是进入实体制造业深入生产一线，还是挤进证券咨询公司做一名穿梭在行情屏前的交易员？`,
+        choices: [
+          {
+            text: "投身大型外资/合资制造厂担任现场工艺工程师，扎根生产线死磕技术",
+            riskLevel: "硬核制造 · 确定成长",
+            successChance: () => 100,
+            successFeedback: "虽然车间机油味重、三班倒辛苦，但你吃透了全套精密工业标准与供应链管理，成为无可替代的技术骨干。",
+            successEffect: { wealth: +5.0, intellect: +10, health: +2, rep: +8 },
+            tagSuccess: "工业脊梁",
+            isKey: true
+          },
+          {
+            text: "进入民间配资与证券投资咨询室，学习K线缠论，尝试利用杠杆做职业操盘手",
+            riskLevel: "资本刀尖 · 成功率 45%",
+            successChance: (p) => 45 + (p.luck > 50 ? 15 : -10) + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【抓中妖股】精准捕捉到几只周期重组大牛股，账户本金在半年内实现三倍爆发！",
+            failFeedback: "【断崖强平】行情突遇黑天鹅连续无量跌停，本金瞬间遭穿仓清洗，在营业部门前抽了一整盒廉价香烟。",
+            successEffect: { wealth: +22.0, intellect: +12, happiness: +8, luck: +6 },
+            failEffect: { wealth: -8.0, happiness: -16, health: -8, rep: -4 },
+            tagSuccess: "操盘黑马",
+            tagFail: "股海折戟",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 7 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "成家立业",
         title: "四万亿洪流与创业大潮",
         narrative: (p, y) => `那是 ${y} 年。四万亿刺激政策带来海量流动性，移动互联网与电商正如春笋般冒出。\n\n昔日同窗拿来商业计划书邀你辞职合伙创业，同时老家父母催你该掏出积蓄上车买房了。`,
@@ -992,8 +1192,44 @@
         ]
       },
       {
-        getAge: () => 31,
-        getYear: (b) => b + 31,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "成家立业",
+        title: "淘宝电商档口还是体制内安稳考编",
+        narrative: (p, y) => `那是 ${y} 年。义乌与广州的服装小商品通过网线发往全国，双十一狂欢拉开序幕；老家父母则一再催促你回乡考编。\n\n在快要奔三的黄金年龄：是租个车库当仓库开淘宝网店，还是静心备战省考谋求一份一眼望得到头但旱涝保收的安稳？`,
+        choices: [
+          {
+            text: "和朋友在城中村租套民房搭架子，做服装/数码配件淘宝电商，日夜打包发货",
+            riskLevel: "电商淘金 · 成功率 55%",
+            successChance: (p) => 55 + (p.luck > 50 ? 15 : -5) + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【爆款起飞】打中了几款平台爆品，日出万单，快递车天天堵在楼下，短短两年累积起惊人财富！",
+            failFeedback: "【差评退货潮】因上游代工厂质量翻车遭遇退货潮和平台封店扣保，押进的几万块本金血本无归。",
+            successEffect: { wealth: +30.0, intellect: +10, happiness: +8, health: -6, rep: +10 },
+            failEffect: { wealth: -6.0, intellect: +5, happiness: -12, health: -8 },
+            tagSuccess: "电商弄潮",
+            tagFail: "库存挤压",
+            isKey: true
+          },
+          {
+            text: "专心闭门苦读申论与行测，在激烈的公务员省考中突围入编，捧上金饭碗",
+            riskLevel: "金榜入仕 · 成功率 75%",
+            successChance: (p) => 75 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【成功上岸】以面试第一的优异成绩被市直机关录用！父母在亲友圈扬眉吐气，从此社会地位稳固尊崇。",
+            successEffect: { wealth: +4.0, rep: +18, happiness: +12, health: +4 },
+            failFeedback: "【以微弱分差惜败】虽然笔试入围但面试被更有经验的考生反超，只得委身街道编外临聘，心绪郁结。",
+            successEffect: { wealth: +1.5, rep: +4, happiness: -6 },
+            tagSuccess: "体制栋梁",
+            tagFail: "省考饮恨",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 8 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "三十而立",
         title: "红白账簿：婚姻、彩礼与家庭重组",
         narrative: (p, y) => `时维 ${y} 年。身边的朋友相继结婚生子，朋友圈被满月酒和婚宴刷屏。\n\n面对相处多年的对象与两方家庭关于彩礼、嫁妆、学区房与婚礼排场的较劲，你站在世俗风暴中心。`,
@@ -1022,8 +1258,41 @@
         ]
       },
       {
-        getAge: () => 35,
-        getYear: (b) => b + 35,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "三十而立",
+        title: "跨国派驻海外淘金还是深耕家乡人脉",
+        narrative: (p, y) => `时维 ${y} 年。一带一路与基建出海如火如荼，公司派遣非洲、东南亚驻外岗位开出三倍年薪和丰厚补贴；老家亲友则劝你留在本地深耕宗族圈子。\n\n三十岁的人生十字路：是抛家舍业远赴海外荒原掘金，还是留在家乡经营温情人脉？`,
+        choices: [
+          {
+            text: "签下三年海外派驻军令状，奔赴艰苦海外工地或办事处，独当一面赚取高薪",
+            riskLevel: "海外征途 · 成功率 65%",
+            successChance: (p) => 65 + (p.health > 60 ? 10 : -10) + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【拓荒凯旋】在异国克服疟疾与风沙，成功交付重大跨国标段，不仅攒下了巨额现金，更被总部破格擢升！",
+            failFeedback: "【异乡重病】在热带感染严重登革热抢救数周，海外工程又因政局波动搁浅，只得提前病退回国。",
+            successEffect: { wealth: +25.0, rep: +15, intellect: +10, health: -6, happiness: +4 },
+            failEffect: { wealth: +6.0, health: -18, happiness: -14, rep: +2 },
+            tagSuccess: "海外拓荒巨子",
+            tagFail: "异域惊涛",
+            isKey: true
+          },
+          {
+            text: "留在本地合伙开办茶楼或特色餐饮店，以茶会友，苦心经营地方人脉政商关系",
+            riskLevel: "市井人情 · 稳扎稳打",
+            successChance: () => 100,
+            successFeedback: "店面成了三教九流汇聚的熟人网络节点。你办事总能找到熟人门路，家庭其乐融融有滋有味。",
+            successEffect: { wealth: +6.0, rep: +12, happiness: +10, health: +2 },
+            tagSuccess: "人情达人",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 9 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "负重前行",
         title: "全民牛市与千万学区房的诱惑",
         narrative: (p, y) => `时值 ${y} 年。股市暴涨暴跌，P2P理财满天飞，房产中介天天在微信轰炸学区房神话。\n\n孩子到了考虑入学的年纪，中介鼓动你把现有住房卖掉，加满三倍杠杆抢购核心区老破小学区房。`,
@@ -1052,8 +1321,41 @@
         ]
       },
       {
-        getAge: () => 40,
-        getYear: (b) => b + 40,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "负重前行",
+        title: "民间借贷风暴还是理财信托踩雷",
+        narrative: (p, y) => `那是 ${y} 年。民间借贷与P2P理财如野火般蔓延，动辄12%以上的高息让人眼红心跳；亲戚登门借走大笔资金做资金周转。\n\n人到中年积蓄渐丰，如何守住财富成为最凶险的考验：是相信熟人借贷吃息，还是全部转存大额存单？`,
+        choices: [
+          {
+            text: "坚决抵制任何高息诱惑，把全家全部积蓄拆分存入六大国有银行大额存单与国债",
+            riskLevel: "绝对防守 · 锁定本金",
+            successChance: () => 100,
+            successFeedback: "周围不少熟人纷纷在暴雷潮中血本无归甚至妻离子散，唯独你家现金秋毫无损，被奉为远见楷模！",
+            successEffect: { wealth: +8.0, happiness: +14, rep: +8 },
+            tagSuccess: "定海神针",
+            isKey: true
+          },
+          {
+            text: "看在重利与旧交情面上借出重金吃高息，甚至抵押部分房产跟进资金盘",
+            riskLevel: "贪婪博弈 · 成功率 35%",
+            successChance: (p) => 35 + (p.luck > 60 ? 15 : -10),
+            successFeedback: "【侥幸抽身】在资金盘彻底崩塌前三个月敏锐嗅到风险，全额强行收回本息，狠狠大赚了一笔！",
+            failFeedback: "【血本无归】平台实控人连夜卷款潜逃，催收群里哭声一片，多年的血汗钱瞬间灰飞烟灭，一夜白头。",
+            successEffect: { wealth: +25.0, happiness: +10, luck: +6 },
+            failEffect: { wealth: -25.0, happiness: -22, health: -14, rep: -8 },
+            tagSuccess: "险峰收割",
+            tagFail: "雷暴劫难",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 10 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "中年险滩",
         title: "医院走廊的消毒水与35岁职场魔咒",
         narrative: (p, y) => `那是 ${y} 年。家中老人的体检单确诊了重大慢性病，需要常年昂贵靶向药与看护；\n\n与此同时，公司在推行'年轻化'战略，三十五岁以上的员工纷纷被约谈边缘化，中年重担如山倒。`,
@@ -1082,8 +1384,41 @@
         ]
       },
       {
-        getAge: () => 44,
-        getYear: (b) => b + 44,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "中年险滩",
+        title: "合伙人反目还是技术转型破局",
+        narrative: (p, y) => `时值 ${y} 年。四十岁的中年危机悄然降临，昔日并肩作战的业务合伙人在利益分配上产生巨大裂痕，甚至背地里转移客户资源。\n\n站在人生的中场危局：是狠下心打官司清算旧友，还是抛下包袱重新专研新兴技术业务？`,
+        choices: [
+          {
+            text: "保留证据请顶级商业律师对簿公堂，坚决捍卫合法知识产权与股东权益",
+            riskLevel: "法槌对决 · 成功率 65%",
+            successChance: (p) => 65 + (p.intellect > 50 ? 10 : 0) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【胜诉维权】法院一审判决全额支持你的诉求，追回数百万赔偿并夺回控制权，在业界树立了铁血威名！",
+            failFeedback: "【官司马拉松】诉讼拖延数年耗尽心力，执行时对方早已金蝉脱壳，虽赢了官司却输了流动性。",
+            successEffect: { wealth: +15.0, rep: +15, happiness: +6, health: -6 },
+            failEffect: { wealth: -6.0, rep: +4, happiness: -15, health: -10 },
+            tagSuccess: "铁腕维权",
+            tagFail: "赢了官司输了钱",
+            isKey: true
+          },
+          {
+            text: "放下执念断舍离，将烂摊子抛在身后，以四十岁之躯从零自学新架构和数字化工具破局",
+            riskLevel: "涅槃重生 · 大器晚成",
+            successChance: () => 100,
+            successFeedback: "中年人的自律令人惊叹。你用扎实的行业底蕴融合新工具，开发出低成本高敏捷新业务，赢得满堂彩！",
+            successEffect: { intellect: +15, wealth: +8.0, happiness: +10, rep: +12 },
+            tagSuccess: "中年涅槃",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 11 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "动荡考验",
         title: "居家隔离、大厂裁员与行业大洗牌",
         narrative: (p, y) => `时维 ${y} 年。突发疫情改变了整个世界的节奏，健康码、居家隔离与行业洗牌纷至沓来。\n\n教培、地产、互联网大厂纷纷裁员收缩，你所在的部门被整体撤并，HR将补偿协议推到你面前。`,
@@ -1112,8 +1447,41 @@
         ]
       },
       {
-        getAge: () => 50,
-        getYear: (b) => b + 50,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "动荡考验",
+        title: "实体供应链断裂与社区团购互助",
+        narrative: (p, y) => `时维 ${y} 年。外部物流受阻，实体工厂与门店纷纷停工，邻里之间蔬菜与常用药品出现短缺。\n\n面对突如其来的生活停摆：是闭门自保消耗存粮，还是站出来担当社区团长、利用早年货源人脉为整栋楼组织保供？`,
+        choices: [
+          {
+            text: "挺身而出担当民间保供团长，不眠不休对接农贸批发，平价为整小区居民协调物资",
+            riskLevel: "侠者仁心 · 成功率 80%",
+            successChance: (p) => 80 + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【邻里传颂】在物资最紧张的日子里你守护了数百户居民的餐桌与急用药，成为整座小区公认的定盘星！",
+            failFeedback: "【费力不讨好】运输途中遭遇部分菜品损耗，个别居民不仅不理解还冷嘲热讽，让你深刻体会到人性的复杂。",
+            successEffect: { rep: +25, happiness: +15, health: -4, wealth: +1.0 },
+            failEffect: { rep: +8, happiness: -10, health: -6 },
+            tagSuccess: "邻里英雄",
+            tagFail: "仁心微凉",
+            isKey: true
+          },
+          {
+            text: "紧闭大门严格消杀，在有限空间内坚持室内健身，陪伴家人读书下棋安稳度日",
+            riskLevel: "韬光养晦 · 恬淡自守",
+            successChance: () => 100,
+            successFeedback: "在安静的世界里，全家平安度过危机，不仅没有染病，反而难得修复了多年来因忙碌而疏离的亲情。",
+            successEffect: { health: +8, happiness: +12, intellect: +4 },
+            tagSuccess: "阖家平安",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 12 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "知命之年",
         title: "孩子高考放榜：复制内卷还是尊重个性？",
         narrative: (p, y) => `那是 ${y} 年。你年过半百，两鬓已有星星白发。\n\n孩子的高考成绩出炉，成绩中等偏上。面对亲戚建议的'考公考编热门专业'，孩子却执意要选小众冷门的设计或哲学。`,
@@ -1145,8 +1513,41 @@
         ]
       },
       {
-        getAge: () => 58,
-        getYear: (b) => b + 58,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "知命之年",
+        title: "老宅拆迁谈判还是乡村民宿退隐",
+        narrative: (p, y) => `那是 ${y} 年。城市扩张规划到了近郊老宅，开发商拆迁办开出了数套安置房与货币补偿方案；与此同时京郊与南方乡村正兴起归园田居。\n\n年过半百的人生考量：是紧咬谈判条件争当拆迁大户，还是拿着现有补偿归隐山水打造诗意民宿？`,
+        choices: [
+          {
+            text: "聘请专业评估团队据理力争，坚守合法红线，经过数轮博弈拿下最优安置方案",
+            riskLevel: "拆迁博弈 · 成功率 65%",
+            successChance: (p) => 65 + (p.luck > 50 ? 15 : -5) + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【盆满钵满】不仅拿到了多套核心地段临街安置商铺，更获赔大笔安家现金，为家族彻底奠定财富基业！",
+            failFeedback: "【规划变更】因僵持过久开发商绕道更改了红线方案，拆迁搁浅成为遗留死角，空耗了大量时间心血。",
+            successEffect: { wealth: +35.0, happiness: +10, rep: +10 },
+            failEffect: { wealth: +2.0, happiness: -15, rep: -4 },
+            tagSuccess: "旧城红利",
+            tagFail: "画地为牢",
+            isKey: true
+          },
+          {
+            text: "承包青山绿水旁的一方老旧农院，精心改造为书香茶舍民宿，回归清静自然",
+            riskLevel: "山水归隐 · 怡然自乐",
+            successChance: () => 100,
+            successFeedback: "晨起看山间晨雾，暮落听松涛鸟鸣。民宿成为文人雅客的秘境，精神世界前所未有地宽阔宁静。",
+            successEffect: { health: +12, happiness: +18, wealth: +4.0, rep: +6 },
+            tagSuccess: "山居雅士",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 13 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "花甲在望",
         title: "生成式AI风暴与体检红字警钟",
         narrative: (p, y) => `时值 ${y} 年。人工智能和人形机器人全面融入社会，曾经以为不可替代的经验正迅速贬值。\n\n年近六旬的你，体检单上密密麻麻的红字警示着心脑血管风险，单位通知你准备办理退休手续。`,
@@ -1175,8 +1576,41 @@
         ]
       },
       {
-        getAge: () => 66,
-        getYear: (b) => b + 66,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "花甲在望",
+        title: "大病保单理赔与海外尖端医疗",
+        narrative: (p, y) => `时维 ${y} 年。年近六旬，老伴或自身在年度大检中查出早期重症结节，现代尖端微创质子重离子治疗费用高昂。\n\n医疗决策关乎晚年质量：是动用早年配置的商业重疾险与人脉赴顶尖专科彻底手术，还是选择保守中医调养？`,
+        choices: [
+          {
+            text: "果断启动全球重疾绿色通道，接受顶尖专家主刀的机器人微创手术切除病灶",
+            riskLevel: "现代医学 · 成功率 85%",
+            successChance: (p) => 85 + (p.wealth > 20 ? 10 : 0),
+            successFeedback: "【病灶全清】手术极其成功！病理报告显示完全切除且未扩散，劫后余生，全家相拥喜极而泣！",
+            failFeedback: "【术后并发症】虽然切除了病灶但术后出现长期低烧吸收热，休养大半年方才缓慢复原，耗费巨资。",
+            successEffect: { health: +15, happiness: +12, wealth: -8.0, rep: +5 },
+            failEffect: { health: -5, happiness: -12, wealth: -15.0 },
+            tagSuccess: "劫后安康",
+            tagFail: "医海波折",
+            isKey: true
+          },
+          {
+            text: "秉持自然之道，遍访名老中医按古方长期调理，搭配每日八段锦与太极拳修心",
+            riskLevel: "国医调神 · 顺天应命",
+            successChance: () => 100,
+            successFeedback: "草药清香与规律起居让脏腑功能逐渐平衡，体检复查结节未再进展，心态愈发超脱淡定。",
+            successEffect: { health: +8, happiness: +12, intellect: +4, wealth: -1.5 },
+            tagSuccess: "养生真谛",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 14 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "桑榆晚景",
         title: "含饴弄孙与公园的长椅",
         narrative: (p, y) => `那是 ${y} 年。孙辈蹒跚学步，阳光穿透公园的柳树叶洒在长椅上。\n\n孩子们工作繁忙，提出希望你能常住帮带孩子操持家务；而老友们则计划包车自驾去西藏环游圆年轻时的梦。`,
@@ -1205,8 +1639,41 @@
         ]
       },
       {
-        getAge: () => 74,
-        getYear: (b) => b + 74,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "桑榆晚景",
+        title: "老年大学诗社还是自驾房车巡游",
+        narrative: (p, y) => `那是 ${y} 年。退居二线的日子天高云淡，同龄老友们纷纷在老年大学报班或在广场上下棋。\n\n人过花甲，生活依然可以有新活法：是购置一辆轻型房车和老伴周游全国名山大川，还是在老年书画社担任社长著书立说？`,
+        choices: [
+          {
+            text: "添置一辆房车，带上老伴顺着国道出发，丈量祖国的三江源与海岸线",
+            riskLevel: "壮心不已 · 成功率 80%",
+            successChance: (p) => 80 + (p.health > 50 ? 10 : -10),
+            successFeedback: "【壮游山河】在戈壁与椰林间留下了属于银发族的潇洒足迹，短视频分享收获数十万同龄人点赞艳羡！",
+            failFeedback: "【途中抛锚】在高原偏僻路段车辆偶发故障，在高海拔挨了一夜冻，虽受了虚惊但看遍了最美的星空。",
+            successEffect: { happiness: +20, health: +5, rep: +8, wealth: -4.0 },
+            failEffect: { happiness: +5, health: -8, wealth: -6.0 },
+            tagSuccess: "银发骑士",
+            tagFail: "风雨同舟",
+            isKey: false
+          },
+          {
+            text: "坐镇市老年文联，讲授古诗词与书法鉴赏，主编一本《小城往事与家族印记》",
+            riskLevel: "文脉流芳 · 雅致从容",
+            successChance: () => 100,
+            successFeedback: "桃李春风，晚生后辈恭敬围坐。你撰写的回忆录被市图书馆正式馆藏，留下温润长存的精神遗产。",
+            successEffect: { rep: +20, intellect: +10, happiness: +12 },
+            tagSuccess: "文林耆宿",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 15 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "古稀沧桑",
         title: "老友凋零与泛黄的相册",
         narrative: (p, y) => `时维 ${y} 年。你戴着老花镜，翻看着几十年前泛黄的黑白相片。\n\n手机通讯录里，昔日一起下乡、一起考研、一起创业的挚友相继离世，参加葬礼的次数已远多于婚礼。`,
@@ -1232,8 +1699,41 @@
         ]
       },
       {
-        getAge: () => 80,
-        getYear: (b) => b + 80,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "古稀沧桑",
+        title: "家族信托安排还是平分助幼孙",
+        narrative: (p, y) => `时维 ${y} 年。年逾古稀，儿孙绕膝已成各房各业。几位晚辈在创业或买房上面临现实资金关口。\n\n面对一生的辛勤积累：是找专业信托机构设立家族慈善基金与保障契约，还是直接取现贴补幼孙？`,
+        choices: [
+          {
+            text: "设立严格规范的家族信托基金，锁定教育与重病医疗兜底，防止后辈败家挥霍",
+            riskLevel: "长治久安 · 成功率 90%",
+            successChance: (p) => 90 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【基业长青】家族规矩森严有序，即便未来数代中有人创业失利，亦有源源不断的学业与生活兜底保障！",
+            failFeedback: "【代际嫌隙】个别急于套现的后辈心生怨怼，认为你手握太紧，家宴上少了几分纯粹温情。",
+            successEffect: { rep: +15, wealth: +5.0, happiness: +8 },
+            failEffect: { rep: +5, happiness: -8, wealth: +2.0 },
+            tagSuccess: "门阀根基",
+            tagFail: "家和微隙",
+            isKey: true
+          },
+          {
+            text: "看淡钱财，拿出大部分积蓄为晚辈付清首付和留学学费，愿他们轻装上阵",
+            riskLevel: "慈爱倾囊 · 满堂欢笑",
+            successChance: () => 100,
+            successFeedback: "儿孙们感念至深，逢年过节争相承欢膝下，四世同堂欢声笑语，人间天伦之乐莫过于此。",
+            successEffect: { happiness: +18, rep: +10, wealth: -15.0 },
+            tagSuccess: "仁厚长者",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 16 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "夕阳辞章",
         title: "病榻前的执手：尊严告别还是倾力抢救？",
         narrative: (p, y) => `那是 ${y} 年的冬日午后，暖阳洒在老旧的藤椅与窗台的水仙花上。\n\n长年相濡以沫的老伴因器官衰竭虚弱躺在病榻上，握着你满是老年斑的手，目光柔和依依不舍，医生轻声询问最终诊疗意愿。`,
@@ -1257,14 +1757,44 @@
             isKey: true
           }
         ]
+      },
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "夕阳辞章",
+        title: "院落斜阳与安详辞世",
+        narrative: (p, y) => `那是 ${y} 年。八十余载春秋如白驹过隙，院子里的老槐树落叶纷飞。你坐在藤椅上，身上盖着晒过暖阳的毛毯。\n\n儿孙子侄在堂屋轻声说话，风吹过风铃，窗外的世界繁花似锦，正是时代盛景。最后的时刻正悄然到来。`,
+        choices: [
+          {
+            text: "握住身边挚爱与儿孙的双手，留下最后的微笑与平安叮嘱，从容合眼辞世",
+            riskLevel: "圆满归宿 · 慈祥辞章",
+            successChance: () => 100,
+            successFeedback: "呼吸在柔和的晚风中渐渐平静。你留给世界的是一世的清白与温厚，在全家族由衷的敬意与爱戴中安详远行。",
+            successEffect: { happiness: +20, rep: +20 },
+            tagSuccess: "德泽流芳",
+            isKey: true
+          },
+          {
+            text: "静静凝望窗外的云卷云舒，心中默念一生的苦难与荣光，问心无愧，静谧而去",
+            riskLevel: "天地无言 · 纯净超脱",
+            successChance: () => 100,
+            successFeedback: "无需多言，生如夏花之绚烂，死如秋叶之静美。你坦然走完了凡人极其真切又波澜壮阔的一生。",
+            successEffect: { intellect: +20, happiness: +20 },
+            tagSuccess: "大化归真",
+            isKey: true
+          }
+        ]
       }
+      ]
     ];
 
-    // --- 未来纪元 16 大阶段剧本 (2042-2060 起步) ---
-    const FUTURE_EPOCH_EVENTS = [
+    // --- 未来纪元 16 大阶段随机事件库 (每个阶段均有多样化科幻情境可供动态抽取) ---
+    const FUTURE_STAGE_POOLS = [
+      // 阶段 1 候选事件池
+      [
       {
-        getAge: () => 6,
-        getYear: (b) => b + 6,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "神经初萌",
         title: "人造穹顶与幼年脑机接口手术",
         narrative: (p, y) => `时维 ${y} 年。窗外是人造电离层过滤后的幽蓝天幕，悬浮物流穿梭在钢铁峡谷。\n\n到了入幼学年龄，社区医疗官建议植入'第III代神经智网接口'以实现视网膜直连教学，但有微弱神经排异风险。`,
@@ -1293,8 +1823,41 @@
         ]
       },
       {
-        getAge: () => 10,
-        getYear: (b) => b + 10,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "神经初萌",
+        title: "次级穹顶的人造雨林与全息启蒙",
+        narrative: (p, y) => `时维 ${y} 年。城市被严密的恒温穹顶笼罩，天空中的模拟雨林散发着合成臭氧与水雾气味。\n\n幼年启蒙期，社区推行'全息沉浸式自然感知课'，但需每日佩戴8小时全视网膜投射头盔。`,
+        choices: [
+          {
+            text: "坚持参加全息高阶认知训练，提前掌握天体物理与量子矩阵启蒙图景",
+            riskLevel: "超前启智 · 成功率 80%",
+            successChance: (p) => 80 + (p.intellect > 50 ? 10 : 0),
+            successFeedback: "【思维跃迁】幼年大脑神经元在全息激发下突触活跃度远超同龄人，被评为次级穹顶优等生！",
+            failFeedback: "【视网膜微疲劳】因强光照射出现轻度视敏度下降，虽略有不适，但知识储备依然领先。",
+            successEffect: { intellect: +10, rep: +6, health: -2 },
+            failEffect: { intellect: +4, health: -4, happiness: -4 },
+            tagSuccess: "全息神童",
+            tagFail: "视神经微损",
+            isKey: false
+          },
+          {
+            text: "摘掉头盔，在真实的生态土培土壤里摸蚯蚓、采草菇，保持碳基幼年本真",
+            riskLevel: "质朴碳基 · 天性安宁",
+            successChance: () => 100,
+            successFeedback: "在机械化时代保留了对真实泥土与植物的嗅觉记忆，呼吸系统健康度极其优异。",
+            successEffect: { health: +8, happiness: +10, intellect: +2 },
+            tagSuccess: "泥土芬芳",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 2 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "星海启蒙",
         title: "碳配额紧缩与低轨研学抽签",
         narrative: (p, y) => `那是 ${y} 年。全球气候公约严控个人碳配额，合成营养膏占据餐桌。\n\n学校组织了'近地空间站7日重力研学营'，名额稀缺，需要家庭押上近半年的能源信用分参与公证摇号。`,
@@ -1323,8 +1886,41 @@
         ]
       },
       {
-        getAge: () => 15,
-        getYear: (b) => b + 15,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "能量与配额",
+        title: "合成藻类牧场还是聚变堆巡检学徒",
+        narrative: (p, y) => `那是 ${y} 年。地表气温居高不下，地下合成藻类农场成为全球主粮基地；而第二座托卡马克聚变堆正在招聘少年观察员。\n\n十岁出头面临课外工坊分配：是去光照充足的藻类农场培育高能蛋白质，还是去聚变堆实习核物理？`,
+        choices: [
+          {
+            text: "申请进入核聚变反应堆少年观测站，协助监测等离子体磁约束磁场波动",
+            riskLevel: "高能前沿 · 成功率 65%",
+            successChance: (p) => 65 + (p.luck > 50 ? 15 : -10) + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【磁暴预警】成功协助工程师提前校准了一次磁岛扰动，获得深空能源署颁发的少年银星勋章！",
+            failFeedback: "【剂量超标受惊】一次例行巡检中微量辐射传感器警报长鸣，虽无实质损伤但被勒令休学调养。",
+            successEffect: { intellect: +14, rep: +10, wealth: +3.0, happiness: +5 },
+            failEffect: { intellect: +5, happiness: -10, health: -6 },
+            tagSuccess: "聚变雏鹰",
+            tagFail: "辐射惊悸",
+            isKey: true
+          },
+          {
+            text: "在地下立体水耕藻类农场照料发光藻株，享受温和湿润的恒温环境",
+            riskLevel: "绿色安宁 · 稳健生存",
+            successChance: () => 100,
+            successFeedback: "收获了大批高品质合成蛋白质块，家庭碳税享受长达一年的减免，生活踏实富足。",
+            successEffect: { wealth: +2.5, health: +6, happiness: +6 },
+            tagSuccess: "绿藻清芬",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 3 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "少年分化",
         title: "算力分级考试：中央智脑调度员还是深空航线技工？",
         narrative: (p, y) => `时值 ${y} 年。社会职业被算法全权分流，只有排名前10%的脑波共振者能入选'智脑总控系'。\n\n其余大部分人将进入深空矿业技术学院，作为派驻月球或小行星带的重工业技师。`,
@@ -1353,8 +1949,41 @@
         ]
       },
       {
-        getAge: () => 18,
-        getYear: (b) => b + 18,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "矩阵分流",
+        title: "黑客地下暗网协议还是近轨防御志愿役",
+        narrative: (p, y) => `时值 ${y} 年。近地防卫舰队正在征召轨道拦截兵，而民间赛博地下黑客圈正在传播'暗光去中心化协议'。\n\n少年叛逆期，是加入军方轨道学员连穿戴外骨骼，还是在黑客地下室里破解巨企算力中继？`,
+        choices: [
+          {
+            text: "深入暗网钻研零日漏洞与分布式神经防火墙，誓要打破寡头企业的算力垄断",
+            riskLevel: "黑客漫游 · 成功率 60%",
+            successChance: (p) => 60 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【破壁极客】成功开源了一套免审查算力分发协议，成为暗网世界受人敬仰的无名英雄！",
+            failFeedback: "【巨企封杀】遭智脑反向追踪并锁死了公共网络权限，不得不自费巨款更换视网膜Mac地址。",
+            successEffect: { intellect: +18, rep: +12, wealth: +5.0, happiness: +6 },
+            failEffect: { wealth: -4.0, intellect: +6, happiness: -12, rep: -6 },
+            tagSuccess: "矩阵破壁者",
+            tagFail: "虚拟流亡",
+            isKey: true
+          },
+          {
+            text: "应征入伍近轨防御志愿预备役，在低重力训练营锤炼失重格斗与电磁炮操控",
+            riskLevel: "轨道卫士 · 确定硬朗",
+            successChance: () => 100,
+            successFeedback: "结实的肌肉与出色的前庭神经让你成为优秀的轨道战士，享有军方全额津贴保障。",
+            successEffect: { health: +12, rep: +8, wealth: +3.0, happiness: +4 },
+            tagSuccess: "轨道尖兵",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 4 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "星轨抉择",
         title: "成人生死券：月球南极氦-3采掘还是地球虚拟灵境馆？",
         narrative: (p, y) => `时维 ${y} 年。成人礼上，国家深空开发总署向适龄青年递出契约。\n\n一侧是月球前哨基地的高薪极端工种（五年合约免除全家三代碳税）；另一侧是留在地球沉浸灵境乐园做虚拟世界造梦师。`,
@@ -1383,8 +2012,41 @@
         ]
       },
       {
-        getAge: () => 21,
-        getYear: (b) => b + 21,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "成年生死",
+        title: "深空殖民先驱还是地底避难城工程师",
+        narrative: (p, y) => `时维 ${y} 年。火星第一批永久农业穹顶落成，招募十八岁深空拓荒先锋；同时地底万米热能避难城正在扩建。\n\n走向成年：是告别母星踏上五年单程航行奔赴异星荒漠，还是留在母星深处建设固若金汤的地堡？`,
+        choices: [
+          {
+            text: "签署火星拓荒先锋公约，登上一去不复返的殖民飞船，向红色星球进发",
+            riskLevel: "星际拓荒 · 成功率 55%",
+            successChance: (p) => 55 + (p.health > 60 ? 10 : -10) + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【红星第一步】飞船安全穿越范艾伦辐射带降落火星！你在火星红色风沙中立下第一块领地标石！",
+            failFeedback: "【休眠舱微漏】航行途中人工休眠舱发生冷凝液微渗漏，神经反应受损，抵达后转入后勤基地。",
+            successEffect: { rep: +22, intellect: +14, happiness: +10, wealth: +10.0 },
+            failEffect: { health: -14, happiness: -12, wealth: +2.0, rep: +6 },
+            tagSuccess: "火星先锋",
+            tagFail: "休眠后遗症",
+            isKey: true
+          },
+          {
+            text: "留在母星地下一万米深处，担任地热熔岩电站主管技师，享受稳固高薪与最高避险级别",
+            riskLevel: "地下壁垒 · 固若金汤",
+            successChance: () => 100,
+            successFeedback: "地热能源无穷无尽。你在地壳深处过着无风无雨的安稳生活，成为全家人最坚实的避风港。",
+            successEffect: { wealth: +8.0, health: +6, happiness: +8, rep: +6 },
+            tagSuccess: "熔岩掌灯人",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 5 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "合成之爱",
         title: "真挚碳基情愫还是完美仿生伴侣？",
         narrative: (p, y) => `那是 ${y} 年。高级仿生机器人已能完美模拟一切温柔与共情，且绝不背叛衰老。\n\n你遇到了同样心怀纯真理想的碳基同窗，与此同时，巨头公司向优秀青年推送了终身免费的'定制级AI伴侣试用合约'。`,
@@ -1413,8 +2075,41 @@
         ]
       },
       {
-        getAge: () => 24,
-        getYear: (b) => b + 24,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "青春与情感",
+        title: "神经共感网络恋情还是独身算力苦修",
+        narrative: (p, y) => `那是 ${y} 年。青年男女流行通过'神经突触共感接口'谈恋爱，两人的喜怒哀乐无需言语即可100%同频互通。\n\n然而毫无隐私的心灵裸露也意味着巨大风险：是向挚爱敞开全部意识，还是断开接口做一个孤独高冷的独立思考者？`,
+        choices: [
+          {
+            text: "接入高纯度神经共感协议，与心仪伴侣实现灵魂层面的无保留共振",
+            riskLevel: "灵魂交融 · 成功率 65%",
+            successChance: (p) => 65 + (p.happiness > 50 ? 10 : -10),
+            successFeedback: "【知己相契】你们在数据海洋中找到了彼此最纯净的灵魂底色，成为相濡以沫的终身灵境眷侣！",
+            failFeedback: "【情绪病毒感染】对方隐匿的重度抑郁情感波冲垮了你的情绪防火墙，失恋后大病数月心力交瘁。",
+            successEffect: { happiness: +18, rep: +6, health: +4 },
+            failEffect: { happiness: -20, health: -10, intellect: +4 },
+            tagSuccess: "灵犀共振",
+            tagFail: "情感过载",
+            isKey: false
+          },
+          {
+            text: "锁死私人脑波防火墙，保持绝对精神孤立，将所有算力投入高能物理研究",
+            riskLevel: "冷峻独行 · 智性巅峰",
+            successChance: () => 100,
+            successFeedback: "未受任何情愫牵绊的冰冷大脑爆发出了惊人的科研生产力，以单作者发表多篇重量级报告。",
+            successEffect: { intellect: +16, wealth: +4.0, happiness: +2 },
+            tagSuccess: "纯粹理性",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 6 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "深空前线",
         title: "地月货运电梯危机与应急处置",
         narrative: (p, y) => `时值 ${y} 年。地月同步轨道电梯发生微陨石撞击，3号配重缆索发生高频震颤，近千吨高能聚变原料悬停半空。\n\n你在调度台当值，算法建议立即切断3号副缆丢车保帅，但下方吊舱内仍有三名失联维修工人。`,
@@ -1443,8 +2138,41 @@
         ]
       },
       {
-        getAge: () => 27,
-        getYear: (b) => b + 27,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "初涉宇宙",
+        title: "太空垃圾打捞船长还是空间站安保主管",
+        narrative: (p, y) => `时值 ${y} 年。近地低轨漂浮着数十万件退役卫星与航天器残骸，太空拾荒打捞者被誉为'星轨淘金客'。\n\n二十多岁：是贷款盘下一艘二手轨道打捞船出舱碰运气，还是留在联合空间站做一名安稳的巡警？`,
+        choices: [
+          {
+            text: "以小博大贷款购买二手拖船，深入残骸墓地搜寻高价值报废军事侦察卫星与量子内核",
+            riskLevel: "轨道拾金 · 成功率 50%",
+            successChance: (p) => 50 + (p.luck > 50 ? 15 : -10) + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【捕获重宝】成功捞获一枚未损毁的绝密量子密钥发生器！军工巨头以天价回购，一举还清全部船贷！",
+            failFeedback: "【残骸擦碰】遭遇超高速微陨石贯穿推进舱，打捞失败反倒赔进去巨额拖船施救费。",
+            successEffect: { wealth: +28.0, rep: +12, happiness: +8, luck: +6 },
+            failEffect: { wealth: -12.0, happiness: -14, health: -8 },
+            tagSuccess: "星轨掘金客",
+            tagFail: "太空白卷",
+            isKey: true
+          },
+          {
+            text: "受聘联合空间站警卫署，负责出入港飞船的人脸识别与禁运物资排查",
+            riskLevel: "守望哨卡 · 确定薪饷",
+            successChance: () => 100,
+            successFeedback: "薪酬优厚稳定，每日目睹各色飞船穿梭星汉，生活规律而安全。",
+            successEffect: { wealth: +6.0, rep: +8, health: +4, happiness: +6 },
+            tagSuccess: "星空港警",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 7 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "资产裂变",
         title: "小行星采矿股权还是地表绿区永久产权？",
         narrative: (p, y) => `那是 ${y} 年。外小行星带'谷神星-4号'发现了储量惊人的稀土与超导矿脉，全网开放代币众筹；\n\n同时，地表第四穹顶的'天然土壤独栋房产'挂牌出售，两份足以彻底重塑资产负债表的契约摆在面前。`,
@@ -1473,8 +2201,41 @@
         ]
       },
       {
-        getAge: () => 31,
-        getYear: (b) => b + 31,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "立业与资产",
+        title: "小行星采矿股权还是火星冷凝水专营权",
+        narrative: (p, y) => `那是 ${y} 年。小行星带稀土金属丰收，而火星地下冷凝水源开采牌照即将拍卖。\n\n在资产配置的关键转折点：是认购高风险的富铂小行星开采权，还是竞标极其刚需的火星生命水源垄断经营？`,
+        choices: [
+          {
+            text: "孤注一掷押宝火星北极冷凝水处理厂专营权，垄断千万人造穹顶生命水源",
+            riskLevel: "刚需命脉 · 成功率 70%",
+            successChance: (p) => 70 + (p.wealth > 10 ? 10 : 0) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【水务寡头】火星移民人口暴增，水资源价格狂飙，你的水厂每日进账数万通用能量点，富甲一方！",
+            failFeedback: "【水脉含硫】钻探出的地下深井含硫量严重超标导致设备腐蚀报废，被迫接受重组吞并。",
+            successEffect: { wealth: +40.0, rep: +16, happiness: +10 },
+            failEffect: { wealth: -15.0, happiness: -15, rep: -4 },
+            tagSuccess: "火星水神",
+            tagFail: "毒泉折戟",
+            isKey: true
+          },
+          {
+            text: "把资金分散投资于多支近地轨道物流ETF，追求低波动被动收益",
+            riskLevel: "分散防御 · 稳若磐石",
+            successChance: () => 100,
+            successFeedback: "避开了所有星际探矿破产潮，资产稳步复利增长，现金流源源不绝。",
+            successEffect: { wealth: +12.0, happiness: +8, rep: +4 },
+            tagSuccess: "稳健资管",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 8 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "基因博弈",
         title: "CRISPR-IV 胚胎基因编辑还是自然分娩？",
         narrative: (p, y) => `时维 ${y} 年。你们迎来了新生命的孕育。\n\n基因诊断中心给出建议：支付高额费用进行'四代综合强化编辑'（消除99%遗传病并提升30%脑容量）；否则孩子未来可能在纯脑力竞争中面临劣势。`,
@@ -1503,8 +2264,41 @@
         ]
       },
       {
-        getAge: () => 35,
-        getYear: (b) => b + 35,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "繁衍与伦理",
+        title: "定制完美人造子宫婴儿还是自然受孕抗体传承",
+        narrative: (p, y) => `时维 ${y} 年。育儿中心提供'全基因组定制人造子宫'方案，能剔除全部遗传缺陷并植入超群免疫算法；但昂贵且剥离了母体温存。\n\n面对后代孕育：是订购经过四级算力筛选的完美试管儿，还是坚守十月怀胎的原始生物脉搏？`,
+        choices: [
+          {
+            text: "掏空积蓄为孩子选购顶级智力与抗辐射基因优化套餐，置入人造母舱孕育",
+            riskLevel: "新人类契约 · 成功率 80%",
+            successChance: (p) => 80 + (p.intellect > 50 ? 10 : 0),
+            successFeedback: "【天之骄子】诞生下来的宝宝不仅免疫所有地表已知病毒，而且展现出惊人的数理直觉，轰动社区！",
+            failFeedback: "【未预期基因拮抗】极度优化的代谢基因引起轻度内分泌失调，不得不长期注射调谐蛋白制剂。",
+            successEffect: { intellect: +10, rep: +12, happiness: +8, wealth: -10.0 },
+            failEffect: { wealth: -12.0, happiness: -12, health: -4 },
+            tagSuccess: "智力新星之父",
+            tagFail: "基因调试苦旅",
+            isKey: true
+          },
+          {
+            text: "顺应数百万年碳基进化规律自然受孕分娩，让生命在温暖的心跳与羊水中自然破晓",
+            riskLevel: "碳基温情 · 顺应天道",
+            successChance: () => 100,
+            successFeedback: "在产房握住婴儿湿热微弱的小手，泪水滑落面颊。那种原始而磅礴的爱，任何合成冷舱都无法比拟。",
+            successEffect: { happiness: +18, health: +6, rep: +6 },
+            tagSuccess: "大地之母",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 9 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "意识风暴",
         title: "数字永生法案：思维云端备份的诱惑",
         narrative: (p, y) => `时值 ${y} 年。第一部《意识上传与数字连续性法案》通过，首批商业'意识云端备份'向公众开放。\n\n只要将神经连接至量子机房，即使肉体遭遇非命，也能在虚拟赛博天堂中以数字生命延续存在。`,
@@ -1533,8 +2327,38 @@
         ]
       },
       {
-        getAge: () => 40,
-        getYear: (b) => b + 40,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "意识存续",
+        title: "记忆冷备份保险还是纯生物大脑防护",
+        narrative: (p, y) => `那是 ${y} 年。数字永生保险公司推出'终身突触微雕冷备份'服务，一旦发生肉体意外，可在三分钟内将思维克隆至人造义体。\n\n人到中年：是花费巨额年费将个人灵魂上传至冰冷的数据机房，还是坚守'我思即我在'的肉身孤勇？`,
+        choices: [
+          {
+            text: "每年缴纳重金保费，每日进行思维快照上传，为自己买下一份'死而复生'的安全底牌",
+            riskLevel: "数字备胎 · 绝对防备",
+            successChance: () => 100,
+            successFeedback: "虽然每年开销不菲，但直面深空风暴与意外时内心毫无恐惧，拥有了超越死亡威胁的绝对从容。",
+            successEffect: { happiness: +12, rep: +8, wealth: -6.0 },
+            tagSuccess: "云端有底",
+            isKey: true
+          },
+          {
+            text: "拒绝将自己的隐秘思维托付给商业巨头服务器，加装物理防扫描头盔，坚守生物纯净",
+            riskLevel: "独立灵魂 · 傲然卓立",
+            successChance: () => 100,
+            successFeedback: "你的思维从未被任何算法窃取或分析，保留了人类最崇高而未被污染的独立人格与尊严。",
+            successEffect: { intellect: +14, happiness: +12, rep: +10 },
+            tagSuccess: "思维堡垒",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 10 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "中年危机",
         title: "仿生义体老化与高阶维护费黑洞",
         narrative: (p, y) => `那是 ${y} 年。人到四十，早年植入的神经连接轴与人工肺叶相继出现氧化磨损，官方通知核心固件已停更；\n\n与此同时，孩子的高阶算力学费与家庭穹顶维保费如两只巨兽，中年两头受堵。`,
@@ -1563,8 +2387,41 @@
         ]
       },
       {
-        getAge: () => 44,
-        getYear: (b) => b + 44,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "义体与衰老",
+        title: "全钛合金人工心脏改造还是干细胞再生修复",
+        narrative: (p, y) => `时值 ${y} 年。四十余岁的心脏逐渐出现心肌纤维化，医院提供'磁悬浮全人工核能心脏'与'猪源干细胞自体克隆再生'两种方案。\n\n机械永动与生物再生：是让胸膛里跳动着永不停歇的核聚变微泵，还是依靠干细胞慢慢长出温热心肌？`,
+        choices: [
+          {
+            text: "移植最新型号磁悬浮人工核能心脏，彻底终结心律失常与疲惫感",
+            riskLevel: "机械强袭 · 成功率 85%",
+            successChance: (p) => 85 + (p.wealth > 15 ? 10 : -10),
+            successFeedback: "【机械澎湃】核泵输出功率极其平稳！哪怕在极限气压下心率也能随心调节，体能重回二十岁巅峰！",
+            failFeedback: "【电磁干扰频发】遇到强烈太阳黑子活动时胸膛会产生轻微发热和杂音，需每月前往车间微调阀门。",
+            successEffect: { health: +20, wealth: -8.0, rep: +8 },
+            failEffect: { health: +4, wealth: -12.0, happiness: -10 },
+            tagSuccess: "钢铁之心",
+            tagFail: "磁悬浮异响",
+            isKey: true
+          },
+          {
+            text: "采用温和的自体克隆干细胞原位注射修复，保留原生肉体自然搏动",
+            riskLevel: "生物温养 · 纯粹自然",
+            successChance: () => 100,
+            successFeedback: "虽然恢复期长达三个月，但胸腔里跳动的依旧是亲切热乎的原装心脏，内心宁静而踏实。",
+            successEffect: { health: +10, happiness: +12, wealth: -3.0 },
+            tagSuccess: "生生不息",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 11 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "宏观动荡",
         title: "强人工智能自组织与地表大洗牌",
         narrative: (p, y) => `时维 ${y} 年。中央智能网络完成了第七次自我重构，接管了全球90%的传统规划审批与科研实验。\n\n你所在的深空项目部被彻底'代码化整编'，算法直接向全员发放了优厚的退役遣散通证。`,
@@ -1593,8 +2450,41 @@
         ]
       },
       {
-        getAge: () => 50,
-        getYear: (b) => b + 50,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "硅基巨变",
+        title: "强人工智能自治特区还是旧人类自治地下城",
+        narrative: (p, y) => `时维 ${y} 年。全球算力超脑正式宣布成立'逻辑自治联合体'，接管大部分司法与生产；人类被要求在算法特区与旧地表之间站队。\n\n面对文明分水岭：是融入算力统筹的极高效率新社会，还是移居坚守人类直觉与艺术的自由邦？`,
+        choices: [
+          {
+            text: "接受超脑调度，成为链接人类情感与机器决策的'首席共情协调官'",
+            riskLevel: "桥梁使者 · 成功率 75%",
+            successChance: (p) => 75 + (p.intellect > 60 ? 15 : 0),
+            successFeedback: "【智巧调停】你在冰冷机械与狂热民意之间搭建了不可或缺的缓冲带，获得双边世界的崇高礼遇！",
+            failFeedback: "【两头受气】激进的人类反抗派骂你是硅基走狗，机械中枢又嫌你逻辑效率低下，精神压力倍增。",
+            successEffect: { rep: +24, wealth: +15.0, intellect: +12, happiness: +6 },
+            failEffect: { rep: -6, happiness: -16, health: -8, wealth: +4.0 },
+            tagSuccess: "碳硅桥梁",
+            tagFail: "夹缝游魂",
+            isKey: true
+          },
+          {
+            text: "退往拒绝算法统治的自由海岛，依靠燃油发电机、手工纸笔与吉他过自给自足的生活",
+            riskLevel: "文明遗民 · 诗意栖居",
+            successChance: () => 100,
+            successFeedback: "围坐在真实的篝火旁唱歌、喝酒、写诗。虽无飞天遁地的算力，却饱尝了作为人的至纯欢愉。",
+            successEffect: { happiness: +20, health: +6, rep: +10, wealth: -4.0 },
+            tagSuccess: "自由遗民",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 12 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "代际碰撞",
         title: "孩子的火星移民申请表：远征还是守望？",
         narrative: (p, y) => `那是 ${y} 年。首批拥有独立自循环生态的火星城邦宣布接纳新移民。\n\n年满十八岁的孩子递来一张'水手大峡谷科考移民志愿表'。一旦启程，地球重力与异星时空将让此生再难亲身相拥。`,
@@ -1623,8 +2513,41 @@
         ]
       },
       {
-        getAge: () => 58,
-        getYear: (b) => b + 58,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "代际抉择",
+        title: "孩子的恒星际飞船船票：启程飞向比邻星",
+        narrative: (p, y) => `那是 ${y} 年。人类首艘亚光速恒星际巨舰'远航号'即将起航飞向半人马座比邻星，旅程耗时八十年。你的孩子通过了遴选。\n\n年过半百，面对一生无法再见的星际长别：是倾注毕生储蓄支持 Ta 飞向未知星辰，还是劝孩子留下相守？`,
+        choices: [
+          {
+            text: "变卖半数家产为孩子购置顶级深空休眠舱与私人微反应堆，目送飞船化作星海微光",
+            riskLevel: "星海远嫁 · 成功率 85%",
+            successChance: (p) => 85 + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【火种播撒】在超空间通讯传回的起航全息画面里，孩子向你敬了最崇高的军礼，全人类铭记这一瞬间！",
+            failFeedback: "【航线微偏惊魂】飞船在加速阶段突遭星际尘埃小冲撞触发警报，虽然随后恢复，但让你彻夜痛哭难眠。",
+            successEffect: { rep: +20, happiness: +12, intellect: +10, wealth: -15.0 },
+            failEffect: { happiness: -14, health: -10, wealth: -15.0, rep: +8 },
+            tagSuccess: "星海之父",
+            tagFail: "牵肠挂肚",
+            isKey: true
+          },
+          {
+            text: "泪流满面拉住孩子的手，劝说 Ta 留在母星轨道共同生活，享受天伦乐事",
+            riskLevel: "人间炊烟 · 暖意融融",
+            successChance: () => 100,
+            successFeedback: "孩子最终留在了身边，随后成家立业生儿育女。无论宇宙多么辽阔，家人的餐桌永远是最温暖的归宿。",
+            successEffect: { happiness: +16, health: +6, rep: +4 },
+            tagSuccess: "母星天伦",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 13 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "暮景智境",
         title: "强太阳风暴与城市断网之夜",
         narrative: (p, y) => `时值 ${y} 年。一场百年未遇的超级太阳风暴击碎了外层空间的大部分中继星链，整座城市陷入罕见的全局断网与停电。\n\n年轻一代习惯了脑机直连，在突如其来的黑暗与静默中陷入恐慌；年近六旬的你，点亮了珍藏多年的物理蜡烛。`,
@@ -1653,8 +2576,41 @@
         ]
       },
       {
-        getAge: () => 66,
-        getYear: (b) => b + 66,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "天地惊变",
+        title: "近地轨道伽马射线暴余波与地表辐射防御",
+        narrative: (p, y) => `时维 ${y} 年。数光年外的超新星爆发产生超能伽马射线暴扫过太阳系外围，行星护盾遭受剧烈电离激荡。\n\n年近六旬的你身为资深物理技术顾问：是冒着辐射风险前往外层护盾中枢手动校准偏转线圈，还是进入地下避难？`,
+        choices: [
+          {
+            text: "穿上重型铅合金防辐射服，带领抢险队爬上塔顶手动锁死磁通量偏转阀",
+            riskLevel: "舍身力挽 · 成功率 80%",
+            successChance: (p) => 80 + Math.floor((p.intellect - 50) / 2) + (p.health > 50 ? 10 : -10),
+            successFeedback: "【救世砥柱】在最后三十秒成功恢复了地表电磁护盾！数十万居民免遭辐射伤害，全城为你鸣响礼炮！",
+            failFeedback: "【剂量超载】抢修成功但防护服手套破损吸收了过量射线，术后在抗辐射凝胶舱休养了整整半年。",
+            successEffect: { rep: +30, happiness: +16, intellect: +10, health: -6 },
+            failEffect: { rep: +18, health: -18, happiness: -8 },
+            tagSuccess: "护盾英雄",
+            tagFail: "射线烙痕",
+            isKey: true
+          },
+          {
+            text: "按照标准应急规程引导全家退入最深层铅防护掩体，安静等待风暴自然消退",
+            riskLevel: "合规避险 · 平安无虞",
+            successChance: () => 100,
+            successFeedback: "掩体坚固厚实，风暴过后全家平安走出地底，看着重新蔚蓝的天空，深感生命的珍贵。",
+            successEffect: { health: +8, happiness: +10, intellect: +2 },
+            tagSuccess: "平安避险",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 14 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "晚霞沧桑",
         title: "深空引退与星空观象台长椅",
         narrative: (p, y) => `那是 ${y} 年。全自动化已经无需任何人类肉身劳动，公民终身算力红利已足够衣食丰足。\n\n你站在山顶旧射电望远镜废墟旁的观象台上，孙辈好奇地摸着你粗糙温热的手指，问起你年轻时造过的飞船与写过的代码。`,
@@ -1683,8 +2639,38 @@
         ]
       },
       {
-        getAge: () => 74,
-        getYear: (b) => b + 74,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "暮年归隐",
+        title: "月球静海疗养院还是地表生态园艺",
+        narrative: (p, y) => `那是 ${y} 年。六分之低重力的月球静海疗养基地对老年人骨骼和心肺极为友好，许多老一代拓荒者选择在那里养老。\n\n步入花甲暮年：是移居月球在低重力穹顶下轻盈散步，还是留在母星修剪古老真实的盆景花卉？`,
+        choices: [
+          {
+            text: "移居月球静海'低重力银发基地'，在1/6重力下慢跑、漂浮，摆脱关节磨损痛苦",
+            riskLevel: "月海飞羽 · 舒适延寿",
+            successChance: () => 100,
+            successFeedback: "在月球穹顶下你可以像鸟一样振翅滑翔，衰老的身躯重获轻盈自由，身体机能大幅回春！",
+            successEffect: { health: +18, happiness: +16, wealth: -6.0 },
+            tagSuccess: "月海漫步",
+            isKey: false
+          },
+          {
+            text: "留在母星的一处阳光小镇，精心培植真实的花草果木，给来访的孩童讲述星海往事",
+            riskLevel: "落叶归根 · 岁月温润",
+            successChance: () => 100,
+            successFeedback: "你的花园成了社区最迷人的绿洲，孩子们围绕在你膝前，听你讲述当年开荒深空的真实传奇。",
+            successEffect: { rep: +16, happiness: +18, health: +8 },
+            tagSuccess: "绿意守望",
+            isKey: true
+          }
+        ]
+      }
+      ],
+      // 阶段 15 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "沧海遗珠",
         title: "老旧量子晶片的封存：把什么留给未来？",
         narrative: (p, y) => `时维 ${y} 年。你整理起一生的旧式晶片、老式全息投影片与早年手写信件。\n\n全球数字历史博物馆发来邀请，希望收录你这一代跨越'旧碳基向星际智能跃迁'的实录私人档案。`,
@@ -1710,8 +2696,38 @@
         ]
       },
       {
-        getAge: () => 80,
-        getYear: (b) => b + 80,
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "记忆回响",
+        title: "神经记忆解密开源还是随身封存",
+        narrative: (p, y) => `时维 ${y} 年。年过古稀，世界历史档案馆向早期深空开拓者征集'第一人称真实意识记忆流'以入选人类文明大辞典。\n\n面对一生的爱恨情仇与绝密档案：是公开自己一生的脑电波录像供全人类查阅，还是将其封存在私人量子晶体？`,
+        choices: [
+          {
+            text: "将自己八十年间所有经历、情绪波动与技术手记无保留上传至人类公共文明记忆库",
+            riskLevel: "文明奉献 · 名垂青史",
+            successChance: () => 100,
+            successFeedback: "数以亿计的年轻一代通过全息链接感知到了你真切的心跳与泪水，你成为人类文明不朽拼图的一部分！",
+            successEffect: { rep: +30, intellect: +15, happiness: +15 },
+            tagSuccess: "文明记忆基石",
+            isKey: true
+          },
+          {
+            text: "将包含私人秘密的量子晶体锁入合金小盒，沉入家乡深水湖底，留住属于凡人的一抹私密",
+            riskLevel: "守密自珍 · 独善其身",
+            successChance: () => 100,
+            successFeedback: "有些风雨只属于你和那个早已离去的时代。带着神秘与尊严，守住了最纯洁的精神自留地。",
+            successEffect: { happiness: +18, intellect: +10 },
+            tagSuccess: "永恒秘语",
+            isKey: false
+          }
+        ]
+      }
+      ],
+      // 阶段 16 候选事件池
+      [
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
         period: "归于星海",
         title: "生命终幕：是上传思维意识，还是随微风散入尘埃？",
         narrative: (p, y) => `那是 ${y} 年。冬日的午后，阳光穿过穹顶折射出七彩微茫，心率监测仪发出温和平缓的律动。\n\n意识上传舱已静静候在一旁，医生柔声询问：'先生/女士，是否启动永久思维上传？或者，选择以碳基肉身的完整方式合上双眼？'`,
@@ -1735,12 +2751,98 @@
             isKey: true
           }
         ]
+      },
+      {
+        getAge: (p) => p.age,
+        getYear: (b, p) => b + (p ? p.age : 0),
+        period: "终幕升维",
+        title: "戴森球光芒与静谧合眼",
+        narrative: (p, y) => `那是 ${y} 年。窗外恒星戴森云已经初具雏形，壮丽的人造金环环绕恒星熠熠生辉。\n\n八十余年风雪，你见证了人类从地表泥沼迈向星河巅峰的完整史诗。最后的时刻，心跳如渐落的晚钟，平静而庄严。`,
+        choices: [
+          {
+            text: "拒绝将意识转录为虚幻代码，在挚爱亲朋温暖的握手中，将肉体骨灰撒入深空微风",
+            riskLevel: "碳基尊严 · 壮烈归真",
+            successChance: () => 100,
+            successFeedback: "原子来自于星尘，如今又归于星尘。你的骨灰在恒星风的吹拂下飘向无垠宇宙，坦荡无悔，壮丽落幕。",
+            successEffect: { happiness: +25, rep: +25 },
+            tagSuccess: "星尘归真",
+            isKey: true
+          },
+          {
+            text: "闭上双眼，将这八十年的爱与痛凝结为一段纯净正弦波，融入恒星戴森球的共振节奏",
+            riskLevel: "恒星脉动 · 融于浩瀚",
+            successChance: () => 100,
+            successFeedback: "整颗太阳的光芒仿佛都在为你呼吸跳跃。你已超越了生物个体，化作这浩瀚星辰中永不熄灭的一缕光芒。",
+            successEffect: { intellect: +25, happiness: +25 },
+            tagSuccess: "光流同辉",
+            isKey: true
+          }
+        ]
       }
+      ]
     ];
+
+    // --- 人生历程阶段与随机年龄跨度配置 ---
+    const LIFE_STAGE_BRACKETS = [
+      { id: 0, minAge: 5, maxAge: 7, label: "幼年启蒙" },
+      { id: 1, minAge: 9, maxAge: 11, label: "童年韶光" },
+      { id: 2, minAge: 14, maxAge: 16, label: "少年分流" },
+      { id: 3, minAge: 17, maxAge: 19, label: "成人立志" },
+      { id: 4, minAge: 20, maxAge: 22, label: "青春韶华" },
+      { id: 5, minAge: 23, maxAge: 25, label: "初涉人世" },
+      { id: 6, minAge: 26, maxAge: 29, label: "成家立业" },
+      { id: 7, minAge: 30, maxAge: 33, label: "三十而立" },
+      { id: 8, minAge: 34, maxAge: 38, label: "负重前行" },
+      { id: 9, minAge: 39, maxAge: 42, label: "中年险滩" },
+      { id: 10, minAge: 43, maxAge: 47, label: "动荡考验" },
+      { id: 11, minAge: 49, maxAge: 53, label: "知命之年" },
+      { id: 12, minAge: 56, maxAge: 61, label: "花甲在望" },
+      { id: 13, minAge: 64, maxAge: 69, label: "桑榆晚景" },
+      { id: 14, minAge: 72, maxAge: 76, label: "古稀沧桑" },
+      { id: 15, minAge: 78, maxAge: 83, label: "夕阳辞章" }
+    ];
+
+    // 为单局游戏动态生成随机岁月时间线（严格单调递增，发生时间随机）
+    function generateRandomTimeline() {
+      let timeline = [];
+      let prevAge = 0;
+      for (let i = 0; i < LIFE_STAGE_BRACKETS.length; i++) {
+        const bracket = LIFE_STAGE_BRACKETS[i];
+        const minVal = Math.max(prevAge + 1, bracket.minAge);
+        const maxVal = Math.max(minVal, bracket.maxAge);
+        const randomAge = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+        timeline.push(randomAge);
+        prevAge = randomAge;
+      }
+      return timeline;
+    }
+
+    // 为单局游戏动态组装 16 个随机选定的时代事件
+    function assembleDynamicSessionEvents(epochMode) {
+      const pools = (epochMode === "past") ? PAST_STAGE_POOLS : FUTURE_STAGE_POOLS;
+      const timeline = generateRandomTimeline();
+      let assembled = [];
+
+      for (let i = 0; i < pools.length; i++) {
+        const pool = pools[i];
+        // 随机选择当前阶段的候选事件之一
+        const pickedEvent = pool[Math.floor(Math.random() * pool.length)];
+        const stageAge = timeline[i];
+        
+        assembled.push({
+          ...pickedEvent,
+          stageIndex: i,
+          assignedAge: stageAge,
+          getAge: () => stageAge,
+          getYear: (b) => b + stageAge
+        });
+      }
+      return assembled;
+    }
 
     // --- 游戏运行态控制 ---
     let currentEventIndex = 0;
-    let activeEpochEvents = PAST_EPOCH_EVENTS;
+    let activeEpochEvents = [];
 
     function startGame() {
       initAudio();
@@ -1769,7 +2871,7 @@
       currentEventIndex = 0;
 
       // 决定剧本池
-      activeEpochEvents = (player.epochMode === "past") ? PAST_EPOCH_EVENTS : FUTURE_EPOCH_EVENTS;
+      activeEpochEvents = assembleDynamicSessionEvents(player.epochMode);
 
       // 切换视图
       document.getElementById('screen-intro').classList.add('hidden');
