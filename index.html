@@ -137,6 +137,10 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <button onclick="openHallOfFame()" class="text-zinc-400 hover:text-amber-300 text-xs px-2.5 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition flex items-center">
+          <span>🏛️ 轮回谱</span>
+          <span id="top-badge-ach" class="ml-1 text-[10px] text-amber-300 font-mono">0</span>
+        </button>
         <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2.5 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition">
           🔊 音效: 开
         </button>
@@ -157,10 +161,21 @@
         <h1 class="text-3xl md:text-5xl font-black text-amber-100 tracking-wider mb-3">
           浮 生 录
         </h1>
-        <p class="text-zinc-400 text-xs md:text-sm leading-relaxed max-w-xl mx-auto mb-6 font-sans-sc">
+        <p class="text-zinc-400 text-xs md:text-sm leading-relaxed max-w-xl mx-auto mb-5 font-sans-sc">
           一个人的命运，既要靠自我的奋斗，亦要看历史的进程。<br>
           时代洪流呼啸而过，偶发的幸与不幸如影随形。细水长流，步步为营，落子无悔。
         </p>
+
+        <!-- 断点续玩与万世祠快捷入口 -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5 mb-5 font-sans-sc">
+          <button id="btn-resume-game" onclick="resumeSavedGame()" class="hidden px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-200 border border-emerald-600/70 rounded-lg text-xs md:text-sm font-bold shadow-lg transition flex items-center animate-pulse">
+            <span class="mr-1.5">⏳</span> 继续上一世：<span id="resume-summary" class="ml-1 font-mono text-emerald-300">--</span>
+          </button>
+          <button onclick="openHallOfFame()" class="px-3.5 py-2 bg-zinc-900/90 hover:bg-zinc-800 text-amber-200 border border-amber-600/40 rounded-lg text-xs md:text-sm font-medium transition flex items-center shadow">
+            <span class="mr-1.5">🏛️</span> 百世轮回谱 & 成就勋章
+            <span id="badge-ach-count" class="ml-2 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono border border-amber-500/30">0/16</span>
+          </button>
+        </div>
 
         <!-- 时代纪元自主选择 / 随机投放（五大文明纪元） -->
         <div class="max-w-2xl mx-auto mb-4 bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 text-left font-sans-sc">
@@ -468,7 +483,10 @@
           <button onclick="restartGame()" class="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm transition">
             开启另一轮轮回
           </button>
-          <button onclick="copySummary()" class="w-full sm:w-auto px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded text-xs md:text-sm transition">
+          <button onclick="openHallOfFame()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-300 font-medium rounded text-xs md:text-sm transition flex items-center justify-center">
+            <span class="mr-1.5">🏛️</span> 功业入万世祠
+          </button>
+          <button onclick="copySummary()" class="w-full sm:w-auto px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded text-xs md:text-sm transition">
             复制人生纪传档案
           </button>
         </div>
@@ -477,6 +495,63 @@
 
     </div>
   </main>
+
+  <!-- 成就勋章与万世祠 弹窗模态框 -->
+  <div id="modal-hall-of-fame" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in font-sans-sc">
+    <div class="bg-[#151722] border border-amber-600/40 rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- 弹窗顶栏 -->
+      <div class="px-5 py-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/60">
+        <div class="flex items-center space-x-2">
+          <span class="text-amber-400 font-bold text-sm md:text-base flex items-center">
+            <span class="mr-1.5 text-base">🏛️</span> 万世祠与千秋功业勋章
+          </span>
+        </div>
+        <button onclick="closeHallOfFame()" class="text-zinc-400 hover:text-zinc-200 text-lg px-2 py-0.5 rounded transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- 选项卡切换 -->
+      <div class="flex border-b border-zinc-800 bg-zinc-950/40 px-5 pt-2 gap-4 text-xs font-medium">
+        <button id="tab-btn-ach" onclick="switchHallTab('ach')" class="pb-2 border-b-2 border-amber-500 text-amber-300 font-bold transition">
+          🏆 功业勋章 (<span id="hof-ach-unlocked-count">0</span>/16)
+        </button>
+        <button id="tab-btn-lives" onclick="switchHallTab('lives')" class="pb-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
+          📜 百世轮回谱 (<span id="hof-lives-count">0</span>世)
+        </button>
+      </div>
+
+      <!-- 选项卡内容区域 (滚动) -->
+      <div class="p-4 md:p-5 overflow-y-auto space-y-3 flex-grow text-xs font-sans-sc">
+        <!-- 成就面板 -->
+        <div id="panel-achievements" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <!-- 动态渲染成就勋章卡片 -->
+        </div>
+
+        <!-- 轮回录面板 -->
+        <div id="panel-lives" class="hidden space-y-2.5">
+          <!-- 动态渲染历史人生列表 -->
+        </div>
+      </div>
+
+      <!-- 底部控制条 -->
+      <div class="px-5 py-3 border-t border-zinc-800 bg-zinc-900/60 flex items-center justify-between text-xs text-zinc-500">
+        <span class="text-[11px]">功德昭彰，载于青史，跨越千秋</span>
+        <button onclick="closeHallOfFame()" class="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded font-medium transition">
+          返回人世
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就解锁悬浮弹窗提示 -->
+  <div id="toast-achievement" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-gradient-to-r from-amber-950 via-zinc-900 to-amber-950 border-2 border-amber-500/80 rounded-xl shadow-2xl text-amber-200 text-xs md:text-sm font-sans-sc flex items-center space-x-2.5 animate-bounce">
+    <span class="text-xl">🏆</span>
+    <div>
+      <div class="text-[10px] text-amber-400 font-bold tracking-widest uppercase">千秋功德 · 成就达成</div>
+      <div id="toast-ach-text" class="font-bold text-zinc-100 font-serif">--</div>
+    </div>
+  </div>
 
   <footer class="text-center py-3 text-[11px] text-zinc-600 font-sans-sc border-t border-zinc-900">
     《浮生录》· 穿梭过去与未来的真实人生模拟 · 大浪淘沙，唯心自守
@@ -3308,6 +3383,7 @@
 
       updateUIStats();
       renderCurrentEvent();
+      saveActiveGame();
     }
 
     function updateUIStats(changes = null) {
@@ -3448,9 +3524,9 @@
       const roll = Math.floor(Math.random() * 100) + 1;
       const isSuccess = roll <= successChance;
 
-      const effect = isSuccess ? choice.successEffect : choice.failEffect;
-      const feedback = isSuccess ? choice.successFeedback : choice.failFeedback;
-      const tag = isSuccess ? choice.tagSuccess : choice.tagFail;
+      const effect = (isSuccess ? choice.successEffect : choice.failEffect) || choice.successEffect || {};
+      const feedback = (isSuccess ? choice.successFeedback : choice.failFeedback) || choice.successFeedback || "命运翻转，尘埃落定。";
+      const tag = (isSuccess ? choice.tagSuccess : choice.tagFail) || choice.tagSuccess || "";
 
       player.health = Math.max(0, Math.min(100, player.health + (effect.health || 0)));
       player.wealth = parseFloat((player.wealth + (effect.wealth || 0)).toFixed(1));
@@ -3549,6 +3625,7 @@
     function nextEvent() {
       soundClick();
       currentEventIndex++;
+      saveActiveGame();
       renderCurrentEvent();
     }
 
@@ -3636,6 +3713,11 @@
       renderFamilyEnding();
       generateVividBiography();
       renderKeyTurningPoints();
+
+      checkAndUnlockAchievements(player);
+      recordLifeToHallOfFame(player, archetypeData.archetype, archetypeData.epitaph);
+      try { localStorage.removeItem('fushenglu_active_save_v1'); } catch (e) {}
+      checkResumeAvailable();
     }
 
     function renderFamilyEnding() {
@@ -3923,6 +4005,7 @@ function renderKeyTurningPoints() {
     function restartGame() {
       soundClick();
       rollNewDestiny();
+      checkResumeAvailable();
       document.getElementById('screen-ending').classList.add('hidden');
       document.getElementById('screen-intro').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3945,11 +4028,371 @@ function renderKeyTurningPoints() {
       });
     }
 
+    // ==================== 功业勋章与成就系统 ====================
+    const ACHIEVEMENTS_DEF = [
+      { id: "ach_first_life", title: "初入凡尘", desc: "完成第一世完整的浮生轮回", icon: "🌱" },
+      { id: "ach_longevity", title: "寿比南山", desc: "单局人生享年达到 80 岁及以上", icon: "🐢" },
+      { id: "ach_wealthy", title: "富甲一方", desc: "单局财富净值达到 35 以上", icon: "🪙" },
+      { id: "ach_sage", title: "格物致知", desc: "学识智识值达到 90 及以上", icon: "📜" },
+      { id: "ach_peace", title: "心如止水", desc: "心境安宁度达到 90 及以上", icon: "🕊️" },
+      { id: "ach_fortune", title: "福泽深厚", desc: "终生天命气运达到 85 及以上", icon: "🎲" },
+      { id: "ach_matriarch", title: "巾帼执牛耳", desc: "以女性身份位列【时代领军巨擘】", icon: "👑" },
+      { id: "ach_patriarch", title: "栋梁砥柱", desc: "以男性身份位列【时代领军巨擘】", icon: "🏛️" },
+      { id: "ach_lineage", title: "四世同堂", desc: "育有 3 位及以上子嗣且见孙辈绕膝", icon: "🏡" },
+      { id: "ach_love", title: "金婚相守", desc: "与结发夫妻相濡以沫超过 40 载", icon: "💍" },
+      { id: "ach_traveler", title: "沧海桑田", desc: "单局人生跨越 6 个及以上大历史时代", icon: "🌊" },
+      { id: "ach_ancient", title: "青铜长歌", desc: "完整体验【先秦汉唐】纪元的一生", icon: "⚱️" },
+      { id: "ach_premodern", title: "汴京风雅", desc: "完整体验【宋韵明清】纪元的一生", icon: "🏮" },
+      { id: "ach_modern", title: "烽火破晓", desc: "完整体验【近代破晓】纪元的一生", icon: "🌅" },
+      { id: "ach_contemporary", title: "春风浪潮", desc: "完整体验【当代腾飞】纪元的一生", icon: "🏙️" },
+      { id: "ach_future", title: "星海远航", desc: "完整体验【未来星海】纪元的一生", icon: "🚀" }
+    ];
+
+    function getUnlockedAchievements() {
+      try {
+        const raw = localStorage.getItem('fushenglu_achievements_v1');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function updateAchievementBadge() {
+      const unlocked = getUnlockedAchievements();
+      const count = Object.keys(unlocked).length;
+      const b1 = document.getElementById('badge-ach-count');
+      const b2 = document.getElementById('top-badge-ach');
+      const b3 = document.getElementById('hof-ach-unlocked-count');
+      if (b1) b1.innerText = `${count}/${ACHIEVEMENTS_DEF.length}`;
+      if (b2) b2.innerText = `${count}`;
+      if (b3) b3.innerText = `${count}`;
+    }
+
+    function showAchievementToast(newlyUnlocked) {
+      if (!newlyUnlocked || !newlyUnlocked.length) return;
+      const toast = document.getElementById('toast-achievement');
+      const txt = document.getElementById('toast-ach-text');
+      if (!toast || !txt) return;
+
+      const def = newlyUnlocked[0];
+      txt.innerText = `${def.icon} 【${def.title}】${def.desc}`;
+      toast.classList.remove('hidden');
+      soundDecision();
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        if (newlyUnlocked.length > 1) {
+          setTimeout(() => showAchievementToast(newlyUnlocked.slice(1)), 300);
+        }
+      }, 3500);
+    }
+
+    function checkAndUnlockAchievements(p) {
+      const currentUnlocked = getUnlockedAchievements();
+      const newlyUnlocked = [];
+      const endYear = p.birthYear + p.age;
+      const eras = listErasBetween(p.birthYear, endYear);
+      const fam = p.family || {};
+
+      function testAch(id, condition) {
+        if (condition && !currentUnlocked[id]) {
+          currentUnlocked[id] = { unlockedAt: Date.now() };
+          const def = ACHIEVEMENTS_DEF.find(a => a.id === id);
+          if (def) newlyUnlocked.push(def);
+        }
+      }
+
+      testAch("ach_first_life", true);
+      testAch("ach_longevity", p.age >= 80);
+      testAch("ach_wealthy", p.wealth >= 35);
+      testAch("ach_sage", p.intellect >= 90);
+      testAch("ach_peace", p.happiness >= 90);
+      testAch("ach_fortune", p.luck >= 85);
+      testAch("ach_matriarch", p.gender === "female" && p.socialRank === "时代领军巨擘");
+      testAch("ach_patriarch", p.gender === "male" && p.socialRank === "时代领军巨擘");
+      testAch("ach_lineage", fam.children && fam.children.length >= 3 && fam.grandchildrenCount > 0);
+      testAch("ach_love", fam.spouse && ((fam.spouse.deathYear || endYear) - fam.spouse.marriedYear) >= 40);
+      testAch("ach_traveler", eras.length >= 6);
+      testAch("ach_ancient", p.epochMode === "ancient");
+      testAch("ach_premodern", p.epochMode === "premodern");
+      testAch("ach_modern", p.epochMode === "modern");
+      testAch("ach_contemporary", p.epochMode === "contemporary");
+      testAch("ach_future", p.epochMode === "future");
+
+      try {
+        localStorage.setItem('fushenglu_achievements_v1', JSON.stringify(currentUnlocked));
+      } catch (e) {}
+
+      updateAchievementBadge();
+      if (newlyUnlocked.length > 0) {
+        showAchievementToast(newlyUnlocked);
+      }
+    }
+
+    // ==================== 百世轮回谱与万世祠 ====================
+    function getHallOfFameRecords() {
+      try {
+        const raw = localStorage.getItem('fushenglu_hall_of_fame_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function recordLifeToHallOfFame(p, archetype, epitaph) {
+      const list = getHallOfFameRecords();
+      const endYear = p.birthYear + p.age;
+      const rec = {
+        id: Date.now(),
+        name: p.name,
+        gender: p.gender || 'male',
+        epochMode: p.epochMode,
+        birthYear: p.birthYear,
+        birthMonth: p.birthMonth,
+        endYear,
+        age: p.age,
+        deathReason: p.deathReason,
+        archetype: archetype || "烟火凡人",
+        epitaph: epitaph || "",
+        careerTrack: p.careerTrack,
+        socialRank: p.socialRank,
+        wealth: p.wealth,
+        wealthUnit: wealthUnit(p.epochMode),
+        happiness: Math.round(p.happiness),
+        intellect: Math.round(p.intellect),
+        luck: Math.round(p.luck),
+        familySummary: formatFamilyStatus(p),
+        timestamp: new Date().toLocaleDateString('zh-CN')
+      };
+      list.unshift(rec);
+      if (list.length > 50) list.pop();
+      try {
+        localStorage.setItem('fushenglu_hall_of_fame_v1', JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function openHallOfFame() {
+      soundClick();
+      renderHallOfFame();
+      const modal = document.getElementById('modal-hall-of-fame');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeHallOfFame() {
+      soundClick();
+      const modal = document.getElementById('modal-hall-of-fame');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    let activeHallTab = 'ach';
+    function switchHallTab(tab) {
+      soundClick();
+      activeHallTab = tab;
+      const btnAch = document.getElementById('tab-btn-ach');
+      const btnLives = document.getElementById('tab-btn-lives');
+      const pAch = document.getElementById('panel-achievements');
+      const pLives = document.getElementById('panel-lives');
+      if (!btnAch || !btnLives || !pAch || !pLives) return;
+
+      if (tab === 'ach') {
+        btnAch.className = "pb-2 border-b-2 border-amber-500 text-amber-300 font-bold transition";
+        btnLives.className = "pb-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
+        pAch.classList.remove('hidden');
+        pLives.classList.add('hidden');
+      } else {
+        btnLives.className = "pb-2 border-b-2 border-amber-500 text-amber-300 font-bold transition";
+        btnAch.className = "pb-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition";
+        pLives.classList.remove('hidden');
+        pAch.classList.add('hidden');
+      }
+    }
+
+    function renderHallOfFame() {
+      updateAchievementBadge();
+      const unlocked = getUnlockedAchievements();
+      const records = getHallOfFameRecords();
+
+      const cntEl = document.getElementById('hof-lives-count');
+      if (cntEl) cntEl.innerText = records.length;
+
+      // 1. 渲染成就
+      const pAch = document.getElementById('panel-achievements');
+      if (pAch) {
+        pAch.innerHTML = ACHIEVEMENTS_DEF.map(a => {
+          const isDone = !!unlocked[a.id];
+          return `
+            <div class="p-3 rounded-xl border transition flex items-start space-x-2.5 ${
+              isDone 
+                ? 'bg-amber-950/30 border-amber-500/50 shadow-sm shadow-amber-950' 
+                : 'bg-zinc-900/40 border-zinc-800/80 opacity-60'
+            }">
+              <div class="text-2xl filter ${isDone ? '' : 'grayscale'}">${a.icon}</div>
+              <div class="flex-grow min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs ${isDone ? 'text-amber-200' : 'text-zinc-400'} font-serif">${a.title}</span>
+                  <span class="text-[10px] font-mono ${isDone ? 'text-emerald-400' : 'text-zinc-600'}">${isDone ? '✓ 已达成' : '未解锁'}</span>
+                </div>
+                <p class="text-[11px] text-zinc-400 mt-0.5 leading-snug">${a.desc}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 2. 渲染轮回录
+      const pLives = document.getElementById('panel-lives');
+      if (pLives) {
+        if (records.length === 0) {
+          pLives.innerHTML = `
+            <div class="text-center py-12 text-zinc-500 font-serif">
+              <div class="text-3xl mb-2">📜</div>
+              <p>暂无入世轮回记录。完成人生长卷后，功业将永载于此。</p>
+            </div>
+          `;
+        } else {
+          pLives.innerHTML = records.map((r, i) => {
+            const cfg = getEpochConfig(r.epochMode);
+            const gText = r.gender === 'female' ? '女 ♀' : '男 ♂';
+            return `
+              <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 hover:border-amber-600/40 transition text-xs font-sans-sc space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-amber-300 font-serif text-sm">
+                    ${r.name} <span class="text-xs text-zinc-400 font-sans-sc font-normal">(${gText})</span>
+                  </span>
+                  <span class="text-[10px] font-mono text-zinc-400">${r.timestamp}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-200/90 font-mono">${cfg.eraIcon} ${cfg.name}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono">${r.birthYear} - ${r.endYear} (${r.age}岁)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/60">${r.archetype}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">${r.careerTrack} · ${r.socialRank}</span>
+                </div>
+                <div class="text-zinc-400 text-[11px] leading-relaxed italic">
+                  “${r.epitaph}”
+                </div>
+                <div class="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800/60 flex items-center justify-between">
+                  <span>财富: ${r.wealth} ${r.wealthUnit} | 心安: ${r.happiness}☼</span>
+                  <span>至亲: ${r.familySummary}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    // ==================== 即时自动存档与断点续玩 ====================
+    function rehydrateEvent(spec, birthYear) {
+      const pools = getEpochStagePools(spec.eraId);
+      const pool = pools[spec.stageIndex] || pools[pools.length - 1];
+      let raw = pool.find(e => e.title === spec.title);
+      if (!raw && typeof WOMEN_EVENT_POOLS !== 'undefined' && WOMEN_EVENT_POOLS[spec.eraId] && WOMEN_EVENT_POOLS[spec.eraId][spec.stageIndex]) {
+        raw = WOMEN_EVENT_POOLS[spec.eraId][spec.stageIndex].find(e => e.title === spec.title);
+      }
+      if (!raw) raw = pool[0];
+
+      return {
+        ...raw,
+        stageIndex: spec.stageIndex,
+        assignedAge: spec.assignedAge,
+        eraId: spec.eraId,
+        getAge: () => spec.assignedAge,
+        getYear: (b) => (b || birthYear) + spec.assignedAge
+      };
+    }
+
+    function saveActiveGame() {
+      if (!player || player.isDead || currentEventIndex >= activeEpochEvents.length) {
+        try { localStorage.removeItem('fushenglu_active_save_v1'); } catch (e) {}
+        checkResumeAvailable();
+        return;
+      }
+      try {
+        const eventSpecs = activeEpochEvents.map(e => ({
+          title: e.title,
+          stageIndex: e.stageIndex,
+          assignedAge: e.assignedAge,
+          eraId: e.eraId
+        }));
+        const saveObj = {
+          version: 1,
+          player,
+          currentEventIndex,
+          eventSpecs,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('fushenglu_active_save_v1', JSON.stringify(saveObj));
+        checkResumeAvailable();
+      } catch (err) {
+        console.warn("Auto-save failed", err);
+      }
+    }
+
+    function checkResumeAvailable() {
+      const btn = document.getElementById('btn-resume-game');
+      const sum = document.getElementById('resume-summary');
+      if (!btn) return;
+      try {
+        const raw = localStorage.getItem('fushenglu_active_save_v1');
+        if (!raw) {
+          btn.classList.add('hidden');
+          return;
+        }
+        const save = JSON.parse(raw);
+        if (save && save.player && !save.player.isDead) {
+          const cfg = getEpochConfig(save.player.epochMode);
+          const gText = save.player.gender === 'female' ? '女' : '男';
+          sum.innerText = `${save.player.name}(${gText}) · ${cfg.name} · ${save.player.age}岁`;
+          btn.classList.remove('hidden');
+        } else {
+          btn.classList.add('hidden');
+        }
+      } catch (e) {
+        btn.classList.add('hidden');
+      }
+    }
+
+    function resumeSavedGame() {
+      const raw = localStorage.getItem('fushenglu_active_save_v1');
+      if (!raw) return;
+      try {
+        const save = JSON.parse(raw);
+        player = save.player;
+        currentEventIndex = save.currentEventIndex;
+        activeEpochEvents = save.eventSpecs.map(spec => rehydrateEvent(spec, player.birthYear));
+
+        document.getElementById('screen-intro').classList.add('hidden');
+        document.getElementById('screen-ending').classList.add('hidden');
+        document.getElementById('screen-game').classList.remove('hidden');
+        document.getElementById('top-bar').classList.remove('hidden');
+        document.getElementById('stats-container').classList.remove('hidden');
+        document.getElementById('display-era-badge').classList.remove('hidden');
+
+        const pBadge = document.getElementById('display-player-badge');
+        if (pBadge) {
+          pBadge.innerText = `${player.name} (${player.gender === 'female' ? '女 ♀' : '男 ♂'})`;
+          pBadge.classList.remove('hidden');
+        }
+
+        updateUIStats();
+        updateHistoryUI();
+        renderCurrentEvent();
+        soundClick();
+      } catch (err) {
+        console.error("Resume failed", err);
+        alert("存档已失效或不兼容，已重置。");
+        localStorage.removeItem('fushenglu_active_save_v1');
+        checkResumeAvailable();
+      }
+    }
+
     // 初始化默认勾选过去
     renderEpochCards();
     const defaultRadio = document.querySelector('input[name="epoch_mode"][value="' + selectedEpochMode + '"]');
     if (defaultRadio) defaultRadio.checked = true;
     rollNewDestiny();
+    updateAchievementBadge();
+    checkResumeAvailable();
 
     // 注册 PWA Service Worker (支持手机离线安装与全屏独立运行)
     if ('serviceWorker' in navigator) {

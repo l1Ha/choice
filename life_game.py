@@ -13,6 +13,7 @@ import sys
 import time
 import os
 import random
+import json
 
 # ANSI 颜色与高亮排版
 class Color:
@@ -292,6 +293,129 @@ def generate_random_timeline():
         prev_age = assigned
     return timeline
 
+SAVE_FILE = ".fushenglu_save.json"
+RECORDS_FILE = ".fushenglu_records.json"
+
+
+def save_game_state(player, stage_idx, timeline):
+    if not player or player.is_dead:
+        if os.path.exists(SAVE_FILE):
+            try:
+                os.remove(SAVE_FILE)
+            except Exception:
+                pass
+        return
+    state = {
+        "version": 1,
+        "stage_idx": stage_idx,
+        "timeline": timeline,
+        "player": {
+            "name": player.name,
+            "gender": getattr(player, "gender", "male"),
+            "epoch_mode": player.epoch_mode,
+            "birth_year": player.birth_year,
+            "birth_month": getattr(player, "birth_month", 1),
+            "origin": player.origin,
+            "trait": player.trait,
+            "age": player.age,
+            "health": player.health,
+            "wealth": player.wealth,
+            "intellect": player.intellect,
+            "happiness": player.happiness,
+            "luck": player.luck,
+            "reputation": player.reputation,
+            "tags": player.tags,
+            "history": player.history,
+            "key_choices": player.key_choices,
+            "random_events": player.random_events,
+            "family": getattr(player, "family", None),
+            "family_logs": getattr(player, "family_logs", []),
+            "career_track": player.career_track,
+            "social_rank": player.social_rank,
+            "track_scores": player.track_scores,
+        }
+    }
+    try:
+        with open(SAVE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def load_game_state():
+    if not os.path.exists(SAVE_FILE):
+        return None
+    try:
+        with open(SAVE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def record_to_hall_of_fame(player, archetype, epitaph):
+    records = []
+    if os.path.exists(RECORDS_FILE):
+        try:
+            with open(RECORDS_FILE, "r", encoding="utf-8") as f:
+                records = json.load(f)
+        except Exception:
+            records = []
+    end_year = player.birth_year + player.age
+    rec = {
+        "name": player.name,
+        "gender": getattr(player, "gender", "male"),
+        "epoch_mode": player.epoch_mode,
+        "birth_year": player.birth_year,
+        "end_year": end_year,
+        "age": player.age,
+        "archetype": archetype,
+        "epitaph": epitaph,
+        "career_track": player.career_track,
+        "social_rank": player.social_rank,
+        "wealth": player.wealth,
+        "wealth_unit": wealth_unit(player.epoch_mode),
+        "happiness": int(player.happiness),
+        "intellect": int(player.intellect),
+        "luck": int(player.luck),
+        "family_summary": format_family_status(player),
+        "date": time.strftime("%Y-%m-%d %H:%M")
+    }
+    records.insert(0, rec)
+    records = records[:50]
+    try:
+        with open(RECORDS_FILE, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def view_hall_of_fame():
+    clear_screen()
+    print(f"{Color.GOLD}{'='*68}{Color.RESET}")
+    print(f"{Color.BOLD}{Color.GOLD}    🏛️  万 世 祠  ·  百 世 轮 回 功 业 谱{Color.RESET}")
+    print(f"{Color.GOLD}{'='*68}{Color.RESET}\n")
+    if not os.path.exists(RECORDS_FILE):
+        print(f" {Color.GRAY}尚无立传先烈。请先进入人世，完成一轮完整的浮生轮回。{Color.RESET}\n")
+    else:
+        try:
+            with open(RECORDS_FILE, "r", encoding="utf-8") as f:
+                records = json.load(f)
+        except Exception:
+            records = []
+        if not records:
+            print(f" {Color.GRAY}祠堂寂寂，尚无英名。{Color.RESET}\n")
+        else:
+            print(f" {Color.CYAN}已收录 {len(records)} 世凡尘功业长卷：{Color.RESET}\n")
+            for idx, r in enumerate(records, 1):
+                cfg = get_epoch_config(r["epoch_mode"])
+                g_str = "女 ♀" if r.get("gender") == "female" else "男 ♂"
+                print(f"  {Color.YELLOW}{idx}. {r['name']}{Color.RESET} ({g_str}) | {cfg['icon']} {cfg['name']} ({r['birth_year']} - {r['end_year']} · {r['age']}岁)")
+                print(f"     称号: {Color.BOLD}《{r['archetype']}》{Color.RESET} | 位阶: {r['career_track']} · {r['social_rank']}")
+                print(f"     铭文: {Color.GRAY}“{r['epitaph']}”{Color.RESET}")
+                print(f"     至亲: {Color.GREEN}{r.get('family_summary', '自立一人')}{Color.RESET} | 财富: {r['wealth']} {r['wealth_unit']}\n")
+    input(f"{Color.GOLD}按回车返回时代大门...{Color.RESET}")
+
+
 def main():
     clear_screen()
     print(f"{Color.GOLD}{'='*68}{Color.RESET}")
@@ -299,16 +423,41 @@ def main():
     print(f"{Color.GOLD}{'='*68}{Color.RESET}")
     slow_print(" 一个人的命运，既要靠自我的奋斗，亦要看历史的进程。\n 时代洪流呼啸而过，偶发的幸与不幸如影随形。细水长流，步步为营，落子无悔。\n", 0.012)
 
-    # 纪元模式选择
-    print(f"{Color.CYAN}【 请选择入世时代纪元 】{Color.RESET}")
-    print(f"  {Color.GRAY}文明长河自公元前1600年奔涌至公元2150年，皆可投胎；一生将随年代推移自动切换时代背景。{Color.RESET}")
-    for idx_e, e in enumerate(EPOCHS, 1):
-        print(f"  {idx_e}. {e['icon']} {e['name']} ({e['sub_title']}) · {e['badge']}")
-    print(f"  {len(EPOCHS) + 1}. 完全随机天命 (由命运的骰子决定你降生于哪一个大时代)")
+    # 检查是否有未结束的即时存档
+    save_data = load_game_state()
+    if save_data and save_data.get("player") and not save_data["player"].get("is_dead"):
+        sp = save_data["player"]
+        s_cfg = get_epoch_config(sp["epoch_mode"])
+        s_gender = "女 ♀" if sp.get("gender") == "female" else "男 ♂"
+        print(f"{Color.GREEN}【 ⏳ 发现未竟之途 】检测到上一世存档：{sp['name']} ({s_gender}) · {s_cfg['name']} · {sp['age']}岁{Color.RESET}")
+        res_choice = input(f"{Color.GOLD}按 c 继续上一世，或按回车开启全新轮回: {Color.RESET}").strip().lower()
+        if res_choice == 'c':
+            player = Player(sp["name"], sp["epoch_mode"], sp["birth_year"], sp["origin"], sp["trait"], gender=sp.get("gender", "male"))
+            for k, v in sp.items():
+                setattr(player, k, v)
+            start_stage = save_data.get("stage_idx", 1) + 1
+            timeline = save_data.get("timeline", generate_random_timeline())
+            total_stages = 16
+            run_game_loop(player, start_stage, total_stages, timeline)
+            return
 
-    epoch_mode = EPOCHS[3]["id"]
+    # 纪元模式选择
     while True:
-        e_choice = input(f"\n{Color.GOLD}请选择纪元模式 [1-{len(EPOCHS) + 1}, 默认 {len(EPOCHS) + 1}]: {Color.RESET}").strip()
+        clear_screen()
+        print(f"{Color.GOLD}{'='*68}{Color.RESET}")
+        print(f"{Color.BOLD}{Color.GOLD}    浮 生 录  ·  入 世 纪 元 选 择{Color.RESET}")
+        print(f"{Color.GOLD}{'='*68}{Color.RESET}")
+        print(f"{Color.CYAN}【 请选择入世时代纪元 】{Color.RESET}")
+        print(f"  {Color.GRAY}文明长河自公元前1600年奔涌至公元2150年，皆可投胎；一生将随年代推移自动切换时代背景。{Color.RESET}")
+        for idx_e, e in enumerate(EPOCHS, 1):
+            print(f"  {idx_e}. {e['icon']} {e['name']} ({e['sub_title']}) · {e['badge']}")
+        print(f"  {len(EPOCHS) + 1}. 完全随机天命 (由命运的骰子决定你降生于哪一个大时代)")
+        print(f"  {len(EPOCHS) + 2}. 🏛️ 步入万世祠 (查阅百世轮回长卷与历史功业)")
+
+        e_choice = input(f"\n{Color.GOLD}请选择 [1-{len(EPOCHS) + 2}, 默认 {len(EPOCHS) + 1}]: {Color.RESET}").strip()
+        if e_choice == str(len(EPOCHS) + 2):
+            view_hall_of_fame()
+            continue
         if e_choice.isdigit() and 1 <= int(e_choice) <= len(EPOCHS):
             epoch_mode = EPOCHS[int(e_choice) - 1]["id"]
             break
@@ -357,8 +506,12 @@ def main():
     slow_print(f"\n命运之轮缓缓启动，{player.name} ({g_text}) 踏入了 {format_year_month(player.birth_year, getattr(player, 'birth_month', 1))} 的人间...\n", 0.02)
     time.sleep(0.05)
 
+    run_game_loop(player, 1, total_stages, timeline)
+
+
+def run_game_loop(player, start_stage, total_stages, timeline):
     # 游戏主轮次
-    for idx_stage in range(1, total_stages + 1):
+    for idx_stage in range(start_stage, total_stages + 1):
         if player.health <= 12:
             player.death_reason = "积劳成疾，在时代长风中过早抱憾离世"
             break
@@ -479,6 +632,8 @@ def main():
         if chance < 100:
             print(f"\n{Color.PURPLE}🎲 命运掷骰：出目 {roll} / 胜率基线 {chance}%  ➔  {'★ 顺遂如愿' if is_success else '✕ 天不遂人'}{Color.RESET}")
         print(f"{Color.GREEN}抉择回响：{Color.RESET}{fb}")
+
+        save_game_state(player, idx_stage, timeline)
 
         input(f"\n{Color.GRAY}按回车继续步入岁月下一程...{Color.RESET}")
         time.sleep(0.05)
@@ -628,6 +783,13 @@ def render_terminal_ending(player):
 
     print(f"\n{Color.GOLD}{'='*68}{Color.RESET}")
     print(f"{Color.DIM}大浪淘沙，唯心自守。愿你在人间的每一程都无怨无悔。{Color.RESET}\n")
+
+    record_to_hall_of_fame(player, archetype, epitaph)
+    if os.path.exists(SAVE_FILE):
+        try:
+            os.remove(SAVE_FILE)
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     try:
