@@ -234,7 +234,21 @@ def replace_between(text, start_marker, end_marker, new, label):
     return text[:i] + new + text[j:]
 
 
+def ensure_base(path, marker):
+    """确保待注入文件处于「未注入」的原始状态，避免重复注入。"""
+    if not os.path.exists(path):
+        raise SystemExit("找不到 %s" % path)
+    body = open(path, encoding="utf-8").read()
+    if marker in body:
+        raise SystemExit(
+            "%s 已包含纪元数据（%s），无需重复注入。\n"
+            "如需重新生成，请先恢复原始版本，例如：\n"
+            "    git checkout 6729de9 -- %s" % (path, marker, path))
+    return body
+
+
 def main():
+    ensure_base('life_game.py', 'GRAND_ERA_TABLE')
     load_data()
     path = 'life_game.py'
     py = open(path, encoding='utf-8').read()

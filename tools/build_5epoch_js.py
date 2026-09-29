@@ -263,7 +263,21 @@ EPOCH_UI_JS = '''    // 动态渲染五大纪元选择卡（支持手机单列 /
 '''
 
 
+def ensure_base(path, marker):
+    """确保待注入文件处于「未注入」的原始状态，避免重复注入。"""
+    if not os.path.exists(path):
+        raise SystemExit("找不到 %s" % path)
+    body = open(path, encoding="utf-8").read()
+    if marker in body:
+        raise SystemExit(
+            "%s 已包含纪元数据（%s），无需重复注入。\n"
+            "如需重新生成，请先恢复原始版本，例如：\n"
+            "    git checkout 6729de9 -- %s" % (path, marker, path))
+    return body
+
+
 def main():
+    ensure_base('index.html', 'CIVILIZATION_EPOCHS')
     load_data()
 
     path = 'index.html'
