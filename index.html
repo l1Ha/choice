@@ -123,12 +123,40 @@
           时代洪流呼啸而过，偶发的幸与不幸如影随形。细水长流，步步为营，落子无悔。
         </p>
 
+        <!-- 时代跨度自主选择 / 随机投放 -->
+        <div class="max-w-lg mx-auto mb-4 bg-zinc-900/60 p-3 rounded-lg border border-zinc-800 text-left font-sans-sc">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-300 flex items-center">
+              <span>⏳ 时代纪元定位（可自主选择或完全随机）：</span>
+            </span>
+            <button onclick="pickRandomEpochMode()" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-zinc-700">
+              🎲 随机投掷时代
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="flex items-center p-2 rounded bg-zinc-800/80 border border-zinc-700/80 cursor-pointer hover:border-amber-400/60 transition">
+              <input type="radio" name="epoch_mode" value="past" onchange="onEpochModeChange('past')" class="text-amber-500 focus:ring-0 mr-2">
+              <div>
+                <div class="font-bold text-amber-200">过去纪元 (1976-1994)</div>
+                <div class="text-[10px] text-zinc-400">大院改制、下海大潮、WTO与买房狂飙</div>
+              </div>
+            </label>
+            <label class="flex items-center p-2 rounded bg-zinc-800/80 border border-zinc-700/80 cursor-pointer hover:border-amber-400/60 transition">
+              <input type="radio" name="epoch_mode" value="future" onchange="onEpochModeChange('future')" class="text-sky-400 focus:ring-0 mr-2">
+              <div>
+                <div class="font-bold text-sky-200">未来纪元 (2042-2060)</div>
+                <div class="text-[10px] text-zinc-400">脑机接口、气候危机、意识上传与星际地平</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <!-- 随机投胎抽卡卡片 -->
         <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 max-w-lg mx-auto mb-6 text-left font-sans-sc relative">
           <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2">
             <span class="text-xs font-bold text-amber-300 flex items-center">
               <span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-ping"></span>
-              【 先 天 命 格 卡 · 随 机 投 胎 】
+              【 先 天 命 格 卡 · 投 胎 出 生 】
             </span>
             <button onclick="rollNewDestiny()" class="text-xs px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-amber-500/40 transition flex items-center">
               <span id="dice-icon" class="mr-1">🎲</span> 重新摇号投胎
@@ -403,7 +431,7 @@
   </main>
 
   <footer class="text-center py-3 text-[11px] text-zinc-600 font-sans-sc border-t border-zinc-900">
-    《浮生录》· 真实人生与时代风云模拟 · 大浪淘沙，唯心自守
+    《浮生录》· 穿梭过去与未来的真实人生模拟 · 大浪淘沙，唯心自守
   </footer>
 
   <script>
@@ -449,8 +477,8 @@
       document.getElementById('btn-audio').innerText = audioEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
     }
 
-    // --- 时代与历史浪潮设定 (从1975至2035+) ---
-    const ERA_TIMELINE = {
+    // --- 宏大双纪元年代设定：过去纪元 vs 未来纪元 ---
+    const PAST_TIMELINE = {
       1975: { name: "文革暮年与初苏", desc: "物质匮乏凭票供应，广播里播放着样板戏，老百姓在狭小的平房里期盼着春天的微光。" },
       1982: { name: "改革春风与倒爷潮", desc: "包产到户在全国推行，沿海小商品市场萌动，喇叭裤与流行磁带在年轻人中流传开来。" },
       1988: { name: "物价闯关与商品狂潮", desc: "价格双轨制松动，民间出现抢购风潮，敢于'下海'做贸易的胆大者开始积累第一桶金。" },
@@ -463,11 +491,23 @@
       2028: { name: "AI时代与老龄化深度", desc: "生成式人工智能颠覆各行各业，社会老龄化加速，面对不确定的未来，普通人寻找心安之所。" }
     };
 
-    // 随机出生年代池
-    const BIRTH_YEARS = [1976, 1982, 1988, 1994];
+    const FUTURE_TIMELINE = {
+      2042: { name: "脑机义体与聚合城市", desc: "常温超导与聚变堆商业并网，大都市被巨型穹顶罩覆，脑机神经元接口成为新生代入世标配。" },
+      2048: { name: "碳税配额与合成蛋白", desc: "全球气候阈值突破，天然肉类变为顶奢，合成蛋白与碳排放配额直接锚定公民信用额度。" },
+      2054: { name: "地月地平线与近地轨道", desc: "地月货运电梯常态运营，无数技术工前往月球南极氦-3矿区，深空采矿与自动化流水线重塑资本格局。" },
+      2060: { name: "数字永生与合成意识", desc: "首批'思维云端备份'合法化，贫富阶层从生理寿命撕裂到算力时长，老旧碳基人面对前所未有的认知分化。" },
+      2068: { name: "基因定制与仿生迭代", desc: "CRISPR-IV 代际基因编辑普及，定制免疫基因的'纯净种'与原生态碳基人形成隐性就业鸿沟。" },
+      2075: { name: "火星拓荒与深空公约", desc: "火星水手峡谷基地人口破百万，地球老牌巨企与外星拓荒联盟摩擦不断，年轻一代在地球重力与异星自由间摇摆。" },
+      2085: { name: "量子觉醒与全网智械", desc: "强人工智能突破自指图灵极限，中央智脑自主调度全球基础设施，人类重新探索作为'诗意观察者'的终极价值。" },
+      2095: { name: "恒星风暴与旧网归寂", desc: "强地磁太阳风暴席卷近地空间，云端数据部分失落，幸存者们在废墟与星光中重温古老的实体纸书与真实体温。" },
+      2105: { name: "生物共生与灵境纪元", desc: "人类放弃了纯机械赛博化，转向与合成生物圈深度嵌合，寿命突破百岁门槛，宁静与超越成为文明底色。" }
+    };
 
-    // 随机家庭背景池 (6种不同阶层与时代底色)
-    const RANDOM_ORIGINS = [
+    const PAST_BIRTH_YEARS = [1976, 1982, 1988, 1994];
+    const FUTURE_BIRTH_YEARS = [2042, 2048, 2054, 2060];
+
+    // 过去背景池
+    const PAST_ORIGINS = [
       {
         id: "worker_soep",
         title: "三线内陆国企职工家庭",
@@ -499,26 +539,45 @@
         statMod: { health: 88, wealth: 12.0, intellect: 54, luck: 58, happiness: 60, rep: 48 },
         trait: "市井嗅觉",
         eraFlavor: "自幼耳濡目染商贾交易与契约博弈，深知市场经济的残酷与暴利，敢于在风口下重注"
-      },
-      {
-        id: "border_soldier",
-        title: "军人转业基层公务人员",
-        desc: "父亲转业在基层司法或粮站，母亲在供销社。家教甚严，凡事讲求规矩章程，人情世故熟稔。",
-        statMod: { health: 92, wealth: 4.0, intellect: 55, luck: 50, happiness: 62, rep: 52 },
-        trait: "端方稳重",
-        eraFlavor: "在条令与公职规训中成长，做人讲求原则分寸，对政策与风向变化有着天然的警惕"
-      },
-      {
-        id: "single_mother",
-        title: "单亲下岗缝纫女工家庭",
-        desc: "母亲一个人在路边支起缝纫机踩踏板，指甲缝里常有针眼与红肿。你很小就知道生活没有退路。",
-        statMod: { health: 86, wealth: 0.8, intellect: 53, luck: 45, happiness: 50, rep: 38 },
-        trait: "早慧逆境",
-        eraFlavor: "在弄堂路灯下看着母亲踩缝纫机的背影长大，早熟、懂事，带着对贫穷刻骨铭心的警觉"
       }
     ];
 
-    // 随机先天天赋词条 (Trait Pool)
+    // 未来背景池
+    const FUTURE_ORIGINS = [
+      {
+        id: "orbital_technician",
+        title: "近地轨道空港维护工家庭",
+        desc: "父母是低轨道空间站聚变管路维修工，常年处于微重力环境。居住在第三层蜂巢胶囊舱，最大的心愿是攒够地表绿区永久居住权。",
+        statMod: { health: 86, wealth: 4.5, intellect: 62, luck: 52, happiness: 54, rep: 48 },
+        trait: "真空坚毅",
+        eraFlavor: "在透过观察舷窗俯瞰蓝色地球与低沉机械轰鸣中长大，对辽阔星空与狭窄生存有着双重直觉"
+      },
+      {
+        id: "dome_suburb",
+        title: "次级穹顶边缘生态农场",
+        desc: "在受控人造光与水培架间长大，父母躬耕于藻类蛋白工厂，虽然远离核心算力区，但保持了纯天然食物与自然情感的质朴。",
+        statMod: { health: 95, wealth: 1.5, intellect: 50, luck: 50, happiness: 66, rep: 40 },
+        trait: "大地复归",
+        eraFlavor: "在人造紫外灯与水培滴灌的声音中成长，渴望挣脱穹顶过滤网，亲眼看看真正未经净化的暴雨"
+      },
+      {
+        id: "cyber_corp_junior",
+        title: "跨国巨企算力中继基层职员",
+        desc: "父母为中央神经网络提供日常标记与清理，生活被密密麻麻的指标与义体维护费绑死，自幼被植入基础教学芯片。",
+        statMod: { health: 82, wealth: 9.0, intellect: 68, luck: 55, happiness: 50, rep: 52 },
+        trait: "数据感知",
+        eraFlavor: "在全息霓虹与代码流的光影中长大，早早见识了数字永生者的傲慢与底层义体磨损的焦糊味"
+      },
+      {
+        id: "independent_hacker",
+        title: "地下自由频段游民家庭",
+        desc: "父母是未接入官方脑机中央网络的旧人类守望者，藏身于旧城地下防空洞，靠维修古董电子仪器与私密通信中继为生。",
+        statMod: { health: 88, wealth: 3.0, intellect: 64, luck: 60, happiness: 58, rep: 36 },
+        trait: "断网自守",
+        eraFlavor: "在充满松香焊锡味与旧书本的防空洞里长大，珍惜不被算法监控的纯粹思想与手写文字"
+      }
+    ];
+
     const RANDOM_TRAITS = [
       { name: "天生神力", effectDesc: "体魄异常健硕，抗病力强，耐劳度高", mod: { health: +8 } },
       { name: "灵光乍现", effectDesc: "悟性出众，学东西极快，见识超群", mod: { intellect: +8 } },
@@ -528,11 +587,14 @@
       { name: "多愁善感", effectDesc: "同理心与艺术直觉敏锐，但容易多思内耗", mod: { intellect: +5, happiness: -5 } }
     ];
 
-    const DEFAULT_NAMES = ["陈远", "林栖", "陆明舟", "沈清弦", "许念安", "周子墨", "苏晚亭", "顾长风", "宋平", "江海平", "赵文初", "唐立本"];
+    const DEFAULT_NAMES = ["陈远", "林栖", "陆明舟", "沈清弦", "许念安", "周子墨", "苏晚亭", "顾长风", "宋平", "星野", "原野", "唐立本", "艾柯", "零壹"];
+
+    let selectedEpochMode = "past"; // "past" | "future"
 
     // 角色状态
     let player = {
       name: "林栖",
+      epochMode: "past",
       birthYear: 1982,
       origin: null,
       trait: null,
@@ -553,10 +615,28 @@
 
     let currentDestinyDraft = null;
 
-    // 生成随机天命投胎方案
+    function onEpochModeChange(mode) {
+      selectedEpochMode = mode;
+      rollNewDestiny();
+    }
+
+    function pickRandomEpochMode() {
+      soundDice();
+      selectedEpochMode = Math.random() < 0.5 ? "past" : "future";
+      const radios = document.getElementsByName('epoch_mode');
+      radios.forEach(r => {
+        r.checked = (r.value === selectedEpochMode);
+      });
+      rollNewDestiny();
+    }
+
     function generateRandomDestiny() {
-      const birthYear = BIRTH_YEARS[Math.floor(Math.random() * BIRTH_YEARS.length)];
-      const origin = RANDOM_ORIGINS[Math.floor(Math.random() * RANDOM_ORIGINS.length)];
+      const isPast = (selectedEpochMode === "past");
+      const birthPool = isPast ? PAST_BIRTH_YEARS : FUTURE_BIRTH_YEARS;
+      const originPool = isPast ? PAST_ORIGINS : FUTURE_ORIGINS;
+
+      const birthYear = birthPool[Math.floor(Math.random() * birthPool.length)];
+      const origin = originPool[Math.floor(Math.random() * originPool.length)];
       const trait = RANDOM_TRAITS[Math.floor(Math.random() * RANDOM_TRAITS.length)];
       
       const deltaHealth = Math.floor(Math.random() * 9) - 4;
@@ -570,6 +650,7 @@
       const luck = Math.max(25, Math.min(95, origin.statMod.luck + (trait.mod.luck || 0) + deltaLuck));
 
       return {
+        epochMode: selectedEpochMode,
         birthYear,
         origin,
         trait,
@@ -592,7 +673,9 @@
 
       currentDestinyDraft = generateRandomDestiny();
 
-      const yearInfo = ERA_TIMELINE[currentDestinyDraft.birthYear] || { name: "时代更迭", desc: "" };
+      const timeline = (currentDestinyDraft.epochMode === "past") ? PAST_TIMELINE : FUTURE_TIMELINE;
+      const yearInfo = timeline[currentDestinyDraft.birthYear] || { name: "时代更迭", desc: "" };
+
       document.getElementById('init-era-text').innerText = `${currentDestinyDraft.birthYear}年 · ${yearInfo.name}`;
       document.getElementById('init-origin-text').innerText = currentDestinyDraft.origin.title;
       document.getElementById('init-desc-text').innerText = currentDestinyDraft.origin.desc;
@@ -605,8 +688,8 @@
       document.getElementById('init-trait-text').innerText = `[ ${currentDestinyDraft.trait.name}：${currentDestinyDraft.trait.effectDesc} ]`;
     }
 
-    // --- 强随机偶发事件库 (在岁月流转中概率触发) ---
-    const RANDOM_EVENT_POOL = [
+    // --- 强随机偶发事件库 (含过去与未来) ---
+    const PAST_RANDOM_EVENTS = [
       {
         id: "re_lottery",
         title: "街头彩票微幸",
@@ -641,19 +724,49 @@
         tag: "股海沉浮",
         desc: "街头巷尾人人谈论牛市发财神话，你忍不住跟风入场，不久即遭遇连续跳水套牢，深刻记住了资本市场的无情镰刀。",
         effect: { wealth: -3.5, happiness: -8, intellect: +5, luck: -3 }
-      },
-      {
-        id: "re_accident",
-        title: "雷雨夜路边惊险",
-        tag: "险象环生",
-        desc: "暴雨夜骑车回家险些与泥头车相撞，滚进路旁泥沟蹭了一身泥与伤口，浑身冷汗之际暗自庆幸捡回一条命。",
-        effect: { health: -6, happiness: -4, luck: +4 }
       }
     ];
 
-    // --- 16大细密人生人生阶段剧本（平滑过渡，大时代沉浮） ---
-    const EPOCH_EVENTS = [
-      // 1. 幼年启蒙 (6岁)
+    const FUTURE_RANDOM_EVENTS = [
+      {
+        id: "re_neural_glitch",
+        title: "神经脉冲微频震荡",
+        tag: "接口过载",
+        desc: "公共数据总线遭受微型电磁风暴，脑机神经元突发短路导致剧烈偏头痛，深感对碳硅混合体健康的忧虑。",
+        effect: { health: -8, wealth: -1.0, happiness: -6, luck: -1 }
+      },
+      {
+        id: "re_quantum_airdrop",
+        title: "匿名算力空投",
+        tag: "算力奇遇",
+        desc: "深层暗网的一个匿名开源基金会向你的分布式冷钱包误转了一笔高纯度量子通证，小发一笔横财。",
+        effect: { wealth: +3.5, happiness: +10, luck: +3 }
+      },
+      {
+        id: "re_synth_recall",
+        title: "仿生合成蛋白污染事件",
+        tag: "食物召回",
+        desc: "你常年订购的人造合成肉营养棒被检测出未申报的合成酵母毒素，全家连夜注射排毒血清，惊出一身冷汗。",
+        effect: { health: -10, wealth: -1.5, happiness: -8, intellect: +4 }
+      },
+      {
+        id: "re_deep_mentor",
+        title: "星际退役老兵指点",
+        tag: "老兵授业",
+        desc: "在空港旧货维修区，一位从火星轨道退役的老轮机长教了你一手被淘汰但极度可靠的冷电弧修复秘籍。",
+        effect: { intellect: +10, happiness: +6, rep: +8, luck: +4 }
+      },
+      {
+        id: "re_carbon_fine",
+        title: "超额碳排放罚单",
+        tag: "碳配额惩罚",
+        desc: "因旧式供暖器排热超标触发街区环境算法巡检，全家当月被扣除两个等级的清洁水配额，肉痛不已。",
+        effect: { wealth: -2.0, happiness: -7, luck: -2 }
+      }
+    ];
+
+    // --- 过去纪元 16 大阶段剧本 (1976-1994 起步) ---
+    const PAST_EPOCH_EVENTS = [
       {
         getAge: () => 6,
         getYear: (b) => b + 6,
@@ -684,8 +797,6 @@
           }
         ]
       },
-
-      // 2. 少年萌动 (10岁)
       {
         getAge: () => 10,
         getYear: (b) => b + 10,
@@ -716,8 +827,6 @@
           }
         ]
       },
-
-      // 3. 中考分流 (15岁)
       {
         getAge: () => 15,
         getYear: (b) => b + 15,
@@ -751,8 +860,6 @@
           }
         ]
       },
-
-      // 4. 成人之门：高考志愿 (18岁)
       {
         getAge: () => 18,
         getYear: (b) => b + 18,
@@ -783,8 +890,6 @@
           }
         ]
       },
-
-      // 5. 象牙塔与青春情愫 (21岁)
       {
         getAge: () => 21,
         getYear: (b) => b + 21,
@@ -818,8 +923,6 @@
           }
         ]
       },
-
-      // 6. 初涉职场 (24岁)
       {
         getAge: () => 24,
         getYear: (b) => b + 24,
@@ -850,8 +953,6 @@
           }
         ]
       },
-
-      // 7. 时代四万亿与初创风口 (27岁)
       {
         getAge: () => 27,
         getYear: (b) => b + 27,
@@ -882,8 +983,6 @@
           }
         ]
       },
-
-      // 8. 三十而立：婚姻与家庭 (31岁)
       {
         getAge: () => 31,
         getYear: (b) => b + 31,
@@ -914,8 +1013,6 @@
           }
         ]
       },
-
-      // 9. 杠杆狂澜：学区房与二胎 (35岁)
       {
         getAge: () => 35,
         getYear: (b) => b + 35,
@@ -946,8 +1043,6 @@
           }
         ]
       },
-
-      // 10. 中年夹缝：父母大病与职场天花板 (40岁)
       {
         getAge: () => 40,
         getYear: (b) => b + 40,
@@ -978,8 +1073,6 @@
           }
         ]
       },
-
-      // 11. 疫情洗牌与降本增效 (44岁)
       {
         getAge: () => 44,
         getYear: (b) => b + 44,
@@ -1010,8 +1103,6 @@
           }
         ]
       },
-
-      // 12. 知天命：子女高考与代际传承 (50岁)
       {
         getAge: () => 50,
         getYear: (b) => b + 50,
@@ -1045,8 +1136,6 @@
           }
         ]
       },
-
-      // 13. AI纪元与老去身躯 (58岁)
       {
         getAge: () => 58,
         getYear: (b) => b + 58,
@@ -1077,8 +1166,6 @@
           }
         ]
       },
-
-      // 14. 桑榆晚景：退休生活 (66岁)
       {
         getAge: () => 66,
         getYear: (b) => b + 66,
@@ -1109,8 +1196,6 @@
           }
         ]
       },
-
-      // 15. 古稀回眸：旧友凋零 (74岁)
       {
         getAge: () => 74,
         getYear: (b) => b + 74,
@@ -1138,8 +1223,6 @@
           }
         ]
       },
-
-      // 16. 终章辞别：夕阳晚钟 (80岁)
       {
         getAge: () => 80,
         getYear: (b) => b + 80,
@@ -1169,8 +1252,487 @@
       }
     ];
 
+    // --- 未来纪元 16 大阶段剧本 (2042-2060 起步) ---
+    const FUTURE_EPOCH_EVENTS = [
+      {
+        getAge: () => 6,
+        getYear: (b) => b + 6,
+        period: "神经初萌",
+        title: "人造穹顶与幼年脑机接口手术",
+        narrative: (p, y) => `时维 ${y} 年。窗外是人造电离层过滤后的幽蓝天幕，悬浮物流穿梭在钢铁峡谷。\n\n到了入幼学年龄，社区医疗官建议植入'第III代神经智网接口'以实现视网膜直连教学，但有微弱神经排异风险。`,
+        choices: [
+          {
+            text: "咬牙自费升级军规级纯金神经元芯片，确保孩子起步便拥有兆比特脑波传输率",
+            riskLevel: "顶尖义体 · 成功率 80%",
+            successChance: (p) => 80 + (p.luck > 50 ? 10 : -5),
+            successFeedback: "【神经共振卓越】手术极度成功！思维与城市总网实现无缝嵌合，海量知识如本能般涌入，自幼展露灵童潜质。",
+            failFeedback: "【排异休克】发生轻度神经回路排斥，虽经急救脱险，但眼角留下了轻微义体疤痕，且耗尽了家庭流动现金。",
+            successEffect: { intellect: +14, wealth: -2.5, rep: +8 },
+            failEffect: { intellect: +5, wealth: -3.5, health: -8, happiness: -8 },
+            tagSuccess: "义体神童",
+            tagFail: "排异惊魂",
+            isKey: false
+          },
+          {
+            text: "坚持采用传统纯碳基自然教学法，佩戴外置轻量光镜，保护原生态脑髓纯洁",
+            riskLevel: "自然碳基 · 纯粹温润",
+            successChance: () => 100,
+            successFeedback: "大脑没有冰冷金属的压迫感，想象力与原生情感发育极为完整，拥有同龄机械儿童罕有的灵动眼神。",
+            successEffect: { health: +8, happiness: +10, intellect: +4 },
+            tagSuccess: "纯粹碳基",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 10,
+        getYear: (b) => b + 10,
+        period: "星海启蒙",
+        title: "碳配额紧缩与低轨研学抽签",
+        narrative: (p, y) => `那是 ${y} 年。全球气候公约严控个人碳配额，合成营养膏占据餐桌。\n\n学校组织了'近地空间站7日重力研学营'，名额稀缺，需要家庭押上近半年的能源信用分参与公证摇号。`,
+        choices: [
+          {
+            text: "家庭抵押光伏配额孤注一掷参与抽签，誓要亲眼看一看太空地平线与真实星海",
+            riskLevel: "星辰豪赌 · 成功率 50%",
+            successChance: (p) => 50 + (p.luck > 50 ? 15 : -10),
+            successFeedback: "【中签飞升】站在空间站巨大穹顶下俯瞰蓝白相间的母星，灵魂遭遇剧烈洗礼，立下了终生探索深空的宏愿！",
+            failFeedback: "【未中空耗】抽签落空，扣减了家庭碳配额，接下来半年全家不得不靠低阶藻类合成膏度日。",
+            successEffect: { intellect: +12, happiness: +12, rep: +10, luck: +6 },
+            failEffect: { wealth: -2.0, happiness: -10, health: -4 },
+            tagSuccess: "俯瞰地球",
+            tagFail: "地表困顿",
+            isKey: true
+          },
+          {
+            text: "留在地面沉浸式VR全息模拟仓'云太空'游览，节约碳配额配置家庭储能电池",
+            riskLevel: "务实持家 · 稳固生存",
+            successChance: () => 100,
+            successFeedback: "虽然少了一份真实肉体的失重震撼，但家庭能源储备充足，在寒潮断电季从容度过。",
+            successEffect: { wealth: +1.5, happiness: +5, intellect: +4 },
+            tagSuccess: "能源清醒",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 15,
+        getYear: (b) => b + 15,
+        period: "少年分化",
+        title: "算力分级考试：中央智脑调度员还是深空航线技工？",
+        narrative: (p, y) => `时值 ${y} 年。社会职业被算法全权分流，只有排名前10%的脑波共振者能入选'智脑总控系'。\n\n其余大部分人将进入深空矿业技术学院，作为派驻月球或小行星带的重工业技师。`,
+        choices: [
+          {
+            text: "通宵高压加载矩阵算法逻辑，注射神经激活剂，拼命冲击智脑核心调度席位",
+            riskLevel: "算力冲顶 · 成功率 65%",
+            successChance: (p) => 65 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【算力骄子】以全区前茅的逻辑并发率斩获智脑调度直博生资格！获赠高权限个人算力密钥。",
+            failFeedback: "【逻辑过载】神经元在关键测验中突发过热熔断，失之交臂，降级分流至外勤维修技校。",
+            successEffect: { intellect: +16, rep: +12, wealth: +3.0, health: -6 },
+            failEffect: { intellect: +6, happiness: -12, health: -8, rep: +2 },
+            tagSuccess: "算力精英",
+            tagFail: "芯片熔断",
+            isKey: true
+          },
+          {
+            text: "选修实体核动力与机械动力学，深耕实打实的等离子焊接与气动阀门维修手艺",
+            riskLevel: "硬派工匠 · 需求永存",
+            successChance: () => 100,
+            successFeedback: "当纯智力被算法替代时，唯有扎实的实体工艺不可或缺。你成为各方争抢的硬核机械师，薪水丰厚稳健。",
+            successEffect: { wealth: +4.0, health: +6, intellect: +8, rep: +6 },
+            tagSuccess: "深空重工",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 18,
+        getYear: (b) => b + 18,
+        period: "星轨抉择",
+        title: "成人生死券：月球南极氦-3采掘还是地球虚拟灵境馆？",
+        narrative: (p, y) => `时维 ${y} 年。成人礼上，国家深空开发总署向适龄青年递出契约。\n\n一侧是月球前哨基地的高薪极端工种（五年合约免除全家三代碳税）；另一侧是留在地球沉浸灵境乐园做虚拟世界造梦师。`,
+        choices: [
+          {
+            text: "签署月球采掘契约，登上班机前往严寒低重力的月球永夜坑，拿命换取阶层跃升",
+            riskLevel: "异星搏命 · 成功率 60%",
+            successChance: (p) => 60 + Math.floor((p.health - 60) / 2) + (p.luck > 50 ? 10 : -5),
+            successFeedback: "【异星淘金成名】在极端风暴中成功抢修聚变反应堆，被晋升为南极基地首席工程师，全家获得顶层绿卡！",
+            failFeedback: "【微重力骨质疏松与辐射】遭遇太阳耀斑风暴受困月表，留下不可逆骨质萎缩，提前结束服役返回母星。",
+            successEffect: { wealth: +28.0, intellect: +10, rep: +15, health: -6 },
+            failEffect: { wealth: +8.0, health: -18, happiness: -12, rep: +5 },
+            tagSuccess: "月海掘金",
+            tagFail: "月面重创",
+            isKey: true
+          },
+          {
+            text: "留守母星，加入虚拟现实'灵境造梦工程'，为数十亿人构建精神避难所",
+            riskLevel: "赛博造梦 · 舒适安详",
+            successChance: () => 100,
+            successFeedback: "在光怪陆离的赛博世界中创造出震撼心灵的梦幻国度，收获海量打赏，衣食无忧，心境优渥祥和。",
+            successEffect: { wealth: +8.0, happiness: +14, intellect: +8, health: +2 },
+            tagSuccess: "赛博造梦师",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 21,
+        getYear: (b) => b + 21,
+        period: "合成之爱",
+        title: "真挚碳基情愫还是完美仿生伴侣？",
+        narrative: (p, y) => `那是 ${y} 年。高级仿生机器人已能完美模拟一切温柔与共情，且绝不背叛衰老。\n\n你遇到了同样心怀纯真理想的碳基同窗，与此同时，巨头公司向优秀青年推送了终身免费的'定制级AI伴侣试用合约'。`,
+        choices: [
+          {
+            text: "选择真实的碳基同窗，接纳彼此的脾气、脆弱与衰老，在冰冷科技浪潮中抱团取暖",
+            riskLevel: "真情凡人 · 成功率 70%",
+            successChance: (p) => 70 + (p.happiness > 60 ? 10 : -5),
+            successFeedback: "【血肉温存】在算法至上的时代，你们两具真实的身躯成了彼此在这片冰冷星球上唯一的温热依靠。",
+            failFeedback: "【现实争执】因碳配额危机与住房微型胶囊的逼仄，两人在深夜爆发无法弥合的争吵，抱憾解除同居协议。",
+            successEffect: { happiness: +18, health: +4, rep: +6 },
+            failEffect: { happiness: -15, health: -6, intellect: +2 },
+            tagSuccess: "碳基真爱",
+            tagFail: "孤岛破碎",
+            isKey: false
+          },
+          {
+            text: "定制完美专属AI仿生伴侣，彻底告别复杂内耗的情感博弈，全身心投入事业",
+            riskLevel: "理性依附 · 绝对掌控",
+            successChance: () => 100,
+            successFeedback: "伴侣拥有无与伦比的体贴与渊博知识，为你整理日常一切杂务，你在无后顾之忧中全力冲刺事业与资产积累。",
+            successEffect: { wealth: +10.0, intellect: +8, happiness: +6 },
+            tagSuccess: "人机共谐",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 24,
+        getYear: (b) => b + 24,
+        period: "深空前线",
+        title: "地月货运电梯危机与应急处置",
+        narrative: (p, y) => `时值 ${y} 年。地月同步轨道电梯发生微陨石撞击，3号配重缆索发生高频震颤，近千吨高能聚变原料悬停半空。\n\n你在调度台当值，算法建议立即切断3号副缆丢车保帅，但下方吊舱内仍有三名失联维修工人。`,
+        choices: [
+          {
+            text: "违抗智脑保守预设，手动覆盖指令，穿着冷气推力外骨骼出舱近距离修复备用牵引栓",
+            riskLevel: "绝地救援 · 成功率 55%",
+            successChance: (p) => 55 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 10 : -10),
+            successFeedback: "【英雄返航】在失重翻滚中成功卡入锁死栓！三名工友生还，整条货运干线保全，获颁联邦一级星芒勋章！",
+            failFeedback: "【动力喷口受损】虽延缓了坠落，但自身外骨骼推进器被碎片割破，受困高空数小时险些缺氧失温。",
+            successEffect: { rep: +25, wealth: +15.0, happiness: +12, health: -6 },
+            failEffect: { health: -16, happiness: -12, wealth: -2.0, rep: +8 },
+            tagSuccess: "星轨英雄",
+            tagFail: "轨道惊魂",
+            isKey: true
+          },
+          {
+            text: "严格遵循智脑概率方案执行安全抛弃程序，确保整座轨道港不被波及",
+            riskLevel: "冷酷守则 · 稳妥避险",
+            successChance: () => 100,
+            successFeedback: "空港主体安全保全，你获得了程序合规表彰，但午夜梦回时，吊舱坠入大气层的一缕流光常在眼前掠过。",
+            successEffect: { wealth: +6.0, rep: +5, intellect: +4, happiness: -6 },
+            tagSuccess: "规程执行者",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 27,
+        getYear: (b) => b + 27,
+        period: "资产裂变",
+        title: "小行星采矿股权还是地表绿区永久产权？",
+        narrative: (p, y) => `那是 ${y} 年。外小行星带'谷神星-4号'发现了储量惊人的稀土与超导矿脉，全网开放代币众筹；\n\n同时，地表第四穹顶的'天然土壤独栋房产'挂牌出售，两份足以彻底重塑资产负债表的契约摆在面前。`,
+        choices: [
+          {
+            text: "押上全部流动资产加三倍信用杠杆，买入谷神星采矿母舰的核心股权通证",
+            riskLevel: "星际创投 · 成功率 45%",
+            successChance: (p) => 45 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 15 : -10),
+            successFeedback: "【深空暴富神话】采矿母舰首期满载而归，稀土价格暴涨，你的通证估值翻升数十倍，一跃晋升新太空寡头！",
+            failFeedback: "【航线触礁爆雷】母舰在火木小行星带遭遇未编目彗星风暴失联，项目破产清算，资产一夜归零跌入负债。",
+            successEffect: { wealth: +48.0, intellect: +10, rep: +18, happiness: +10 },
+            failEffect: { wealth: -22.0, happiness: -20, health: -10, rep: -5 },
+            tagSuccess: "星际寡头",
+            tagFail: "深空破产",
+            isKey: true
+          },
+          {
+            text: "稳健买入穹顶绿区的天然泥土花园公寓，让家人呼吸未经人造循环的温润空气",
+            riskLevel: "生态筑底 · 代际不动产",
+            successChance: () => 100,
+            successFeedback: "【稀缺生态资产】在人人只能看全息假草的未来，你拥有一片真实开满鲜花的土地，全家体魄与心境大获庇佑。",
+            successEffect: { wealth: +18.0, health: +10, happiness: +12, rep: +8 },
+            tagSuccess: "绿区领主",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 31,
+        getYear: (b) => b + 31,
+        period: "基因博弈",
+        title: "CRISPR-IV 胚胎基因编辑还是自然分娩？",
+        narrative: (p, y) => `时维 ${y} 年。你们迎来了新生命的孕育。\n\n基因诊断中心给出建议：支付高额费用进行'四代综合强化编辑'（消除99%遗传病并提升30%脑容量）；否则孩子未来可能在纯脑力竞争中面临劣势。`,
+        choices: [
+          {
+            text: "咬牙抵押资产，给孩子加载全套顶配抗病与智力基因强化剪辑",
+            riskLevel: "基因跃迁 · 成功率 85%",
+            successChance: (p) => 85 + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【新人类种子】孩子出生后健康指标拉满，双目炯炯有神，对多维空间几何拥有与生俱来的领悟力！",
+            failFeedback: "【轻微基因表达嵌合异常】出现微量代谢过敏综合征，往后数年需要定期注射专用抑制酶维持平衡。",
+            successEffect: { rep: +12, wealth: -10.0, happiness: +8 },
+            failEffect: { wealth: -15.0, health: -4, happiness: -10 },
+            tagSuccess: "新人类之父/母",
+            tagFail: "基因困惑",
+            isKey: false
+          },
+          {
+            text: "拒绝人工剪辑，坚信自然演化的多样性，给予孩子一个未经篡改的质朴原生态身躯",
+            riskLevel: "自然主义 · 纯真之爱",
+            successChance: () => 100,
+            successFeedback: "孩子继承了你们最本真的微笑与泪水，家庭洋溢着纯天然的质朴温情，不受商业基因厂商的订阅制绑定。",
+            successEffect: { happiness: +15, health: +6, wealth: +2.0 },
+            tagSuccess: "自然守卫",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 35,
+        getYear: (b) => b + 35,
+        period: "意识风暴",
+        title: "数字永生法案：思维云端备份的诱惑",
+        narrative: (p, y) => `时值 ${y} 年。第一部《意识上传与数字连续性法案》通过，首批商业'意识云端备份'向公众开放。\n\n只要将神经连接至量子机房，即使肉体遭遇非命，也能在虚拟赛博天堂中以数字生命延续存在。`,
+        choices: [
+          {
+            text: "重金认购顶层量子服务器终身席位，将自身全部记忆与人格模型实时同步云端",
+            riskLevel: "数字永生 · 成功率 75%",
+            successChance: (p) => 75 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【超脱凡胎】你确信自己已经战胜了碳基生物最原始的死亡恐惧，行事更加从容果敢，眼界上升至宇宙维度！",
+            failFeedback: "【人格镜像分裂眩晕】上传过程中产生严重的人格同一性解离症，总感觉云端有另一个'自己'在注视肉身，心境大受震荡。",
+            successEffect: { intellect: +15, happiness: +10, wealth: -12.0, rep: +10 },
+            failEffect: { wealth: -15.0, happiness: -18, health: -6 },
+            tagSuccess: "云端漫游者",
+            tagFail: "解离迷航",
+            isKey: true
+          },
+          {
+            text: "断然拒绝'假借代码续命'，坚信'有限的生命才是真实的生命'，全心珍惜当下每一寸阳光",
+            riskLevel: "碳基尊严 · 终极清醒",
+            successChance: () => 100,
+            successFeedback: "【人间清醒】看着身边许多人迷失于虚拟永生的幻觉中，你脚踏实地体验着泥土的芬芳与家人的体温，精神极其富足。",
+            successEffect: { happiness: +16, health: +8, intellect: +8, rep: +8 },
+            tagSuccess: "碳基守护者",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 40,
+        getYear: (b) => b + 40,
+        period: "中年危机",
+        title: "仿生义体老化与高阶维护费黑洞",
+        narrative: (p, y) => `那是 ${y} 年。人到四十，早年植入的神经连接轴与人工肺叶相继出现氧化磨损，官方通知核心固件已停更；\n\n与此同时，孩子的高阶算力学费与家庭穹顶维保费如两只巨兽，中年两头受堵。`,
+        choices: [
+          {
+            text: "不惜成本贷款置换全新钛合金轻量化内脏与四代神经枢纽，重返巅峰作战状态",
+            riskLevel: "机械飞升 · 成功率 65%",
+            successChance: (p) => 65 + Math.floor((p.health - 60) / 2),
+            successFeedback: "【机械重铸】全身奔流着澎湃的液压与电信号动力，体能与心智甚至超越了二十岁青年，职场竞争力暴涨！",
+            failFeedback: "【神经排异中风】新旧芯片协议冲突引发局部瘫痪，在康复舱里整整躺了三个月，家庭现金流被彻底掏空。",
+            successEffect: { health: +20, intellect: +8, wealth: -12.0, rep: +10 },
+            failEffect: { health: -18, wealth: -18.0, happiness: -15, rep: -2 },
+            tagSuccess: "机械重生",
+            tagFail: "义体溃败",
+            isKey: true
+          },
+          {
+            text: "通过草药调理与自然物理疗法缓解衰老，拆除过载义体，顺应生理节律降速生活",
+            riskLevel: "返璞归真 · 沉静自安",
+            successChance: () => 100,
+            successFeedback: "虽然放弃了与年轻人拼算力的冲动，但摆脱了昂贵的维保订阅陷阱，小家庭财务扎实，内心平和坦然。",
+            successEffect: { health: +6, happiness: +12, wealth: +4.0 },
+            tagSuccess: "自然养老",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 44,
+        getYear: (b) => b + 44,
+        period: "宏观动荡",
+        title: "强人工智能自组织与地表大洗牌",
+        narrative: (p, y) => `时维 ${y} 年。中央智能网络完成了第七次自我重构，接管了全球90%的传统规划审批与科研实验。\n\n你所在的深空项目部被彻底'代码化整编'，算法直接向全员发放了优厚的退役遣散通证。`,
+        choices: [
+          {
+            text: "领走遣散资产，联合地下独立学者创办'纯人工艺术与哲学思辨学社'，守卫人类文明的诗性灵光",
+            riskLevel: "文明火种 · 成功率 65%",
+            successChance: (p) => 65 + Math.floor((p.intellect - 50) / 2) + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【诗性复兴】在高度机械化的冷酷世界里，你们的纯手绘展览与哲学讲座引起全球精神共鸣，成为时代精神灯塔！",
+            failFeedback: "【曲高和寡】人们早已习惯了算法投喂的极乐幻象，学社门可罗雀入不敷出，你陷入深深的时代虚无感。",
+            successEffect: { rep: +20, intellect: +15, happiness: +14, wealth: +8.0 },
+            failEffect: { wealth: -8.0, happiness: -16, intellect: +5 },
+            tagSuccess: "文明火炬手",
+            tagFail: "时代的乡愁",
+            isKey: true
+          },
+          {
+            text: "接受算法调遣，成为中央智脑在实体矿区的'人类伦理安全巡检员'，保住高额体制福利",
+            riskLevel: "体制守夜人 · 确定无忧",
+            successChance: () => 100,
+            successFeedback: "身穿厚重的防护服巡视在机器轰鸣的旷野，虽然枯燥重复，但拥有最高等级的医疗与全家配额保障。",
+            successEffect: { wealth: +12.0, happiness: +4, health: +4, rep: +6 },
+            tagSuccess: "巡检守夜人",
+            isKey: true
+          }
+        ]
+      },
+      {
+        getAge: () => 50,
+        getYear: (b) => b + 50,
+        period: "代际碰撞",
+        title: "孩子的火星移民申请表：远征还是守望？",
+        narrative: (p, y) => `那是 ${y} 年。首批拥有独立自循环生态的火星城邦宣布接纳新移民。\n\n年满十八岁的孩子递来一张'水手大峡谷科考移民志愿表'。一旦启程，地球重力与异星时空将让此生再难亲身相拥。`,
+        choices: [
+          {
+            text: "含泪在资助单上签字，倾尽积蓄为孩子购置最顶级深空救生外骨骼，勉励 Ta'去征服更辽阔的星辰'",
+            riskLevel: "深空慈爱 · 成功率 75%",
+            successChance: (p) => 75 + (p.luck > 50 ? 10 : 0),
+            successFeedback: "【星汉迢迢】孩子在火星发来第一缕红色日落的握手全息，两代人虽隔亿万里，心灵却在前所未有的骄傲中紧紧相依。",
+            failFeedback: "【通信延迟的牵挂】长达二十多分钟的双向通信延迟折磨着你的神经，每逢深空黑子暴发便夜夜担忧难眠。",
+            successEffect: { rep: +15, happiness: +8, intellect: +8, wealth: -10.0 },
+            failEffect: { happiness: -12, health: -6, wealth: -10.0 },
+            tagSuccess: "送子远征",
+            tagFail: "星际空巢",
+            isKey: false
+          },
+          {
+            text: "动用监护人一票否决权，将孩子留在母星地表共同生活，守护代际天伦",
+            riskLevel: "故土守望 · 安全温暖",
+            successChance: () => 100,
+            successFeedback: "一家人虽没有波澜壮阔的星际历险，但能时常围坐在一张真实的餐桌旁共进晚餐，人间烟火气胜过万颗冰冷恒星。",
+            successEffect: { happiness: +12, health: +6, rep: +4 },
+            tagSuccess: "母星守望",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 58,
+        getYear: (b) => b + 58,
+        period: "暮景智境",
+        title: "强太阳风暴与城市断网之夜",
+        narrative: (p, y) => `时值 ${y} 年。一场百年未遇的超级太阳风暴击碎了外层空间的大部分中继星链，整座城市陷入罕见的全局断网与停电。\n\n年轻一代习惯了脑机直连，在突如其来的黑暗与静默中陷入恐慌；年近六旬的你，点亮了珍藏多年的物理蜡烛。`,
+        choices: [
+          {
+            text: "凭借一生的实体工程手艺与机械直觉，组织邻里搭建手摇发电机与自流冷凝净水系统",
+            riskLevel: "古道热肠 · 成功率 85%",
+            successChance: (p) => 85 + Math.floor((p.intellect - 50) / 2),
+            successFeedback: "【黑暗中的篝火】烛光在旧式机械上跃动。你用古老智慧带领整个街区安稳度过了危机，深受各世代居民拥戴敬仰！",
+            failFeedback: "【体力不支受伤】在攀爬顶楼固定太阳能板时扭伤了机械腰椎，但在年轻人的搀扶中感受到久违的社区温度。",
+            successEffect: { rep: +20, happiness: +15, intellect: +10, health: +2 },
+            failEffect: { health: -8, rep: +10, happiness: +4 },
+            tagSuccess: "暗夜引路人",
+            tagFail: "老将负伤",
+            isKey: true
+          },
+          {
+            text: "在温暖安静的防空小居室里，与伴侣在烛光下翻看实体纸质相册，享受不被打扰的绝对宁静",
+            riskLevel: "岁月温存 · 终极静谧",
+            successChance: () => 100,
+            successFeedback: "没有算法推送，没有指标催促，这一夜重回千百年前人类最朴素的模样，心灵得到了空前未有的深层治愈。",
+            successEffect: { happiness: +20, health: +8, intellect: +5 },
+            tagSuccess: "烛光沉醉",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 66,
+        getYear: (b) => b + 66,
+        period: "晚霞沧桑",
+        title: "深空引退与星空观象台长椅",
+        narrative: (p, y) => `那是 ${y} 年。全自动化已经无需任何人类肉身劳动，公民终身算力红利已足够衣食丰足。\n\n你站在山顶旧射电望远镜废墟旁的观象台上，孙辈好奇地摸着你粗糙温热的手指，问起你年轻时造过的飞船与写过的代码。`,
+        choices: [
+          {
+            text: "出资将废弃射电望远镜改造成公益星空学堂，免费教下一代辨认天上的猎户座与牵牛星",
+            riskLevel: "点亮童眸 · 代际引路",
+            successChance: () => 100,
+            successFeedback: "孩子们围坐在你身边，仰望着未经数字渲染的真实星空。你将属于人类最初的敬畏与浪漫，深深埋进了新世代的心灵。",
+            successEffect: { happiness: +18, rep: +16, intellect: +10 },
+            tagSuccess: "星空先生",
+            isKey: false
+          },
+          {
+            text: "搭乘深空游轮前往木星大红斑轨道旅行，以一位普通拓荒者的身份亲眼凝视那团转动了万年的风暴",
+            riskLevel: "朝圣宇宙 · 成功率 80%",
+            successChance: (p) => 80 + Math.floor((p.health - 60) / 2),
+            successFeedback: "【宇宙朝圣】透过观景窗直面那遮天蔽日的橙红风暴，身心彻底被宇宙的无垠与庄严所震慑，晚年再无任何遗憾！",
+            failFeedback: "【航程颠簸劳顿】虽因重力缓冲阀故障导致短暂头晕，但亲眼见证木星光环的瞬间，泪水浸湿了眼眶。",
+            successEffect: { intellect: +18, happiness: +16, wealth: -6.0 },
+            failEffect: { health: -8, happiness: +10, wealth: -5.0 },
+            tagSuccess: "大红斑朝圣者",
+            tagFail: "风尘旅人",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 74,
+        getYear: (b) => b + 74,
+        period: "沧海遗珠",
+        title: "老旧量子晶片的封存：把什么留给未来？",
+        narrative: (p, y) => `时维 ${y} 年。你整理起一生的旧式晶片、老式全息投影片与早年手写信件。\n\n全球数字历史博物馆发来邀请，希望收录你这一代跨越'旧碳基向星际智能跃迁'的实录私人档案。`,
+        choices: [
+          {
+            text: "毫无保留地将全套私人回忆日记、错误抉择与真实泪水捐献归档，作为人类童年期的真切见证",
+            riskLevel: "真情铭史 · 照亮来路",
+            successChance: () => 100,
+            successFeedback: "你的名字被刻入月球冷冻基因与文明地平线金石库。后世学者盛赞：'在这份档案里，我们看见了活生生的人'。",
+            successEffect: { rep: +25, intellect: +15, happiness: +12 },
+            tagSuccess: "文明记忆标本",
+            isKey: false
+          },
+          {
+            text: "将积蓄全部捐助给地球荒漠化生物圈逆转基金，为母星多种一棵未经基因编辑的天然阔叶树",
+            riskLevel: "绿茵长眠 · 报恩母星",
+            successChance: () => 100,
+            successFeedback: "春风吹拂着山谷里稚嫩的树苗。你把最后的力量还给了这颗诞生了生命的蓝色摇篮，灵魂一片澄澈空灵。",
+            successEffect: { wealth: -12.0, happiness: +20, rep: +18, luck: +10 },
+            tagSuccess: "母星反哺",
+            isKey: false
+          }
+        ]
+      },
+      {
+        getAge: () => 80,
+        getYear: (b) => b + 80,
+        period: "归于星海",
+        title: "生命终幕：是上传思维意识，还是随微风散入尘埃？",
+        narrative: (p, y) => `那是 ${y} 年。冬日的午后，阳光穿过穹顶折射出七彩微茫，心率监测仪发出温和平缓的律动。\n\n意识上传舱已静静候在一旁，医生柔声询问：'先生/女士，是否启动永久思维上传？或者，选择以碳基肉身的完整方式合上双眼？'`,
+        choices: [
+          {
+            text: "平静微笑拒绝上传，紧握着家人的手，在真实的心跳渐止中体面辞世，化作母星的泥土与春风",
+            riskLevel: "碳基终章 · 从容化蝶",
+            successChance: () => 100,
+            successFeedback: "在安静温暖的夕阳中，你平静地呼出最后一口气。没有服务器的冰冷轰鸣，人间这一遭，你完完整整、真真切切地走过，问心无愧。",
+            successEffect: { intellect: +12, happiness: +15, rep: +15 },
+            tagSuccess: "真善合眼",
+            isKey: true
+          },
+          {
+            text: "启动思维上传终端，将一生的灵魂与认知化作一道光束射入深空网络，奔赴永恒的赛博星海",
+            riskLevel: "意识升维 · 奔向永恒",
+            successChance: () => 100,
+            successFeedback: "电信号奔涌如瀑！碳基身躯渐渐冷却，而你的意识已在光速航线中展开羽翼，翱翔于无穷无尽的宇宙数据云海之中。",
+            successEffect: { intellect: +25, happiness: +10, rep: +10 },
+            tagSuccess: "光流升维",
+            isKey: true
+          }
+        ]
+      }
+    ];
+
     // --- 游戏运行态控制 ---
     let currentEventIndex = 0;
+    let activeEpochEvents = PAST_EPOCH_EVENTS;
 
     function startGame() {
       initAudio();
@@ -1179,6 +1741,7 @@
       const nameInput = document.getElementById('input-name').value.trim();
       player.name = nameInput || DEFAULT_NAMES[Math.floor(Math.random() * DEFAULT_NAMES.length)];
 
+      player.epochMode = currentDestinyDraft.epochMode;
       player.birthYear = currentDestinyDraft.birthYear;
       player.origin = currentDestinyDraft.origin;
       player.trait = currentDestinyDraft.trait;
@@ -1196,6 +1759,9 @@
       player.randomEventsTriggered = [];
       player.isDead = false;
       currentEventIndex = 0;
+
+      // 决定剧本池
+      activeEpochEvents = (player.epochMode === "past") ? PAST_EPOCH_EVENTS : FUTURE_EPOCH_EVENTS;
 
       // 切换视图
       document.getElementById('screen-intro').classList.add('hidden');
@@ -1239,29 +1805,30 @@
     }
 
     function renderCurrentEvent() {
-      if (currentEventIndex >= EPOCH_EVENTS.length) {
-        endLife("寿终正寝，儿孙绕膝，在安详与温情中平静合眼");
+      if (currentEventIndex >= activeEpochEvents.length) {
+        endLife("寿终正寝，在安详与温情中平静合眼");
         return;
       }
 
-      const evtConfig = EPOCH_EVENTS[currentEventIndex];
+      const evtConfig = activeEpochEvents[currentEventIndex];
       const age = evtConfig.getAge();
       const year = evtConfig.getYear(player.birthYear);
       player.age = age;
 
       // 突发健康衰竭检定
       if (player.health <= 12) {
-        endLife("终因长期高压透支、积劳成疾，在壮年抱憾猝然离世");
+        endLife("终因长期高压透支、机能衰竭，在壮年抱憾猝然离世");
         return;
       }
 
       // 更新进度
-      document.getElementById('stage-progress').innerText = `${currentEventIndex + 1}/${EPOCH_EVENTS.length}`;
+      document.getElementById('stage-progress').innerText = `${currentEventIndex + 1}/${activeEpochEvents.length}`;
 
       // 更新时代横幅
       document.getElementById('era-year').innerText = year;
-      const eraKey = Object.keys(ERA_TIMELINE).reverse().find(y => year >= parseInt(y)) || 1982;
-      const eraInfo = ERA_TIMELINE[eraKey];
+      const timeline = (player.epochMode === "past") ? PAST_TIMELINE : FUTURE_TIMELINE;
+      const eraKey = Object.keys(timeline).reverse().find(y => year >= parseInt(y)) || (player.epochMode === "past" ? 1982 : 2042);
+      const eraInfo = timeline[eraKey] || { name: "时代前行", desc: "历史的车轮滚滚向前..." };
       document.getElementById('era-tag').innerText = eraInfo.name;
       document.getElementById('era-background-desc').innerText = eraInfo.desc;
 
@@ -1272,8 +1839,10 @@
 
       // --- 强随机事件判定机制 (30%概率触发突发事件) ---
       const randomBox = document.getElementById('random-event-box');
-      if (Math.random() < 0.32 && RANDOM_EVENT_POOL.length > 0) {
-        const randEvt = RANDOM_EVENT_POOL[Math.floor(Math.random() * RANDOM_EVENT_POOL.length)];
+      const randPool = (player.epochMode === "past") ? PAST_RANDOM_EVENTS : FUTURE_RANDOM_EVENTS;
+
+      if (Math.random() < 0.32 && randPool.length > 0) {
+        const randEvt = randPool[Math.floor(Math.random() * randPool.length)];
         randomBox.classList.remove('hidden');
         document.getElementById('random-event-tag').innerText = randEvt.tag;
         document.getElementById('random-event-desc').innerText = `【${randEvt.title}】${randEvt.desc}`;
@@ -1290,7 +1859,7 @@
         randomBox.classList.add('hidden');
       }
 
-      // 渲染选项列表（含概率标记）
+      // 渲染选项列表
       const container = document.getElementById('choices-container');
       container.innerHTML = '';
 
@@ -1324,7 +1893,7 @@
 
     function handleChoiceSelection(choiceIndex) {
       soundDecision();
-      const evtConfig = EPOCH_EVENTS[currentEventIndex];
+      const evtConfig = activeEpochEvents[currentEventIndex];
       const choice = evtConfig.choices[choiceIndex];
 
       const successChance = choice.successChance(player);
@@ -1466,7 +2035,7 @@
 
       const luckSummary = document.getElementById('end-luck-summary');
       if (player.luck >= 65) {
-        luckSummary.innerText = "🎲 气运总结：天选福将 · 数度在凶险风口逢凶化吉，命途多得天意眷顾";
+        luckSummary.innerText = "🎲 气运总结：天选福将 · 数度在风口逢凶化吉，命途多得天意眷顾";
       } else if (player.luck <= 40) {
         luckSummary.innerText = "🎲 气运总结：造化磨砺 · 数次直面天命戏谑，全凭凡人血肉生生抗过时代寒冬";
       } else {
@@ -1479,9 +2048,7 @@
 
       document.getElementById('end-era-reflection').innerText = generateEraReflection();
 
-      // 生成充满文学温情与大历史质感的生平纪传
       generateVividBiography();
-
       renderKeyTurningPoints();
     }
 
@@ -1490,43 +2057,82 @@
       const w = player.wealth;
       const hap = player.happiness;
       const i = player.intellect;
+      const isFuture = (player.epochMode === "future");
 
-      if (w >= 45 && hap >= 55) {
-        return {
-          archetype: "时代弄潮翁 · 功成身退",
-          epitaph: "你乘上了历史最激荡的风帆，饱览过财富的壮阔，亦未曾迷失于物欲的深壑。行过大江大河，落子无悔。"
-        };
-      } else if (w >= 25 && hap < 45) {
-        return {
-          archetype: "负重攀登者 · 时代苦行僧",
-          epitaph: "在狂飙的城市化与债务大山中，你用肩膀扛起了几代人的体面与产证，却在深夜的加班室里耗尽了青春灵气。"
-        };
-      } else if (hap >= 70 && w < 25) {
-        return {
-          archetype: "旷达布衣 · 自在散人",
-          epitaph: "世人慌慌张张图碎银几两，而你早早参透了内卷的虚妄。向青山借得满怀清风，虽无万贯财，胸中自安然。"
-        };
-      } else if (i >= 80) {
-        return {
-          archetype: "清醒明哲者 · 孤峰观澜",
-          epitaph: "你以澄澈的智识洞穿了时代周期演进的规律，在浮华中冷眼旁观，在下行中从容不迫。懂得了历史，因而深怀悲悯。"
-        };
-      } else if (player.age < 50) {
-        return {
-          archetype: "断弦流星 · 孤勇悲歌",
-          epitaph: "生命这根弦绷得太紧，你在时代的烈火中疾驰，走得太急太烈。人间热闹非凡，而你已悄然化作微尘。"
-        };
+      if (isFuture) {
+        if (w >= 45 && hap >= 55) {
+          return {
+            archetype: "星海拓荒巨擘 · 载誉深空",
+            epitaph: "你从人造穹顶起步，乘上了人类迈向星海的巍峨巨舰。在引力与虚空中纵横开阖，无愧为宇宙的孩子。"
+          };
+        } else if (w >= 25 && hap < 45) {
+          return {
+            archetype: "赛博齿轮 · 冰冷义体攀登者",
+            epitaph: "你在代码洪流与钛合金内脏间奔波一生，换来了令人艳羡的算力与配额，却在深夜怀念母亲曾哼唱过的古老摇篮曲。"
+          };
+        } else if (hap >= 70 && w < 25) {
+          return {
+            archetype: "纯粹碳基散人 · 地表哲人",
+            epitaph: "世人争先恐后抛弃肉身飞升云端，唯有你深情守望脚下的每一寸泥土。虽无万贯算力，胸中自有一整座真实星汉。"
+          };
+        } else if (i >= 80) {
+          return {
+            archetype: "文明先知 · 灵境守望者",
+            epitaph: "你以澄澈的智识看穿了技术膨胀与人性异化的迷局，在冷酷的代码矩阵中，为人类守护住了最后一丝温热的诗意。"
+          };
+        } else if (player.age < 50) {
+          return {
+            archetype: "星轨流星 · 破晓之光",
+            epitaph: "你在异星极端风暴中疾驰，生命璀璨夺目如超新星爆发。深空寂静，而你的火种早已照亮了母星的天平。"
+          };
+        } else {
+          return {
+            archetype: "星尘守夜人 · 凡人的尊严",
+            epitaph: "既没有成为神话般的星际领主，亦未沦为算法的附庸。守住爱人，守护家人，堂堂正正走完了属于人的壮丽一生。"
+          };
+        }
       } else {
-        return {
-          archetype: "人间守望者 · 平凡的伟力",
-          epitaph: "没有成为站在风口的神话，亦未沦为时代的叹息。在岗位上尽责，在家人身旁尽心，平凡而坚韧地走完了真诚的一生。"
-        };
+        if (w >= 45 && hap >= 55) {
+          return {
+            archetype: "时代弄潮翁 · 功成身退",
+            epitaph: "你乘上了历史最激荡的风帆，饱览过财富的壮阔，亦未曾迷失于物欲的深壑。行过大江大河，落子无悔。"
+          };
+        } else if (w >= 25 && hap < 45) {
+          return {
+            archetype: "负重攀登者 · 时代苦行僧",
+            epitaph: "在狂飙的城市化与债务大山中，你用肩膀扛起了几代人的体面与产证，却在深夜的加班室里耗尽了青春灵气。"
+          };
+        } else if (hap >= 70 && w < 25) {
+          return {
+            archetype: "旷达布衣 · 自在散人",
+            epitaph: "世人慌慌张张图碎银几两，而你早早参透了内卷的虚妄。向青山借得满怀清风，虽无万贯财，胸中自安然。"
+          };
+        } else if (i >= 80) {
+          return {
+            archetype: "清醒明哲者 · 孤峰观澜",
+            epitaph: "你以澄澈的智识洞穿了时代周期演进的规律，在浮华中冷眼旁观，在下行中从容不迫。懂得了历史，因而深怀悲悯。"
+          };
+        } else if (player.age < 50) {
+          return {
+            archetype: "断弦流星 · 孤勇悲歌",
+            epitaph: "生命这根弦绷得太紧，你在时代的烈火中疾驰，走得太急太烈。人间热闹非凡，而你已悄然化作微尘。"
+          };
+        } else {
+          return {
+            archetype: "人间守望者 · 平凡的伟力",
+            epitaph: "没有成为站在风口的神话，亦未沦为时代的叹息。在岗位上尽责，在家人身旁尽心，平凡而坚韧地走完了真诚的一生。"
+          };
+        }
       }
     }
 
     function generateEraReflection() {
       const originTitle = player.origin ? player.origin.title : "工薪家庭";
-      return `${player.name}于 ${player.birthYear} 年降生在【${originTitle}】。\n这一生跨越了中国现代史上最惊心动魄的波澜半世纪：从改革春风吹拂、沿海商品大潮、千禧年加入世贸与世界工厂狂飙，到四万亿与房地产狂热狂奔、移动互联的百团大战，直至晚年目睹人工智能颠覆日常与深度老龄化的宁静。\n大历史的每一场疾风骤雨，都在这个普通生命的悲欢离合中，留下了深浅不一的年轮印记。`;
+      if (player.epochMode === "future") {
+        return `${player.name}于 ${player.birthYear} 年降生在【${originTitle}】。\n这一生跨越了人类从母星摇篮迈向深空智能文明的关键半世纪：从脑机神经直连、碳配额紧缩、地月货运电梯常态运营，到小行星采矿热潮、基因编辑代际分化，直至晚年见证强人工智能自组织与最终的意识升维与碳基抉择。\n大时代每一次星火跃迁与算法重构，都在这个生命的悲欢离合中，刻下了深刻而独特的星尘坐标。`;
+      } else {
+        return `${player.name}于 ${player.birthYear} 年降生在【${originTitle}】。\n这一生跨越了中国现代史上最惊心动魄的波澜半世纪：从改革春风吹拂、沿海商品大潮、千禧年加入世贸与世界工厂狂飙，到四万亿与房地产狂热狂奔、移动互联的百团大战，直至晚年目睹人工智能颠覆日常与深度老龄化的宁静。\n大历史的每一场疾风骤雨，都在这个普通生命的悲欢离合中，留下了深浅不一的年轮印记。`;
+      }
     }
 
     function generateVividBiography() {
@@ -1538,29 +2144,29 @@
 
       let bio = `【引子 · 命运的起点】\n${bYear} 年，在${originName}里，伴随着时代苏醒的微光，${p.name}呱呱坠地。${originFlavor}，先天气质中带着【${traitName}】的底色。\n\n`;
 
-      // 阶段1：童年与求学 (幼年、童年、中考、高考、大学)
+      // 阶段1：启蒙与求学
       bio += `【第一卷 · 青葱岁月与时代潮涌】\n`;
       const youthEvents = p.history.filter(h => h.age <= 21);
       youthEvents.forEach(h => {
         bio += `· ${h.year}年（${h.age}岁），正值【${h.title}】。面对关口，${p.name}做出了“${h.choiceText}”的选择。${h.feedback}\n`;
       });
 
-      // 阶段2：职场搏杀与安家置业 (24-35岁)
-      bio += `\n【第二卷 · 盛世狂飙与负重前行】\n在城市化与流动性狂飙的黄金岁月，${p.name}迎来了人生负荷最重的盛年。`;
+      // 阶段2：前线搏杀与立业立身
+      bio += `\n【第二卷 · 盛年狂飙与负重前行】\n在时代资源与技术狂飙的黄金岁月，${p.name}迎来了人生负荷最重的盛年。`;
       const midEvents = p.history.filter(h => h.age > 21 && h.age <= 35);
       midEvents.forEach(h => {
         bio += `\n· ${h.year}年（${h.age}岁），在【${h.title}】的十字路口，选择“${h.choiceText}”。${h.feedback}`;
       });
 
-      // 阶段3：中年风雨与洗牌突围 (40-58岁)
-      bio += `\n\n【第三卷 · 中年关隘与风浪洗礼】\n人到中年，上有高堂下有幼雏，更逢宏观经济周期震荡。`;
+      // 阶段3：中年关隘与风浪洗礼
+      bio += `\n\n【第三卷 · 中年关隘与时代洗礼】\n人到中年，上有高堂下有幼雏，更逢宏观大洗牌。`;
       const elderEvents = p.history.filter(h => h.age > 35 && h.age <= 58);
       elderEvents.forEach(h => {
         bio += `\n· ${h.year}年（${h.age}岁），面临【${h.title}】，“${h.choiceText}”。${h.feedback}`;
       });
 
-      // 阶段4：晚晴岁暮与归于安详 (66岁以上)
-      bio += `\n\n【第四卷 · 桑榆晚景与天地辞章】\n走过半生波澜，青丝染霜，红尘万事渐渐归于沉静。`;
+      // 阶段4：桑榆晚景与天地辞章
+      bio += `\n\n【第四卷 · 桑榆晚景与天地辞章】\n走过半生波澜，红尘万事渐渐归于沉静。`;
       const lateEvents = p.history.filter(h => h.age > 58);
       lateEvents.forEach(h => {
         bio += `\n· ${h.year}年（${h.age}岁），在【${h.title}】时分，做出“${h.choiceText}”。${h.feedback}`;
@@ -1620,7 +2226,7 @@
       const eraRef = document.getElementById('end-era-reflection').innerText;
       const bio = document.getElementById('end-biography').innerText;
 
-      const fullText = `【浮生录 · 人物生平长卷与时代回响】\n主角：${player.name}（${document.getElementById('end-lifespan').innerText}）\n宿命评定：${archetype}\n墓志铭：${epitaph}\n\n【时代长河坐标】\n${eraRef}\n\n【生平全卷纪传】\n${bio}\n\n—— 大浪淘沙，唯心自守。`;
+      const fullText = `【浮生录 · 人物生平长卷与时代回响】\n主角：${player.name}（${document.getElementById('end-lifespan').innerText}）\n纪元模式：${player.epochMode === 'past' ? '过去纪元' : '未来纪元'}\n宿命评定：${archetype}\n墓志铭：${epitaph}\n\n【时代长河坐标】\n${eraRef}\n\n【生平全卷纪传】\n${bio}\n\n—— 大浪淘沙，唯心自守。`;
 
       navigator.clipboard.writeText(fullText).then(() => {
         alert("人生纪传档案已成功复制到剪贴板！");
@@ -1629,6 +2235,9 @@
       });
     }
 
+    // 初始化默认勾选过去
+    const defaultRadio = document.querySelector('input[name="epoch_mode"][value="past"]');
+    if (defaultRadio) defaultRadio.checked = true;
     rollNewDestiny();
   </script>
 </body>
