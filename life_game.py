@@ -94,6 +94,8 @@ class Player:
         print(f" 时代背景: {Color.YELLOW}{era_title}{Color.RESET} · {Color.GRAY}{era_desc}{Color.RESET}")
         print(f"{Color.GOLD}{'-'*68}{Color.RESET}")
         print(f" [健康]: {int(self.health):<3}♥  |  [财富]: {self.wealth:.1f} {wealth_unit(self.epoch_mode):<4}  |  [智识]: {int(self.intellect):<3}✦  |  [心安]: {int(self.happiness):<3}☼  |  [气运]: {int(self.luck):<3}🎲")
+        sc = self.track_scores
+        print(f" [赛道罗盘]: {Color.GRAY}体制 {sc['体制政务']} | 商海 {sc['商海实业']} | 学术 {sc['学术科技']} | 文艺 {sc['文艺江湖']} | 守拙 {sc['守拙布衣']}{Color.RESET}")
         print(f"{Color.GOLD}{'='*68}{Color.RESET}\n")
 
 
@@ -839,6 +841,9 @@ def render_terminal_ending(player):
     print(f"  学识心智值 : {int(player.intellect)} / 100")
     print(f"  心境安宁度 : {int(player.happiness)} / 100")
     print(f"  终生天命气运: {int(player.luck)} / 100")
+    sc = player.track_scores
+    print(f"  赛道罗盘积分: 体制政务 {sc['体制政务']} | 商海实业 {sc['商海实业']} | 学术科技 {sc['学术科技']} | 文艺江湖 {sc['文艺江湖']} | 守拙自持 {sc['守拙布衣']}")
+    print(f"  终身位阶坐标: {Color.BOLD}{player.career_track} · {player.social_rank}{Color.RESET}")
 
     print(f"\n{Color.CYAN}【 人生印记标签 】{Color.RESET}")
     print("  " + "  ".join([f"{Color.BG_DARK}#{t}{Color.RESET}" for t in player.tags]))

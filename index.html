@@ -95,6 +95,52 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+    /* 宣纸暖玉主题 (Parchment Paper Reading Theme) */
+    body.theme-parchment {
+      background-color: #f7f3e9 !important;
+      color: #27221d !important;
+    }
+    body.theme-parchment #top-bar,
+    body.theme-parchment section,
+    body.theme-parchment footer,
+    body.theme-parchment .bg-\[\#12141a\]\/95,
+    body.theme-parchment .bg-\[\#14161f\],
+    body.theme-parchment .bg-\[\#151722\],
+    body.theme-parchment .bg-\[\#12141c\],
+    body.theme-parchment div[class*="bg-zinc-900"],
+    body.theme-parchment div[class*="bg-zinc-800"],
+    body.theme-parchment .choice-card {
+      background-color: #ede4d1 !important;
+      color: #27221d !important;
+      border-color: rgba(146, 98, 48, 0.25) !important;
+    }
+    body.theme-parchment span[class*="text-zinc-400"],
+    body.theme-parchment p[class*="text-zinc-400"],
+    body.theme-parchment div[class*="text-zinc-400"] {
+      color: #635343 !important;
+    }
+    body.theme-parchment span[class*="text-zinc-200"],
+    body.theme-parchment div[class*="text-zinc-200"],
+    body.theme-parchment div[class*="text-zinc-300"] {
+      color: #1f1a14 !important;
+    }
+    body.theme-parchment h1, body.theme-parchment h2, body.theme-parchment h3 {
+      color: #78350f !important;
+    }
+
+    /* 星渊幽蓝主题 (Cosmic Sci-Fi Blue Theme) */
+    body.theme-cosmic {
+      background-color: #060914 !important;
+      color: #e0f2fe !important;
+    }
+    body.theme-cosmic #top-bar,
+    body.theme-cosmic section,
+    body.theme-cosmic .bg-\[\#12141a\]\/95,
+    body.theme-cosmic .bg-\[\#14161f\] {
+      background-color: #0d1428 !important;
+      border-color: rgba(56, 189, 248, 0.25) !important;
+    }
+
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-amber-900 selection:text-amber-100 pb-safe touch-manipulation">
@@ -137,6 +183,9 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <button onclick="cycleTheme()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition flex items-center" id="btn-theme-toggle" title="切换视觉主题">
+          🎨 <span id="theme-label-text" class="ml-1 font-sans-sc">墨金</span>
+        </button>
         <div class="flex items-center space-x-1 bg-zinc-900/80 px-1.5 py-0.5 rounded-md border border-zinc-700">
           <button onclick="adjustFontSize(-1)" class="text-zinc-400 hover:text-amber-300 text-[11px] px-1 font-mono font-bold" title="字号缩小">A-</button>
           <span class="text-zinc-600 text-[10px]">|</span>
@@ -299,15 +348,27 @@
           <div class="flex flex-wrap items-baseline gap-2 md:space-x-3">
             <span id="display-age" class="text-2xl md:text-3xl font-black text-amber-200 font-serif">6 岁</span>
             <span id="display-period" class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-medium">幼年启蒙</span>
-            <span id="display-track-badge" class="text-[11px] px-2 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/60 font-sans-sc font-medium flex items-center">
+            <button id="display-track-badge" onclick="toggleCareerCompass()" class="text-[11px] px-2 py-0.5 rounded bg-amber-950/70 hover:bg-amber-900/80 text-amber-300 border border-amber-800/60 font-sans-sc font-medium flex items-center cursor-pointer transition" title="点击展开/收起五大赛道倾向罗盘">
               🧭 轨迹：<span id="player-track-text" class="ml-1 font-bold">探索中</span>
-            </span>
+              <span id="compass-arrow" class="ml-1 text-[9px] text-amber-400">▾</span>
+            </button>
             <span id="display-family-badge" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800/90 text-zinc-300 border border-zinc-700/80 font-sans-sc font-medium flex items-center">
               🏡 <span id="family-status-text" class="ml-1">父母膝下</span>
             </span>
           </div>
           <div id="stat-change-notify" class="h-6 text-xs flex items-center space-x-2 font-mono">
             <!-- 动态数值飘动 -->
+          </div>
+        </div>
+
+        <!-- 五大赛道倾向罗盘 (可折叠) -->
+        <div id="career-compass-box" class="hidden mb-4 p-3 rounded-xl bg-zinc-900/90 border border-amber-700/40 text-xs font-sans-sc space-y-2 animate-fade-in shadow-xl">
+          <div class="flex items-center justify-between border-b border-zinc-800/80 pb-1.5 text-zinc-400 text-[11px]">
+            <span class="font-bold text-amber-300 flex items-center">🧭 五大赛道倾向罗盘（每项抉择实时累计权重）</span>
+            <span id="compass-rank-criteria" class="text-[10px] text-zinc-400 font-mono">--</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]" id="compass-bars-container">
+            <!-- 动态渲染五大赛道条 -->
           </div>
         </div>
 
@@ -3573,6 +3634,8 @@
       const famEl = document.getElementById('family-status-text');
       if (famEl) famEl.innerText = formatFamilyStatus(player);
 
+      renderCareerCompass();
+
       const currentYear = player.birthYear + player.age;
       document.getElementById('display-era-badge').innerText = `${currentYear}年 · ${player.age}岁`;
 
@@ -3953,16 +4016,30 @@
     function updateHistoryUI() {
       document.getElementById('history-count').innerText = player.history.length;
       const logContainer = document.getElementById('history-log');
+      if (!logContainer) return;
       logContainer.innerHTML = '';
-      player.history.slice().reverse().forEach(h => {
+
+      if (player.history.length === 0) {
+        logContainer.innerHTML = '<div class="text-zinc-500 text-xs py-2">岁月长卷刚刚铺开，静待第一步落子……</div>';
+        return;
+      }
+
+      player.history.slice().reverse().forEach((h) => {
         const item = document.createElement('div');
-        item.className = "p-2 bg-zinc-900/60 rounded border border-zinc-800/60";
+        item.className = "relative pl-5 pb-3 border-l-2 border-zinc-800 last:border-l-transparent text-xs";
+        
+        const dotColor = h.isSuccess ? 'bg-emerald-400' : 'bg-rose-400';
+        const fateTag = h.fateNote ? `<span class="text-[9px] text-purple-300 font-mono">(${h.fateNote})</span>` : '';
+        const isKeyTag = h.isKey ? `<span class="px-1 py-0.2 rounded bg-amber-950 text-amber-300 text-[9px] border border-amber-700/60 font-bold ml-1.5">分水岭</span>` : '';
+
         item.innerHTML = `
-          <div class="flex items-center justify-between text-[11px] text-amber-400/90 mb-0.5 font-mono">
-            <span>${h.year}年 · ${h.age}岁 · ${h.title}</span>
-            <span class="${h.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${h.isSuccess ? '成' : '败'}</span>
+          <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full ${dotColor} ring-4 ring-[#14161f]"></div>
+          <div class="flex items-center justify-between text-[11px] text-amber-300/90 font-mono mb-0.5">
+            <span>${h.year}年 · ${h.age}岁 · ${h.title}${isKeyTag}</span>
+            <span class="${h.isSuccess ? 'text-emerald-400' : 'text-rose-400'} font-bold">${h.isSuccess ? '★ 顺遂' : '✕ 挫折'}</span>
           </div>
-          <div class="text-zinc-300 text-xs">${h.choiceText}</div>
+          <div class="text-zinc-200 font-medium">${h.choiceText} ${fateTag}</div>
+          <div class="text-zinc-400 text-[11px] italic font-serif leading-snug mt-0.5">${h.feedback}</div>
         `;
         logContainer.appendChild(item);
       });
@@ -4827,6 +4904,100 @@ function renderKeyTurningPoints() {
       }
     }
 
+    // ==================== 五大赛道罗盘与轨迹拆解 ====================
+    function renderCareerCompass() {
+      const container = document.getElementById('compass-bars-container');
+      if (!container) return;
+      const scores = player.trackScores || { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 };
+      const maxScore = Math.max(1, ...Object.values(scores));
+
+      const tracksDef = [
+        { key: "体制政务", icon: "🏛️", color: "bg-red-500" },
+        { key: "商海实业", icon: "🪙", color: "bg-amber-500" },
+        { key: "学术科技", icon: "📜", color: "bg-sky-500" },
+        { key: "文艺江湖", icon: "🎭", color: "bg-purple-500" },
+        { key: "守拙布衣", icon: "🌾", color: "bg-emerald-500" }
+      ];
+
+      container.innerHTML = tracksDef.map(t => {
+        const sc = scores[t.key] || 0;
+        const pct = Math.min(100, Math.round((sc / maxScore) * 100));
+        const isLeader = (player.careerTrack === t.key);
+        return `
+          <div class="space-y-0.5">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="${isLeader ? 'text-amber-300 font-bold' : 'text-zinc-400'}">${t.icon} ${t.key} ${isLeader ? '★领跑' : ''}</span>
+              <span class="font-mono ${isLeader ? 'text-amber-300 font-bold' : 'text-zinc-500'}">${sc} 分</span>
+            </div>
+            <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+              <div class="${t.color} h-1.5 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const critEl = document.getElementById('compass-rank-criteria');
+      if (critEl) {
+        critEl.innerText = `声望 ${player.reputation} | 财富 ${player.wealth.toFixed(1)}${wealthUnitShort(player.epochMode)} ➔ 位阶：${player.socialRank}`;
+      }
+    }
+
+    function toggleCareerCompass() {
+      soundClick();
+      const box = document.getElementById('career-compass-box');
+      const arr = document.getElementById('compass-arrow');
+      if (!box) return;
+      const isHidden = box.classList.contains('hidden');
+      if (isHidden) {
+        renderCareerCompass();
+        box.classList.remove('hidden');
+        if (arr) arr.innerText = '▴';
+      } else {
+        box.classList.add('hidden');
+        if (arr) arr.innerText = '▾';
+      }
+    }
+
+    // ==================== 视觉美学主题切换 (墨金 / 宣纸 / 幽蓝) ====================
+    const THEMES = [
+      { id: "ink", label: "墨金", className: "" },
+      { id: "parchment", label: "宣纸", className: "theme-parchment" },
+      { id: "cosmic", label: "幽蓝", className: "theme-cosmic" }
+    ];
+    let currentThemeIdx = 0;
+
+    function applyTheme() {
+      try {
+        const saved = (typeof localStorage !== 'undefined') ? localStorage.getItem('fushenglu_theme') : null;
+        if (saved) {
+          const found = THEMES.findIndex(t => t.id === saved);
+          if (found >= 0) currentThemeIdx = found;
+        }
+      } catch (e) {}
+
+      const active = THEMES[currentThemeIdx];
+      if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.remove('theme-parchment', 'theme-cosmic');
+        if (active.className) {
+          document.body.classList.add(active.className);
+        }
+      }
+      const lbl = document.getElementById('theme-label-text');
+      if (lbl) lbl.innerText = active.label;
+    }
+
+    function cycleTheme() {
+      soundClick();
+      currentThemeIdx = (currentThemeIdx + 1) % THEMES.length;
+      const active = THEMES[currentThemeIdx];
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('fushenglu_theme', active.id);
+        }
+      } catch (e) {}
+      applyTheme();
+    }
+
     // ==================== 字体大小自适应与无障碍缩放 ====================
     let currentFontScale = 0;
     try {
@@ -4849,6 +5020,7 @@ function renderKeyTurningPoints() {
     }
 
     // 初始化默认勾选过去与界面设置
+    applyTheme();
     applyFontScale();
     renderEpochCards();
     const defaultRadio = document.querySelector('input[name="epoch_mode"][value="' + selectedEpochMode + '"]');
