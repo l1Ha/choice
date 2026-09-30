@@ -484,12 +484,12 @@
           </div>
         </div>
 
-        <!-- 五维属性量化与印记 -->
+        <!-- 六维属性量化与天命雷达图 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 items-center font-sans-sc">
           <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4">
             <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2.5 flex items-center justify-between">
-              <span>终生数值结算</span>
-              <span class="text-amber-400 text-[10px]">终生量化</span>
+              <span>终生数值量化</span>
+              <span class="text-amber-400 text-[10px]">六维量化</span>
             </div>
             <div class="space-y-2 text-xs">
               <div>
@@ -527,20 +527,39 @@
                 </div>
                 <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-luck" class="bg-purple-500 h-1.5 rounded-full" style="width: 50%"></div></div>
               </div>
+              <div>
+                <div class="flex justify-between text-zinc-300 mb-0.5">
+                  <span>社会声望 (Prestige)</span>
+                  <span id="end-val-rep" class="font-bold">--</span>
+                </div>
+                <div class="w-full bg-zinc-800 rounded-full h-1.5"><div id="bar-rep" class="bg-amber-400 h-1.5 rounded-full" style="width: 50%"></div></div>
+              </div>
             </div>
           </div>
 
-          <!-- 标签与运气统计 -->
-          <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between h-full">
-            <div>
-              <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2.5">人生印记与性格纹理</div>
-              <div id="end-tags-container" class="flex flex-wrap gap-1.5 mb-3">
-                <!-- 动态标签 -->
-              </div>
+          <!-- 六维天命蛛网雷达图 -->
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4 flex flex-col items-center justify-center">
+            <div class="w-full text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>六维天命雷达图</span>
+              <span class="text-amber-400 text-[10px]">RADAR MESH</span>
             </div>
-            <div id="end-luck-summary" class="text-xs text-purple-300/90 border-t border-zinc-800/80 pt-2 font-mono">
-              🎲 天命判定：--
+            <div class="flex items-center justify-center w-full py-1">
+              <canvas id="canvas-radar" width="280" height="230" class="max-w-full h-auto"></canvas>
             </div>
+          </div>
+        </div>
+
+        <!-- 标签与运气统计 -->
+        <div class="bg-zinc-900/70 border border-zinc-800 rounded-lg p-4 mb-6 font-sans-sc">
+          <div class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span>人生印记与性格纹理</span>
+            <span class="text-zinc-500 text-[10px]">TAGS & LUCK</span>
+          </div>
+          <div id="end-tags-container" class="flex flex-wrap gap-1.5 mb-2.5">
+            <!-- 动态标签 -->
+          </div>
+          <div id="end-luck-summary" class="text-xs text-purple-300/90 border-t border-zinc-800/80 pt-2 font-mono">
+            🎲 天命判定：--
           </div>
         </div>
 
@@ -4261,11 +4280,16 @@
       document.getElementById('end-val-happiness').innerText = `${Math.round(player.happiness)} / 100`;
       document.getElementById('end-val-luck').innerText = `${Math.round(player.luck)} / 100`;
 
+      document.getElementById('end-val-rep').innerText = `${Math.round(player.reputation)} / 100`;
+      document.getElementById('bar-rep').style.width = `${Math.min(100, Math.max(5, player.reputation))}%`;
+
       document.getElementById('bar-health').style.width = `${Math.min(100, Math.max(5, player.health))}%`;
       document.getElementById('bar-wealth').style.width = `${Math.min(100, Math.max(5, (player.wealth + 20) / 120 * 100))}%`;
       document.getElementById('bar-intellect').style.width = `${Math.min(100, Math.max(5, player.intellect))}%`;
       document.getElementById('bar-happiness').style.width = `${Math.min(100, Math.max(5, player.happiness))}%`;
       document.getElementById('bar-luck').style.width = `${Math.min(100, Math.max(5, player.luck))}%`;
+
+      drawRadarChart(player);
 
       const tagBox = document.getElementById('end-tags-container');
       tagBox.innerHTML = '';
@@ -4306,6 +4330,149 @@
       renderKarmaAndBlessings();
     }
 
+    // ==================== 六维天命蛛网雷达图绘制 ====================
+    function drawRadarChart(player) {
+      if (typeof document === 'undefined') return;
+      const canvas = document.getElementById('canvas-radar');
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w / 2, cy = h / 2 + 2;
+      const radius = 72;
+
+      const labels = ["健康", "财富", "智识", "心安", "气运", "声誉"];
+      const vals = [
+        Math.min(100, Math.max(0, player.health)) / 100,
+        Math.min(100, Math.max(0, (player.wealth + 10) / 60 * 100)) / 100,
+        Math.min(100, Math.max(0, player.intellect)) / 100,
+        Math.min(100, Math.max(0, player.happiness)) / 100,
+        Math.min(100, Math.max(0, player.luck)) / 100,
+        Math.min(100, Math.max(0, player.reputation)) / 100
+      ];
+
+      const totalPoints = 6;
+      const angleStep = (Math.PI * 2) / totalPoints;
+
+      // 绘制三层同心六边形参考线
+      [0.33, 0.66, 1.0].forEach(level => {
+        ctx.beginPath();
+        for (let i = 0; i < totalPoints; i++) {
+          const angle = i * angleStep - Math.PI / 2;
+          const x = cx + Math.cos(angle) * (radius * level);
+          const y = cy + Math.sin(angle) * (radius * level);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = "rgba(212, 175, 55, 0.2)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // 绘制六轴射线与刻度标签
+      for (let i = 0; i < totalPoints; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = "rgba(212, 175, 55, 0.25)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        const lx = cx + Math.cos(angle) * (radius + 18);
+        const ly = cy + Math.sin(angle) * (radius + 12);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillStyle = "#d4af37";
+        ctx.fillText(labels[i], lx, ly);
+      }
+
+      // 绘制人物天命六维多边形
+      ctx.beginPath();
+      for (let i = 0; i < totalPoints; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const r = radius * Math.max(0.12, vals[i]);
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(245, 158, 11, 0.35)";
+      ctx.fill();
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 顶点高亮光晕
+      for (let i = 0; i < totalPoints; i++) {
+        const angle = i * angleStep - Math.PI / 2;
+        const r = radius * Math.max(0.12, vals[i]);
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#fef08a";
+        ctx.fill();
+        ctx.strokeStyle = "#b45309";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    // ==================== 身后长河遗泽与子孙后话推演 ====================
+    function generateDescendantsEpilogue(p, fam) {
+      const childCount = (fam.children || []).length;
+      const isClassical = isClassicalEpoch(p.epochMode);
+      const isFuture = isFutureEpoch(p.epochMode);
+      let parts = [];
+
+      if (fam.spouse && fam.spouse.alive) {
+        parts.push(`你溘然长逝之后，结发${fam.spouse.role}【${fam.spouse.name}】于灵前默坐良久。此后余生每逢忌辰，案头皆敬供着你生前最喜爱的清茶。`);
+      }
+
+      if (childCount >= 2) {
+        if (p.wealth >= 20) {
+          if (isClassical) {
+            parts.push(`长子谨遵你留下的家训主持析产，数座铺面与百亩桑田分授各房，和睦相持未起阋墙之争。借着厚实家底，第三代孙辈中终有俊杰应试入泮，诗礼传家。`);
+          } else if (isFuture) {
+            parts.push(`你留存的高阶算力信托与深空股权由儿女依协议平稳交割，多代人得以在人造穹顶与轨道城安稳生活，你的基因档案被永久镌刻于家族家系库。`);
+          } else {
+            parts.push(`儿女们分得你的积蓄与房产，在波澜壮阔的时代浪潮中各自成家立业。每逢清明聚首，晚辈们仍会翻看泛黄的老相册，感念你当年艰辛打拼打下的基业。`);
+          }
+        } else {
+          parts.push(`儿女们虽无万贯资财可继，却秉承了你一生【${p.trait ? p.trait.name : '坚韧朴实'}】的风骨。在风雨世道中各安其业，踏踏实实度日，守住了普通人最真切的尊严。`);
+        }
+      } else if (childCount === 1) {
+        const ch = fam.children[0];
+        parts.push(`独${ch.role}【${ch.name}】抚棺承家，将你的生前佩物与书册细致包好珍藏。后来${ch.gender === 'female' ? '她' : '他'}亦为人父母，时常向儿孙絮絮讲起你当年的那段峥嵘岁月。`);
+      } else {
+        if (isClassical) {
+          parts.push(`你一身傲骨孤行天地，无子嗣之累。辞世后故旧好友凑资为你具棺收殓，葬于故园青山之阳。清明岁岁，自有一二莫逆知交携酒登坟凭吊。`);
+        } else if (isFuture) {
+          parts.push(`你未育子嗣，辞世后全部算力盈余按生前遗愿捐入公共深空引航基金。在无垠猎户座星云间，有一颗信标灯塔永远闪烁着你的名字。`);
+        } else {
+          parts.push(`你一生独行潇洒，落子无憾。遗存的字画手稿被故旧转赠市图书馆地方文献室，偶尔有驻足翻阅的青年，在字里行间重新相遇了你当年的心跳。`);
+        }
+      }
+
+      if (p.reputation >= 70) {
+        parts.push(`乡党士绅深感其公德，多年后提起你的名讳，依旧赞叹为一方楷模，称你“行事端方，无负天地”。`);
+      } else if (p.wealth >= 30) {
+        parts.push(`商街字号与邻里行帮皆盛传你当年经营的义利信条，后辈经商之人多奉你的法度为标尺。`);
+      }
+
+      return parts.join(" ");
+    }
+
     function renderFamilyEnding() {
       const container = document.getElementById('end-family-chronicle');
       if (!container) return;
@@ -4316,14 +4483,18 @@
 
       const fAge = fam.father.deathYear ? (fam.father.deathYear - fam.father.birthYear) : (endYear - fam.father.birthYear);
       const mAge = fam.mother.deathYear ? (fam.mother.deathYear - fam.mother.birthYear) : (endYear - fam.mother.birthYear);
+      const fStr = fam.father.deathYear ? `享年 ${fAge} 岁` : '安享晚年';
+      const mStr = fam.mother.deathYear ? `享年 ${mAge} 岁` : '长寿健在';
 
-      const parentsText = `慈父【${fam.father.name}】（${fam.father.deathYear ? '享年 ' + fAge + ' 岁' : '安享晚年'}） · 严母【${fam.mother.name}】（${fam.mother.deathYear ? '享年 ' + mAge + ' 岁' : '长寿健在'}）`;
+      const parentsText = `慈父【${fam.father.name}】（${fStr}） · 严母【${fam.mother.name}】（${mStr}）`;
 
       let spouseText = "一生未入围城，寄情于天地山海，独行无悔。";
+      let sStr = "独行";
       if (fam.spouse) {
         const sAge = (fam.spouse.deathYear || endYear) - fam.spouse.birthYear;
         const yearsTog = (fam.spouse.deathYear || endYear) - fam.spouse.marriedYear;
-        spouseText = `结发${fam.spouse.role}【${fam.spouse.name}】（${fam.spouse.marriedYear}年成家，相伴 ${yearsTog} 载，${fam.spouse.deathYear ? '享年 ' + sAge + ' 岁仙逝' : '相守余生'}）`;
+        sStr = fam.spouse.deathYear ? `享年 ${sAge} 岁` : '相守余生';
+        spouseText = `结发${fam.spouse.role}【${fam.spouse.name}】（${fam.spouse.marriedYear}年成家，相伴 ${yearsTog} 载，${sStr}）`;
       }
 
       let childrenText = "膝下未育亲生骨肉，清虚自守。";
@@ -4334,26 +4505,82 @@
         }
       }
 
-      let lineageEval = "";
-      if (fam.spouse && fam.children.length >= 2) {
-        lineageEval = "满堂和睦，开枝散叶。无论时代几度风雨翻覆，家门中那盏夜归人的暖灯，始终未曾熄灭。";
-      } else if (fam.spouse) {
-        lineageEval = "二人同舟，相濡以沫。虽无繁茂宗支，却在风雨沧桑里筑起了一座遮风避雨的温润避风港。";
-      } else {
-        lineageEval = "独行天地，独立苍茫。无俗累之牵绊，亦无宗祧之负累，潇洒生息，落子无悔。";
-      }
+      const postscript = generateDescendantsEpilogue(p, fam);
 
       const badgeEl = document.getElementById('end-family-badge');
       if (badgeEl) {
         badgeEl.innerText = fam.children.length > 0 ? `后继有人 · 育有${fam.children.length}子` : (fam.spouse ? `琴瑟和鸣` : `独立一身`);
       }
 
+      // 可视化世系树 HTML 组装
+      const treeHTML = `
+        <div class="lineage-tree p-3.5 bg-zinc-950/70 rounded-xl border border-zinc-800/80 my-3 font-sans-sc">
+          <!-- 第一代：双亲 -->
+          <div class="flex justify-center items-center gap-3">
+            <div class="px-2.5 py-1.5 rounded bg-zinc-900 border border-amber-600/40 text-center">
+              <span class="text-[9px] text-amber-400 block">慈父</span>
+              <span class="font-bold text-zinc-200 text-xs">${fam.father.name}</span>
+              <span class="text-[9px] text-zinc-500 block font-mono">${fStr}</span>
+            </div>
+            <span class="text-zinc-600 text-xs">⸺ 结合 ⸺</span>
+            <div class="px-2.5 py-1.5 rounded bg-zinc-900 border border-amber-600/40 text-center">
+              <span class="text-[9px] text-amber-400 block">严母</span>
+              <span class="font-bold text-zinc-200 text-xs">${fam.mother.name}</span>
+              <span class="text-[9px] text-zinc-500 block font-mono">${mStr}</span>
+            </div>
+          </div>
+          
+          <div class="w-0.5 h-3 bg-amber-600/40 mx-auto my-1"></div>
+
+          <!-- 第二代：主角与结发 -->
+          <div class="flex justify-center items-center gap-3">
+            <div class="px-3.5 py-1.5 rounded bg-amber-950/70 border-2 border-amber-500 text-center ring-2 ring-amber-500/20">
+              <span class="text-[9px] text-amber-300 font-bold block">【主角】</span>
+              <span class="font-black text-amber-100 text-xs md:text-sm font-serif">${p.name}</span>
+              <span class="text-[9px] text-amber-300/80 block font-mono">${p.gender === 'female' ? '女 ♀' : '男 ♂'} · 享年${p.age}岁</span>
+            </div>
+            ${fam.spouse ? `
+              <span class="text-rose-500 text-xs">♥ 结缡 ♥</span>
+              <div class="px-2.5 py-1.5 rounded bg-zinc-900 border border-rose-600/50 text-center">
+                <span class="text-[9px] text-rose-400 block">${fam.spouse.role}</span>
+                <span class="font-bold text-zinc-200 text-xs">${fam.spouse.name}</span>
+                <span class="text-[9px] text-zinc-500 block font-mono">${sStr}</span>
+              </div>
+            ` : `<span class="text-zinc-600 text-xs italic">独行一生</span>`}
+          </div>
+
+          <!-- 第三代：子嗣 -->
+          ${fam.children && fam.children.length > 0 ? `
+            <div class="w-0.5 h-3 bg-emerald-600/40 mx-auto my-1"></div>
+            <div class="flex flex-wrap justify-center items-center gap-1.5 pt-0.5">
+              ${fam.children.map(c => `
+                <div class="px-2 py-1 rounded bg-zinc-900/90 border border-emerald-600/40 text-center">
+                  <span class="text-[9px] text-emerald-400 block">${c.role}</span>
+                  <span class="font-bold text-zinc-200 text-xs">${c.name}</span>
+                  <span class="text-[8px] text-zinc-500 block font-mono">${c.birthYear}年</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          ${fam.grandchildrenCount > 0 ? `
+            <div class="text-center mt-2 pt-2 border-t border-zinc-800/60 text-[10px] text-amber-300/90 font-mono">
+              🌱 孙辈绕膝（约 ${fam.grandchildrenCount} 位第三代苗裔），家族年轮繁衍不息
+            </div>
+          ` : ''}
+        </div>
+      `;
+
       container.innerHTML = `
-        <div class="bg-zinc-950/40 p-3.5 rounded-lg border border-zinc-800/60 space-y-2 text-xs">
+        <div class="bg-zinc-950/40 p-3.5 rounded-lg border border-zinc-800/60 space-y-2.5 text-xs">
           <div class="flex items-start"><span class="text-amber-400 font-bold shrink-0 w-20">【父母所出】</span><span class="text-zinc-300">${parentsText}</span></div>
           <div class="flex items-start"><span class="text-rose-400 font-bold shrink-0 w-20">【伴侣结发】</span><span class="text-zinc-300">${spouseText}</span></div>
           <div class="flex items-start"><span class="text-emerald-400 font-bold shrink-0 w-20">【血脉子嗣】</span><span class="text-zinc-300">${childrenText}</span></div>
-          <div class="pt-2 border-t border-zinc-800/60 text-[11px] text-zinc-400 italic">“${lineageEval}”</div>
+          ${treeHTML}
+          <div class="pt-2 border-t border-zinc-800/60 text-[11px] text-zinc-300 leading-relaxed font-serif">
+            <span class="text-amber-400 font-bold font-sans-sc block mb-1">【身后长河遗泽 · 子孙后记】</span>
+            ${postscript}
+          </div>
         </div>
       `;
     }

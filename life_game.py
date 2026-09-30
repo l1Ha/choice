@@ -1029,6 +1029,40 @@ def render_terminal_ending(player):
     else:
         print(f"  血脉子嗣: 膝下未有亲生子嗣，清虚自守。")
 
+    # 身后遗泽与子孙后记推演
+    postscript_parts = []
+    child_count = len(fam.get("children", []))
+    if fam.get("spouse") and fam["spouse"].get("alive"):
+        postscript_parts.append(f"你溘然长逝之后，结发{fam['spouse']['role']}【{fam['spouse']['name']}】于灵前默坐良久。余生每逢忌辰，案头皆敬供着你生前最喜爱的清茶。")
+    if child_count >= 2:
+        if player.wealth >= 20:
+            if is_classical:
+                postscript_parts.append("长子谨遵你留下的家训主持析产，各房和睦相持未起阋墙之争。借着厚实家底，孙辈中终有俊杰应试入泮，诗礼传家。")
+            elif is_future:
+                postscript_parts.append("你留存的高阶算力信托与深空股权平稳交割，多代人得以在穹顶安稳生活，你的基因档案被永久镌刻于家族家系库。")
+            else:
+                postscript_parts.append("儿女们分得你的积蓄与房产，在激荡时代中各自成家立业。每逢清明聚首，晚辈们仍会翻看老相册，感念你当年艰辛打下的基业。")
+        else:
+            postscript_parts.append(f"儿女们虽无万贯资财可继，却秉承了你一生【{player.trait['name']}】的风骨，在世道中各安其业，守住了普通人最真切的尊严。")
+    elif child_count == 1:
+        ch = fam["children"][0]
+        postscript_parts.append(f"独{ch['role']}【{ch['name']}】抚棺承家，将你的生前遗物细致包好珍藏，时常向儿孙絮絮讲起你当年的那段峥嵘岁月。")
+    else:
+        if is_classical:
+            postscript_parts.append("你一身傲骨孤行天地，无子嗣之累。辞世后故旧好友凑资为你具棺收殓，葬于故园青山之阳，岁岁清明自有人携酒凭吊。")
+        elif is_future:
+            postscript_parts.append("你未育子嗣，辞世后全部算力盈余捐入深空引航基金，在猎户座星云间，有一颗信标灯塔永远闪烁着你的名字。")
+        else:
+            postscript_parts.append("你一生独行潇洒，落子无憾。遗存的字画手稿被故旧转赠市图书馆，偶尔有驻足翻阅的青年，重新相遇了你当年的心跳。")
+    
+    if player.reputation >= 70:
+        postscript_parts.append("乡党士绅深感其公德，多年后提起你的名讳，依旧赞叹为一方楷模，称你“行事端方，无负天地”。")
+    elif player.wealth >= 30:
+        postscript_parts.append("商街字号与邻里行帮皆盛传你当年经营的义利信条，后辈经商之人多奉你的法度为标尺。")
+
+    print(f"\n{Color.CYAN}【 身后长河遗泽 · 子孙后记 】{Color.RESET}")
+    print(f"  {Color.GRAY}{' '.join(postscript_parts)}{Color.RESET}")
+
     print(f"\n{Color.CYAN}【 生平纪传 · 时代回响长卷 】{Color.RESET}")
     print(f"  {player.name}降生于【{player.origin['title']}】（{format_year_month(player.birth_year, _bmonth)}）。{player.origin.get('flavor', '')}骨子里带着【{player.trait['name']}】的特质。")
     for h in player.history:
