@@ -82,6 +82,10 @@ class Player:
         self.career_track = "探索未定"
         self.social_rank = "风雨布衣"
         self.track_scores = {"体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0}
+        self.epithet = "垂髫稚子" if is_classical_epoch(epoch_mode) else ("基因胚萌" if is_future_epoch(epoch_mode) else "幼学赤子")
+        self.values = {"righteousness": 0, "duty": 0}
+        self.mindset = "兼济天下 · 铁肩义士"
+        self.active_saga = None
 
     def show_dashboard(self, stage_idx, total_stages):
         clear_screen()
@@ -90,9 +94,10 @@ class Player:
         g_symbol = "女 ♀" if self.gender == "female" else "男 ♂"
 
         print(f"{Color.GOLD}{'='*68}{Color.RESET}")
-        print(f" {Color.BOLD}{self.name}{Color.RESET} ({g_symbol}) · {curr_year} 年 ({self.age} 岁) | 轨迹: {Color.CYAN}{self.career_track} · {self.social_rank}{Color.RESET} | 至亲: {Color.GREEN}{format_family_status(self)}{Color.RESET} | 进度 [{stage_idx}/{total_stages}]")
+        print(f" {Color.BOLD}{self.name}{Color.RESET} ({g_symbol}) · {curr_year} 年 ({self.age} 岁) | 尊号: {Color.PURPLE}【{self.epithet}】{Color.RESET} | 至亲: {Color.GREEN}{format_family_status(self)}{Color.RESET} | 进度 [{stage_idx}/{total_stages}]")
         print(f" 时代背景: {Color.YELLOW}{era_title}{Color.RESET} · {Color.GRAY}{era_desc}{Color.RESET}")
         print(f" 历史备考: {Color.YELLOW}{resolve_landmark(curr_year)}{Color.RESET}")
+        print(f" 心性境界: {Color.CYAN}【{self.mindset}】{Color.RESET} | 轨迹坐标: {Color.CYAN}{self.career_track} · {self.social_rank}{Color.RESET}" + (f" | 支线: {Color.YELLOW}{self.active_saga['title']} [{self.active_saga['stage']}/{self.active_saga['max_stage']}]{Color.RESET}" if self.active_saga else ""))
         print(f"{Color.GOLD}{'-'*68}{Color.RESET}")
         print(f" [健康]: {int(self.health):<3}♥  |  [财富]: {self.wealth:.1f} {wealth_unit(self.epoch_mode):<4}  |  [智识]: {int(self.intellect):<3}✦  |  [心安]: {int(self.happiness):<3}☼  |  [气运]: {int(self.luck):<3}🎲")
         sc = self.track_scores
@@ -305,6 +310,172 @@ def calculate_fate_bond_modifier(player, choice):
 
     total = max(-10, min(15, total))
     return total, reasons
+
+
+def update_player_values(player, choice, tag):
+    if not hasattr(player, "values") or not player.values:
+        player.values = {"righteousness": 0, "duty": 0}
+    text = (choice.get("text", "") + " " + (tag or "")).lower()
+
+    if any(k in text for k in ("义", "公", "救", "民", "助", "施", "恤", "舍", "正道", "廉", "保全", "仁")):
+        player.values["righteousness"] = min(20, player.values["righteousness"] + 2)
+    if any(k in text for k in ("利", "商", "钱", "私", "财", "银", "金", "富", "夺", "争", "本钱", "盈余")):
+        player.values["righteousness"] = max(-20, player.values["righteousness"] - 2)
+    if any(k in text for k in ("出仕", "官", "国", "责", "战", "御", "守", "朝", "公门", "天下", "救亡", "社稷")):
+        player.values["duty"] = min(20, player.values["duty"] + 2)
+    if any(k in text for k in ("隐", "辞", "退", "诗", "酒", "田园", "自然", "山水", "清心", "避", "忘机", "放歌")):
+        player.values["duty"] = max(-20, player.values["duty"] - 2)
+
+    r = player.values["righteousness"]
+    d = player.values["duty"]
+    if d >= 0 and r >= 0:
+        player.mindset = "兼济天下 · 铁肩义士"
+    elif d >= 0 and r < 0:
+        player.mindset = "经世致用 · 实干能臣"
+    elif d < 0 and r >= 0:
+        player.mindset = "清虚自守 · 孤芳高士"
+    else:
+        player.mindset = "陶然忘机 · 市井智者"
+
+
+def update_player_epithet(player):
+    age = player.age
+    is_future = is_future_epoch(player.epoch_mode)
+    is_classical = is_classical_epoch(player.epoch_mode)
+    trk = player.career_track or "守拙布衣"
+    rank = player.social_rank or "风雨布衣"
+    tags = player.tags or []
+
+    if age < 14:
+        player.epithet = "垂髫稚子" if is_classical else ("基因胚萌" if is_future else "幼学赤子")
+        return
+    if age <= 18:
+        player.epithet = "志学秀木" if is_classical else ("初阶算力学徒" if is_future else "意气少年")
+        return
+
+    if trk == "体制政务":
+        if rank == "时代领军巨擘":
+            player.epithet = "经邦宰辅" if is_classical else ("中枢大执政官" if is_future else "治世定鼎者")
+        elif rank == "德高望重栋梁":
+            player.epithet = "按察重臣" if is_classical else ("防区调度长" if is_future else "中流砥柱")
+        else:
+            player.epithet = "案头佐吏" if is_classical else ("巡防志愿役" if is_future else "奉公文吏")
+    elif trk == "商海实业":
+        if rank == "时代领军巨擘":
+            player.epithet = "江南陶朱" if is_classical else ("星海矿业大亨" if is_future else "实业泰斗")
+        elif rank == "德高望重栋梁":
+            player.epithet = "通商巨掌柜" if is_classical else ("轨道工坊东主" if is_future else "商界翘楚")
+        else:
+            player.epithet = "市井货郎" if is_classical else ("黑市调试匠" if is_future else "行商干员")
+    elif trk == "学术科技":
+        if any("医" in t for t in tags):
+            player.epithet = "杏林国手" if rank == "时代领军巨擘" else "青囊草医"
+        elif rank == "时代领军巨擘":
+            player.epithet = "百代宗师" if is_classical else ("虚空构筑大宗师" if is_future else "科学先驱")
+        elif rank == "德高望重栋梁":
+            player.epithet = "书院讲席" if is_classical else ("高阶算法导师" if is_future else "资深技术专家")
+        else:
+            player.epithet = "笃学文士" if is_classical else ("数据探针技工" if is_future else "求真学子")
+    elif trk == "文艺江湖":
+        if rank == "时代领军巨擘":
+            player.epithet = "绝代游侠" if is_classical else ("赛博浪潮乐圣" if is_future else "时代文化图腾")
+        elif rank == "德高望重栋梁":
+            player.epithet = "竹林名士" if is_classical else ("自由频段诗人" if is_future else "海内知音")
+        else:
+            player.epithet = "江湖闲客" if is_classical else ("离线吟游者" if is_future else "随性行者")
+    else:
+        if age >= 70:
+            player.epithet = "德劭乡耆" if is_classical else ("旧地表元老" if is_future else "寿考尊长")
+        elif player.happiness >= 75:
+            player.epithet = "林泉逸民" if is_classical else ("纯粹碳基隐者" if is_future else "知足安乐翁")
+        else:
+            player.epithet = "晴耕雨读" if is_classical else ("穹顶寻常客" if is_future else "寻常布衣")
+
+
+SAGAS_DEF = [
+    {"id": "saga_official", "title": "青云之志 · 庙堂沉浮录", "keywords": ("科举", "入仕", "公门", "政务", "官场", "为吏", "行政", "公职", "调任"), "max_stage": 3},
+    {"id": "saga_merchant", "title": "陶朱之路 · 四海通商志", "keywords": ("商号", "经商", "买卖", "票号", "创业", "开厂", "货殖", "电商", "盘店"), "max_stage": 3},
+    {"id": "saga_healer", "title": "大医精诚 · 悬壶济世篇", "keywords": ("医", "药", "草医", "救护", "接生", "病患", "青囊", "良方"), "max_stage": 3},
+    {"id": "saga_wanderer", "title": "天涯长歌 · 快意江湖行", "keywords": ("游历", "江湖", "剑", "诗社", "乐团", "摇滚", "归隐", "浪迹", "放歌"), "max_stage": 3},
+    {"id": "saga_star", "title": "九天揽月 · 星海求索录", "keywords": ("深空", "天梯", "电梯", "算力", "超导", "火星", "聚变", "脑机", "戴森"), "max_stage": 3}
+]
+
+
+def check_saga_progress(player, choice, is_success):
+    text = (choice.get("text", "") + " " + choice.get("risk_label", "")).lower()
+
+    if not player.active_saga and choice.get("is_key"):
+        for sg in SAGAS_DEF:
+            if any(k in text for k in sg["keywords"]):
+                player.active_saga = {"id": sg["id"], "title": sg["title"], "stage": 1, "max_stage": sg["max_stage"]}
+                player.tags.append(f"开启:{sg['title'].split(' · ')[0]}")
+                return f"【开启传奇支线】{sg['title']} [1/{sg['max_stage']}]"
+
+    if player.active_saga and is_success and player.active_saga["stage"] < player.active_saga["max_stage"]:
+        sg = next((s for s in SAGAS_DEF if s["id"] == player.active_saga["id"]), None)
+        if sg and any(k in text for k in sg["keywords"]):
+            player.active_saga["stage"] += 1
+            if player.active_saga["stage"] >= player.active_saga["max_stage"]:
+                player.tags.append(f"功成:{sg['title'].split(' · ')[0]}")
+                player.reputation += 10
+                player.happiness += 10
+                return f"【传奇支线圆满】{sg['title']} 功成名就！(+10声望 +10心安)"
+            return f"【传奇支线进展】{sg['title']} [{player.active_saga['stage']}/{player.active_saga['max_stage']}]"
+    return None
+
+
+def play_terminal_flashback(player, archetype, epitaph):
+    clear_screen()
+    print(f"\n{Color.GOLD}{'='*68}{Color.RESET}")
+    print(f"{Color.BOLD}{Color.GOLD}    🎬  人 生 走 马 灯  ·  浮 生 高 光 回 眸{Color.RESET}")
+    print(f"{Color.GOLD}{'='*68}{Color.RESET}\n")
+
+    end_year = player.birth_year + player.age
+    fam = getattr(player, "family", None) or initialize_family(player)
+    g_text = "女 ♀" if player.gender == "female" else "男 ♂"
+
+    # Slide 1: 降世
+    print(f"{Color.YELLOW}【第一幕 · 降世初元】{Color.RESET}")
+    slow_print(f" {format_year_month(player.birth_year, getattr(player, 'birth_month', 1))}，你作为一名{g_text}降生于【{player.origin['title']}】。\n"
+               f" 慈父【{fam['father']['name']}】与严母【{fam['mother']['name']}】护你在膝下成长，骨子里刻下了【{player.trait['name']}】的命格基底。\n", 0.015)
+    time.sleep(0.3)
+
+    # Slide 2: 志学
+    youth = [h for h in player.history if h["age"] <= 22]
+    y_act = next((h for h in youth if h.get("is_key")), youth[0] if youth else None)
+    if y_act:
+        print(f"\n{Color.YELLOW}【第二幕 · 志学之年】{Color.RESET}")
+        slow_print(f" {y_act['year']}年（{y_act['age']}岁），你在【{y_act['title']}】关口做出决断：“{y_act['choice_text']}”。\n"
+                   f" 回响：{y_act['feedback']} 这一步落子，定下了日后的航向。\n", 0.015)
+        time.sleep(0.3)
+
+    # Slide 3: 伴侣/立业
+    print(f"\n{Color.YELLOW}【第三幕 · 琴瑟同舟】{Color.RESET}")
+    if fam.get("spouse"):
+        s = fam["spouse"]
+        slow_print(f" {s['married_year']}年，你与结发{s['role']}【{s['name']}】缔结良缘，风雨同舟数十载。\n"
+                   f" 家门温润，相濡以沫，在这浩瀚人世间撑起了一处遮风避雨的暖阁。\n", 0.015)
+    else:
+        slow_print(" 行至壮年，你未入凡尘围城，选择以一身傲骨寄情于天地山海，探索属于自己的大道。\n", 0.015)
+    time.sleep(0.3)
+
+    # Slide 4: 命运惊涛
+    mature = [h for h in player.history if h["age"] >= 26]
+    if mature:
+        m_act = min(mature, key=lambda h: abs(h.get("roll", 50) - h.get("chance", 50)))
+        print(f"\n{Color.YELLOW}【第四幕 · 惊涛骇浪】{Color.RESET}")
+        slow_print(f" {m_act['year']}年（{m_act['age']}岁），直面【{m_act['title']}】的考验：“{m_act['choice_text']}”。\n"
+                   f" 掷骰定格——{m_act['feedback']}\n", 0.015)
+        time.sleep(0.3)
+
+    # Slide 5: 盖棺绝唱
+    print(f"\n{Color.YELLOW}【终章 · 浮生绝唱】{Color.RESET}")
+    slow_print(f" 享年 {player.age} 岁，最终留下时人誉称【{player.epithet}】与心性【{player.mindset}】。\n"
+               f" 终极称号：《{archetype}》\n"
+               f" 墓志铭：“{epitaph}”\n"
+               f" 大浪淘沙，唯心自守。人间这一遭，未曾虚度。\n", 0.015)
+
+    input(f"\n{Color.GOLD}按回车返回时代大门...{Color.RESET}")
 
 
 def get_dynamic_choices_for_event(stage, player, curr_year):
@@ -523,6 +694,10 @@ def save_game_state(player, stage_idx, timeline):
             "career_track": player.career_track,
             "social_rank": player.social_rank,
             "track_scores": player.track_scores,
+            "epithet": getattr(player, "epithet", "寻常布衣"),
+            "values": getattr(player, "values", {"righteousness": 0, "duty": 0}),
+            "mindset": getattr(player, "mindset", "兼济天下 · 铁肩义士"),
+            "active_saga": getattr(player, "active_saga", None),
         }
     }
     try:
@@ -560,6 +735,8 @@ def record_to_hall_of_fame(player, archetype, epitaph):
         "age": player.age,
         "archetype": archetype,
         "epitaph": epitaph,
+        "epithet": getattr(player, "epithet", "寻常布衣"),
+        "mindset": getattr(player, "mindset", "兼济天下 · 铁肩义士"),
         "career_track": player.career_track,
         "social_rank": player.social_rank,
         "wealth": player.wealth,
@@ -600,6 +777,7 @@ def view_hall_of_fame():
                 cfg = get_epoch_config(r["epoch_mode"])
                 g_str = "女 ♀" if r.get("gender") == "female" else "男 ♂"
                 print(f"  {Color.YELLOW}{idx}. {r['name']}{Color.RESET} ({g_str}) | {cfg['icon']} {cfg['name']} ({r['birth_year']} - {r['end_year']} · {r['age']}岁)")
+                print(f"     尊号: {Color.PURPLE}【{r.get('epithet', '寻常布衣')}】{Color.RESET} | 心性: {Color.CYAN}【{r.get('mindset', '兼济天下')}】{Color.RESET}")
                 print(f"     称号: {Color.BOLD}《{r['archetype']}》{Color.RESET} | 位阶: {r['career_track']} · {r['social_rank']}")
                 print(f"     铭文: {Color.GRAY}“{r['epitaph']}”{Color.RESET}")
                 print(f"     至亲: {Color.GREEN}{r.get('family_summary', '自立一人')}{Color.RESET} | 财富: {r['wealth']} {r['wealth_unit']}\n")
@@ -854,6 +1032,13 @@ def run_game_loop(player, start_stage, total_stages, timeline):
         else:
             player.social_rank = "风雨坚韧布衣"
 
+        update_player_values(player, chosen, tag)
+        update_player_epithet(player)
+        saga_msg = check_saga_progress(player, chosen, is_success)
+        if saga_msg:
+            print(f"\n{Color.PURPLE}{saga_msg}{Color.RESET}")
+            fb += f"\n{saga_msg}"
+
         if chosen.get("is_key"):
             player.key_choices.append(record)
 
@@ -882,8 +1067,9 @@ def render_terminal_ending(player):
     _bmonth = getattr(player, "birth_month", 1)
     _cfg = get_epoch_config(player.epoch_mode)
     g_str = '女 ♀' if getattr(player, 'gender', 'male') == 'female' else '男 ♂'
-    print(f" 主角姓名: {Color.BOLD}{player.name}{Color.RESET} ({g_str} · {format_year_month(player.birth_year, _bmonth)} - {format_year_only(end_year)} · 享年 {player.age} 岁)")
+    print(f" 主角姓名: {Color.BOLD}{player.name}{Color.RESET} ({g_str}) · {Color.PURPLE}【{player.epithet}】{Color.RESET} ({format_year_month(player.birth_year, _bmonth)} - {format_year_only(end_year)} · 享年 {player.age} 岁)")
     print(f" 时代纪元: {_cfg['icon']}【{_cfg['name']}】({_cfg['sub_title']})")
+    print(f" 心性境界: {Color.CYAN}【{player.mindset}】{Color.RESET}" + (f" | 传奇支线: {Color.YELLOW}{player.active_saga['title']} [功德圆满]{Color.RESET}" if player.active_saga and player.active_saga['stage'] >= player.active_saga['max_stage'] else ""))
     print(f" 出生家庭: {player.origin['title']}")
     print(f" 离世归宿: {player.death_reason}")
 
@@ -1096,6 +1282,10 @@ def render_terminal_ending(player):
             os.remove(SAVE_FILE)
         except Exception:
             pass
+
+    f_input = input(f"{Color.GOLD}是否播放【🎬 人生走马灯 · 浮生高光回眸】? (输入 y 播放，按回车跳过): {Color.RESET}").strip().lower()
+    if f_input == 'y':
+        play_terminal_flashback(player, archetype, epitaph)
 
 if __name__ == "__main__":
     try:

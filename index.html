@@ -374,6 +374,14 @@
               🧭 轨迹：<span id="player-track-text" class="ml-1 font-bold">探索中</span>
               <span id="compass-arrow" class="ml-1 text-[9px] text-amber-400">▾</span>
             </button>
+            <span id="display-epithet-badge" class="text-[11px] px-2 py-0.5 rounded bg-purple-950/70 text-purple-200 border border-purple-800/60 font-serif font-bold" title="生前尊号与时人誉称">
+              【幼学赤子】
+            </span>
+            <span id="display-mindset-badge" class="text-[11px] px-2 py-0.5 rounded bg-sky-950/70 text-sky-300 border border-sky-800/60 font-sans-sc font-medium" title="心性四象境界">
+              ⚖️ 兼济天下
+            </span>
+            <span id="display-saga-badge" class="hidden text-[11px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-500/60 font-sans-sc font-bold animate-pulse" title="当前进行中的传奇宿命支线">
+            </span>
             <span id="display-family-badge" class="text-[11px] px-2 py-0.5 rounded bg-zinc-800/90 text-zinc-300 border border-zinc-700/80 font-sans-sc font-medium flex items-center">
               🏡 <span id="family-status-text" class="ml-1">父母膝下</span>
             </span>
@@ -590,6 +598,9 @@
           <button onclick="restartGame()" class="w-full sm:w-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-zinc-950 font-bold rounded text-xs md:text-sm transition">
             开启另一轮轮回
           </button>
+          <button onclick="openLifeFlashback()" class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-zinc-950 font-bold rounded text-xs md:text-sm transition flex items-center justify-center shadow-lg animate-pulse" title="放映这一生最动人的数度高光回眸">
+            <span class="mr-1.5">🎬</span> 人生走马灯
+          </button>
           <button onclick="openLifePoster()" class="w-full sm:w-auto px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-amber-300 border border-amber-600/40 font-medium rounded text-xs md:text-sm transition flex items-center justify-center shadow">
             <span class="mr-1.5">🖼️</span> 典藏画报卡
           </button>
@@ -696,6 +707,55 @@
             关闭
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 人生走马灯 · 沉浸式浮生回眸 弹窗模态框 -->
+  <div id="modal-life-flashback" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/90 backdrop-blur-xl animate-fade-in font-sans-sc">
+    <div class="relative w-full max-w-2xl bg-gradient-to-b from-[#181a26] via-[#12141c] to-[#0a0b10] border-2 border-amber-500/70 rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[500px] overflow-hidden">
+      <!-- 装饰光影 -->
+      <div class="absolute -top-20 -right-20 w-48 h-48 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- 顶栏与回眸索引 -->
+      <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3 z-10">
+        <div class="flex items-center space-x-2 text-amber-300 font-bold text-sm">
+          <span>🎬 浮生回眸 · 人生走马灯</span>
+          <span id="flashback-counter" class="text-xs font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">1 / 5</span>
+        </div>
+        <button onclick="closeLifeFlashback()" class="text-zinc-400 hover:text-zinc-200 text-lg px-2 py-0.5 rounded transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- 走马灯核心放映画布 -->
+      <div id="flashback-stage" class="my-auto py-6 px-2 md:px-6 text-center space-y-4 z-10 transition-opacity duration-300">
+        <div id="flashback-chapter-badge" class="inline-block text-xs font-mono px-3 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-600/50">
+          第一幕 · 降世初元
+        </div>
+        <h3 id="flashback-title" class="text-2xl md:text-3xl font-black text-amber-100 font-serif tracking-wider">
+          --
+        </h3>
+        <p id="flashback-narrative" class="text-zinc-300 text-xs md:text-sm leading-relaxed md:leading-loose font-serif max-w-lg mx-auto bg-zinc-950/40 p-4 rounded-xl border border-zinc-800/60 text-justify">
+          --
+        </p>
+        <div id="flashback-subnote" class="text-[11px] text-zinc-400 font-mono italic">
+          --
+        </div>
+      </div>
+
+      <!-- 底部播控条 -->
+      <div class="flex items-center justify-between border-t border-zinc-800/80 pt-4 text-xs font-sans-sc z-10">
+        <button onclick="prevFlashbackSlide()" class="px-3.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
+          ◀ 上一回眸
+        </button>
+        <button id="btn-flashback-autoplay" onclick="toggleFlashbackAutoplay()" class="px-4 py-1.5 rounded bg-amber-600/90 hover:bg-amber-500 text-zinc-950 font-bold transition shadow">
+          自动放映: 开
+        </button>
+        <button onclick="nextFlashbackSlide()" class="px-3.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
+          下一回眸 ▶
+        </button>
       </div>
     </div>
   </div>
@@ -1212,7 +1272,11 @@
       deathReason: "",
       careerTrack: "探索未定",
       socialRank: "风雨布衣",
-      trackScores: { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 }
+      trackScores: { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 },
+      epithet: "幼学赤子",
+      values: { righteousness: 0, duty: 0 },
+      mindset: "兼济天下 · 铁肩义士",
+      activeSaga: null
     };
 
     let currentDestinyDraft = null;
@@ -3760,6 +3824,10 @@
       player.trackScores = { "体制政务": 0, "商海实业": 0, "学术科技": 0, "文艺江湖": 0, "守拙布衣": 0 };
       player.careerTrack = "守拙自持";
       player.socialRank = "风雨布衣";
+      player.epithet = isClassicalEpoch(player.epochMode) ? "垂髫稚子" : (isFutureEpoch(player.epochMode) ? "基因胚萌" : "幼学赤子");
+      player.values = { righteousness: 0, duty: 0 };
+      player.mindset = "兼济天下 · 铁肩义士";
+      player.activeSaga = null;
 
       // 决定剧本池（包含女性专属事件动态注入）
       activeEpochEvents = assembleDynamicSessionEvents(player.birthYear, player.gender);
@@ -3793,6 +3861,22 @@
       document.getElementById('val-luck').innerText = Math.round(player.luck);
       const trackEl = document.getElementById('player-track-text');
       if (trackEl) trackEl.innerText = `${player.careerTrack} · ${player.socialRank}`;
+
+      const epEl = document.getElementById('display-epithet-badge');
+      if (epEl) epEl.innerText = `【${player.epithet || "寻常布衣"}】`;
+
+      const msEl = document.getElementById('display-mindset-badge');
+      if (msEl) msEl.innerText = `⚖️ ${player.mindset ? player.mindset.split(' · ')[0] : '兼济天下'}`;
+
+      const sagaEl = document.getElementById('display-saga-badge');
+      if (sagaEl) {
+        if (player.activeSaga) {
+          sagaEl.innerText = `📜 ${player.activeSaga.title.split(' · ')[0]} [${player.activeSaga.stage}/${player.activeSaga.maxStage}]`;
+          sagaEl.classList.remove('hidden');
+        } else {
+          sagaEl.classList.add('hidden');
+        }
+      }
 
       const famEl = document.getElementById('family-status-text');
       if (famEl) famEl.innerText = formatFamilyStatus(player);
@@ -4140,6 +4224,14 @@
         player.socialRank = "小康体面人家";
       } else {
         player.socialRank = "风雨坚韧布衣";
+      }
+
+      // 实时演化心性境界、生前尊号与传奇支线
+      updatePlayerValues(player, choice, tag);
+      updatePlayerEpithet(player);
+      const sagaMsg = checkSagaProgress(player, choice, isSuccess);
+      if (sagaMsg) {
+        historyEntry.feedback += `\n${sagaMsg}`;
       }
 
       updateHistoryUI();
@@ -4769,14 +4861,27 @@
         <div class="flex items-center space-x-2">
           <span class="text-amber-400 font-bold">【 核心人生轨迹 】</span>
           <span class="px-2 py-0.5 rounded bg-amber-900/60 text-amber-200 border border-amber-600/50 font-bold">${p.careerTrack || "守拙自持"}</span>
+          <span class="px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-700/60 font-serif font-bold text-[11px]">【${p.epithet || "寻常布衣"}】</span>
           <span class="text-xs text-zinc-300">（${p.gender === 'female' ? '巾帼女史 ♀' : '须眉男儿 ♂'}）</span>
         </div>
         <div class="flex items-center space-x-2">
+          <span class="text-sky-300 font-medium">${p.mindset || "兼济天下 · 铁肩义士"}</span>
+          <span class="text-zinc-600">|</span>
           <span class="text-zinc-400">终身社会坐标：</span>
           <span class="font-bold text-amber-300 font-mono">${p.socialRank || "风雨布衣"}</span>
         </div>
       `;
       container.appendChild(summaryBar);
+
+      if (p.activeSaga) {
+        const sagaEl = document.createElement('div');
+        sagaEl.className = "mb-3 p-2.5 rounded-lg bg-purple-950/40 border border-purple-600/40 flex items-center justify-between text-xs font-sans-sc";
+        sagaEl.innerHTML = `
+          <span class="text-purple-300 font-bold flex items-center"><span class="mr-1.5">📜</span> 传奇宿命支线：${p.activeSaga.title}</span>
+          <span class="font-mono text-amber-300 font-bold">${p.activeSaga.stage >= p.activeSaga.maxStage ? '★ 功德圆满' : `第 ${p.activeSaga.stage}/${p.activeSaga.maxStage} 卷`}</span>
+        `;
+        container.appendChild(sagaEl);
+      }
 
       // 按编年史岁月阶段组织大篇幅深度传记
       const stages = [
@@ -4909,10 +5014,10 @@ function renderKeyTurningPoints() {
       if (dynastyEl) dynastyEl.innerText = `${cfg.eraIcon} ${cfg.name} (${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)})`;
 
       const titleEl = document.getElementById('poster-player-title');
-      if (titleEl) titleEl.innerText = `${p.name} · ${archetypeData.archetype}`;
+      if (titleEl) titleEl.innerText = `${p.name} · ${archetypeData.archetype} ·【${p.epithet || '寻常布衣'}】`;
 
       const lifespanEl = document.getElementById('poster-lifespan-text');
-      if (lifespanEl) lifespanEl.innerText = `${p.gender === 'female' ? '女 ♀' : '男 ♂'} · 降生于【${p.origin ? p.origin.title : '凡人家'}】 · 享年 ${p.age} 岁 · ${p.deathReason}`;
+      if (lifespanEl) lifespanEl.innerText = `${p.gender === 'female' ? '女 ♀' : '男 ♂'} · 心性: ${p.mindset || '兼济天下'} · 享年 ${p.age} 岁 · ${p.deathReason}`;
 
       const quoteEl = document.getElementById('poster-quote');
       if (quoteEl) quoteEl.innerText = `“${archetypeData.epitaph}”`;
@@ -4988,7 +5093,8 @@ function renderKeyTurningPoints() {
         `       《 浮 生 录 · 百 世 轮 回 传 》`,
         `  ${cfg.eraIcon} ${cfg.name}  |  享年 ${p.age} 岁 (${p.gender === 'female' ? '女' : '男'})`,
         "================================================",
-        `【人物】${p.name} · ${arch}`,
+        `【人物】${p.name} (${p.gender === 'female' ? '女' : '男'}) ·【${p.epithet || '寻常布衣'}】 · ${arch}`,
+        `【心性】${p.mindset || '兼济天下'}`,
         `【生卒】${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)}`,
         `【归宿】${p.deathReason}`,
         `【墓志】${quote}`,
@@ -5073,15 +5179,15 @@ function renderKeyTurningPoints() {
       ctx.lineTo(630, 190);
       ctx.stroke();
 
-      // Player Name & Archetype
-      ctx.font = '900 34px "Noto Serif SC", serif';
+      // Player Name & Archetype & Epithet
+      ctx.font = '900 32px "Noto Serif SC", serif';
       ctx.fillStyle = isParchment ? '#1c1917' : '#fde68a';
       const gText = p.gender === 'female' ? '女 ♀' : '男 ♂';
-      ctx.fillText(`${p.name} (${gText})`, 375, 238);
+      ctx.fillText(`${p.name} (${gText}) ·【${p.epithet || '寻常布衣'}】`, 375, 238);
 
-      ctx.font = '15px "Noto Sans SC", sans-serif';
+      ctx.font = '14px "Noto Sans SC", sans-serif';
       ctx.fillStyle = dimColor;
-      ctx.fillText(`${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)} · 享年 ${p.age} 岁 · ${p.deathReason}`, 375, 270);
+      ctx.fillText(`心性: ${p.mindset || '兼济天下'} | ${formatYearMonth(p.birthYear, p.birthMonth)} - ${formatYearOnly(endYear)} · 享年 ${p.age} 岁`, 375, 270);
 
       // Archetype Box
       ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.1)' : 'rgba(212, 175, 55, 0.12)';
@@ -5744,6 +5850,289 @@ function renderKeyTurningPoints() {
           </button>
         `;
       }).join('');
+    }
+
+    // ==================== 心性价值观天平与名望尊号系统 ====================
+    function updatePlayerValues(p, choice, tag) {
+      if (!p.values) p.values = { righteousness: 0, duty: 0 };
+      const text = (choice.text + " " + (tag || "")).toLowerCase();
+      
+      if (/义|公|救|民|助|施|恤|舍|正道|廉|保全|仁/.test(text)) {
+        p.values.righteousness = Math.min(20, p.values.righteousness + 2);
+      }
+      if (/利|商|钱|私|财|银|金|富|夺|争|本钱|盈余/.test(text)) {
+        p.values.righteousness = Math.max(-20, p.values.righteousness - 2);
+      }
+      if (/出仕|官|国|责|战|御|守|朝|公门|天下|救亡|社稷/.test(text)) {
+        p.values.duty = Math.min(20, p.values.duty + 2);
+      }
+      if (/隐|辞|退|诗|酒|田园|自然|山水|清心|避|忘机|放歌/.test(text)) {
+        p.values.duty = Math.max(-20, p.values.duty - 2);
+      }
+
+      const r = p.values.righteousness;
+      const d = p.values.duty;
+      if (d >= 0 && r >= 0) p.mindset = "兼济天下 · 铁肩义士";
+      else if (d >= 0 && r < 0) p.mindset = "经世致用 · 实干能臣";
+      else if (d < 0 && r >= 0) p.mindset = "清虚自守 · 孤芳高士";
+      else p.mindset = "陶然忘机 · 市井智者";
+    }
+
+    function updatePlayerEpithet(p) {
+      const age = p.age;
+      const isFuture = isFutureEpoch(p.epochMode);
+      const isClassical = isClassicalEpoch(p.epochMode);
+      const trk = p.careerTrack || "守拙布衣";
+      const rank = p.socialRank || "风雨布衣";
+      const tags = p.tags || [];
+
+      if (age < 14) {
+        p.epithet = isClassical ? "垂髫稚子" : (isFuture ? "基因胚萌" : "幼学赤子");
+        return;
+      }
+      if (age <= 18) {
+        p.epithet = isClassical ? "志学秀木" : (isFuture ? "初阶算力学徒" : "意气少年");
+        return;
+      }
+
+      if (trk === "体制政务") {
+        if (rank === "时代领军巨擘") p.epithet = isClassical ? "经邦宰辅" : (isFuture ? "中枢大执政官" : "治世定鼎者");
+        else if (rank === "德高望重栋梁") p.epithet = isClassical ? "按察重臣" : (isFuture ? "防区调度长" : "中流砥柱");
+        else p.epithet = isClassical ? "案头佐吏" : (isFuture ? "巡防志愿役" : "奉公文吏");
+      } else if (trk === "商海实业") {
+        if (rank === "时代领军巨擘") p.epithet = isClassical ? "江南陶朱" : (isFuture ? "星海矿业大亨" : "实业泰斗");
+        else if (rank === "德高望重栋梁") p.epithet = isClassical ? "通商巨掌柜" : (isFuture ? "轨道工坊东主" : "商界翘楚");
+        else p.epithet = isClassical ? "市井货郎" : (isFuture ? "黑市调试匠" : "行商干员");
+      } else if (trk === "学术科技") {
+        if (tags.some(t => /医|草医|青囊|良方/.test(t))) {
+          p.epithet = rank === "时代领军巨擘" ? "杏林国手" : "青囊草医";
+        } else if (rank === "时代领军巨擘") {
+          p.epithet = isClassical ? "百代宗师" : (isFuture ? "虚空构筑大宗师" : "科学先驱");
+        } else if (rank === "德高望重栋梁") {
+          p.epithet = isClassical ? "书院讲席" : (isFuture ? "高阶算法导师" : "资深技术专家");
+        } else {
+          p.epithet = isClassical ? "笃学文士" : (isFuture ? "数据探针技工" : "求真学子");
+        }
+      } else if (trk === "文艺江湖") {
+        if (rank === "时代领军巨擘") p.epithet = isClassical ? "绝代游侠" : (isFuture ? "赛博浪潮乐圣" : "时代文化图腾");
+        else if (rank === "德高望重栋梁") p.epithet = isClassical ? "竹林名士" : (isFuture ? "自由频段诗人" : "海内知音");
+        else p.epithet = isClassical ? "江湖闲客" : (isFuture ? "离线吟游者" : "随性行者");
+      } else {
+        if (age >= 70) p.epithet = isClassical ? "德劭乡耆" : (isFuture ? "旧地表元老" : "寿考尊长");
+        else if (p.happiness >= 75) p.epithet = isClassical ? "林泉逸民" : (isFuture ? "纯粹碳基隐者" : "知足安乐翁");
+        else p.epithet = isClassical ? "晴耕雨读" : (isFuture ? "穹顶寻常客" : "寻常布衣");
+      }
+    }
+
+    // ==================== 传奇宿命支线系统 ====================
+    const SAGAS_DEF = [
+      { id: "saga_official", title: "青云之志 · 庙堂沉浮录", keywords: ["科举", "入仕", "公门", "政务", "官场", "为吏", "行政", "公职", "调任"], maxStage: 3 },
+      { id: "saga_merchant", title: "陶朱之路 · 四海通商志", keywords: ["商号", "经商", "买卖", "票号", "创业", "开厂", "货殖", "电商", "盘店"], maxStage: 3 },
+      { id: "saga_healer", title: "大医精诚 · 悬壶济世篇", keywords: ["医", "药", "草医", "救护", "接生", "病患", "青囊", "良方"], maxStage: 3 },
+      { id: "saga_wanderer", title: "天涯长歌 · 快意江湖行", keywords: ["游历", "江湖", "剑", "诗社", "乐团", "摇滚", "归隐", "浪迹", "放歌"], maxStage: 3 },
+      { id: "saga_star", title: "九天揽月 · 星海求索录", keywords: ["深空", "天梯", "电梯", "算力", "超导", "火星", "聚变", "脑机", "戴森"], maxStage: 3 }
+    ];
+
+    function checkSagaProgress(p, choice, isSuccess) {
+      const text = (choice.text + " " + (choice.riskLevel || "")).toLowerCase();
+      
+      if (!p.activeSaga && choice.isKey) {
+        for (const sg of SAGAS_DEF) {
+          if (sg.keywords.some(k => text.includes(k))) {
+            p.activeSaga = { id: sg.id, title: sg.title, stage: 1, maxStage: sg.maxStage };
+            p.tags.push(`开启:${sg.title.split(' · ')[0]}`);
+            return `【开启传奇支线】${sg.title} [1/${sg.maxStage}]`;
+          }
+        }
+      }
+
+      if (p.activeSaga && isSuccess && p.activeSaga.stage < p.activeSaga.maxStage) {
+        const sg = SAGAS_DEF.find(s => s.id === p.activeSaga.id);
+        if (sg && sg.keywords.some(k => text.includes(k))) {
+          p.activeSaga.stage += 1;
+          if (p.activeSaga.stage >= p.activeSaga.maxStage) {
+            p.tags.push(`功成:${sg.title.split(' · ')[0]}`);
+            p.reputation += 10;
+            p.happiness += 10;
+            return `【传奇支线圆满】${sg.title} 功成名就！(+10声望 +10心安)`;
+          }
+          return `【传奇支线进展】${sg.title} [${p.activeSaga.stage}/${p.activeSaga.maxStage}]`;
+        }
+      }
+      return null;
+    }
+
+    // ==================== 浮生回眸 · 人生走马灯放映系统 ====================
+    let flashbackSlides = [];
+    let currentFlashbackIdx = 0;
+    let flashbackAutoplayTimer = null;
+
+    function buildFlashbackSlides(p) {
+      const slides = [];
+      const endYear = p.birthYear + p.age;
+      const fam = p.family || initializeFamily(p);
+      const archetypeData = evaluateLifeArchetype();
+      const gText = p.gender === 'female' ? '女 ♀' : '男 ♂';
+
+      // 1. 降世初元
+      slides.push({
+        badge: "第一幕 · 降世初元",
+        title: `${p.name} 踏入人间`,
+        narrative: `${formatYearMonth(p.birthYear, p.birthMonth)}，你作为一名${gText}，降生于【${p.origin ? p.origin.title : '凡人家'}】。\n世道正值「${resolveEraDetails(p.birthYear, p.epochMode).name}」。慈父【${fam.father.name}】与严母【${fam.mother.name}】护你在膝下成长，骨子里刻下了【${p.trait ? p.trait.name : '平凡坚韧'}】的命格基底。`,
+        note: `初始体魄 ${p.health}♥ | 初始智识 ${p.intellect}✦ | 天命气运 ${p.luck}🎲`,
+        tone: 261.63
+      });
+
+      // 2. 志学立身
+      const youthHistory = (p.history || []).filter(h => h.age <= 22);
+      const youthItem = youthHistory.find(h => h.isKey) || youthHistory[0];
+      if (youthItem) {
+        slides.push({
+          badge: "第二幕 · 志学之年",
+          title: `少年抉择 · ${youthItem.title}`,
+          narrative: `${youthItem.year}年，时年 ${youthItem.age} 岁的你行至人生的关口。\n面对未知，你毅然决然做出了决断：“${youthItem.choiceText}”。\n岁月的风浪拍打而过，给出了回响：${youthItem.feedback} 这一步落子，悄然铸就了后半生的航向。`,
+          note: `结果：${youthItem.isSuccess ? '★ 顺遂如愿' : '✕ 坎坷磨砺'} · 胜率基准 ${youthItem.successChance}%`,
+          tone: 329.63
+        });
+      }
+
+      // 3. 结缡立业
+      if (fam.spouse) {
+        slides.push({
+          badge: "第三幕 · 琴瑟同舟",
+          title: `缔结良缘 · ${fam.spouse.name}`,
+          narrative: `${fam.spouse.marriedYear}年，你与结发${fam.spouse.role}【${fam.spouse.name}】结为夫妻。\n两人在风雨如晦的世道中并肩携手，同甘共苦。${fam.children && fam.children.length > 0 ? `此后更添得 ${fam.children.length} 位骨肉子嗣，在漫长岁月里撑起了一座温润的遮风避雨之港。` : '彼此相依为命，清虚自守，风雪共担。'}`,
+          note: `相濡以沫 ${fam.spouse.deathYear ? (fam.spouse.deathYear - fam.spouse.marriedYear) : (endYear - fam.spouse.marriedYear)} 载 · 结发齐心`,
+          tone: 392.00
+        });
+      } else {
+        slides.push({
+          badge: "第三幕 · 独立苍茫",
+          title: `立业搏击 · 独行天地`,
+          narrative: `行至壮年，你未入凡尘围城，选择以一身傲骨寄情于天地山海与事业。\n在波澜壮阔的时代浪潮中独当一面，探索属于自己的道。不问儿女情长，唯求落子无悔。`,
+          note: `心性倾向：${p.mindset || '经世致用'} · 守拙自持`,
+          tone: 392.00
+        });
+      }
+
+      // 4. 惊涛骇浪
+      const matureHistory = (p.history || []).filter(h => h.age >= 26);
+      const dramaItem = matureHistory.slice().sort((a, b) => Math.abs(a.roll - a.successChance) - Math.abs(b.roll - b.successChance))[0] || matureHistory[0];
+      if (dramaItem) {
+        slides.push({
+          badge: "第四幕 · 惊涛骇浪",
+          title: `命运浪尖 · ${dramaItem.title}`,
+          narrative: `${dramaItem.year}年，${dramaItem.age} 岁的你直面时代最剧烈的考验。\n在生与死、成与败的悬崖边缘，你选择：“${dramaItem.choiceText}”。\n掷骰定格——${dramaItem.feedback}\n这一役，彻底奠定了你在时代巨浪中的终身坐标。`,
+          note: `掷骰出目 ${dramaItem.roll} / 胜率 ${dramaItem.successChance}% · ${dramaItem.isSuccess ? '★ 顺遂翻盘' : '✕ 沉浮抱憾'}`,
+          tone: 440.00
+        });
+      }
+
+      // 5. 盖棺回望
+      slides.push({
+        badge: "终章 · 浮生绝唱",
+        title: `《${archetypeData.archetype}》`,
+        narrative: `${formatYearOnly(endYear)}，享年 ${p.age} 岁的你走完了这一生。归宿：${p.deathReason}。\n一生先后穿越 ${listErasBetween(p.birthYear, endYear).length} 重大时代，最终留下时人誉称【${p.epithet || '寻常布衣'}】。\n“${archetypeData.epitaph}”\n大浪淘沙，唯心自守。`,
+        note: `终身位阶：${p.careerTrack} · ${p.socialRank} | 财富 ${p.wealth.toFixed(1)}${wealthUnitShort(p.epochMode)} | 心安 ${Math.round(p.happiness)}☼`,
+        tone: 523.25
+      });
+
+      return slides;
+    }
+
+    function openLifeFlashback() {
+      soundClick();
+      flashbackSlides = buildFlashbackSlides(player);
+      currentFlashbackIdx = 0;
+      renderFlashbackSlide();
+      const modal = document.getElementById('modal-life-flashback');
+      if (modal) modal.classList.remove('hidden');
+      startFlashbackAutoplay();
+    }
+
+    function closeLifeFlashback() {
+      soundClick();
+      stopFlashbackAutoplay();
+      const modal = document.getElementById('modal-life-flashback');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderFlashbackSlide() {
+      if (!flashbackSlides || !flashbackSlides.length) return;
+      const s = flashbackSlides[currentFlashbackIdx];
+      const stage = document.getElementById('flashback-stage');
+      const counter = document.getElementById('flashback-counter');
+      const badge = document.getElementById('flashback-chapter-badge');
+      const title = document.getElementById('flashback-title');
+      const nar = document.getElementById('flashback-narrative');
+      const note = document.getElementById('flashback-subnote');
+
+      if (counter) counter.innerText = `${currentFlashbackIdx + 1} / ${flashbackSlides.length}`;
+      if (badge) badge.innerText = s.badge;
+      if (title) title.innerText = s.title;
+      if (nar) nar.innerText = s.narrative;
+      if (note) note.innerText = s.note;
+
+      if (stage) {
+        stage.style.opacity = '0';
+        setTimeout(() => { stage.style.opacity = '1'; }, 50);
+      }
+
+      if (s.tone && audioEnabled) {
+        playTone(s.tone, 'sine', 0.6, 0.08);
+        if (currentFlashbackIdx === flashbackSlides.length - 1) {
+          setTimeout(() => playTone(659.25, 'triangle', 0.8, 0.07), 180);
+          setTimeout(() => playTone(783.99, 'sine', 1.0, 0.06), 360);
+        }
+      }
+    }
+
+    function prevFlashbackSlide() {
+      soundClick();
+      stopFlashbackAutoplay();
+      currentFlashbackIdx = (currentFlashbackIdx - 1 + flashbackSlides.length) % flashbackSlides.length;
+      renderFlashbackSlide();
+    }
+
+    function nextFlashbackSlide() {
+      soundClick();
+      currentFlashbackIdx = (currentFlashbackIdx + 1) % flashbackSlides.length;
+      renderFlashbackSlide();
+    }
+
+    function toggleFlashbackAutoplay() {
+      soundClick();
+      const btn = document.getElementById('btn-flashback-autoplay');
+      if (flashbackAutoplayTimer) {
+        stopFlashbackAutoplay();
+        if (btn) btn.innerText = "自动放映: 关";
+      } else {
+        startFlashbackAutoplay();
+        if (btn) btn.innerText = "自动放映: 开";
+      }
+    }
+
+    function startFlashbackAutoplay() {
+      stopFlashbackAutoplay();
+      flashbackAutoplayTimer = setInterval(() => {
+        if (currentFlashbackIdx >= flashbackSlides.length - 1) {
+          stopFlashbackAutoplay();
+          const btn = document.getElementById('btn-flashback-autoplay');
+          if (btn) btn.innerText = "自动放映: 关";
+          return;
+        }
+        currentFlashbackIdx++;
+        renderFlashbackSlide();
+      }, 4200);
+      const btn = document.getElementById('btn-flashback-autoplay');
+      if (btn) btn.innerText = "自动放映: 开";
+    }
+
+    function stopFlashbackAutoplay() {
+      if (flashbackAutoplayTimer) {
+        clearInterval(flashbackAutoplayTimer);
+        flashbackAutoplayTimer = null;
+      }
     }
 
     // ==================== 视觉美学主题切换 (墨金 / 宣纸 / 幽蓝) ====================
