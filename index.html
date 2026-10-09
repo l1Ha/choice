@@ -150,6 +150,10 @@
     <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-y-2 font-sans-sc">
       <div class="flex items-center space-x-2">
         <span class="text-lg md:text-xl font-bold tracking-widest text-amber-200/90 font-serif">浮生录</span>
+        <!-- 离线就绪徽标 -->
+        <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 font-mono hidden sm:inline-flex items-center gap-1" title="本应用已支持离线免网运行">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 离线就绪
+        </span>
         <!-- 角色姓名与性别 -->
         <span id="display-player-badge" class="hidden text-[11px] md:text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium inline-flex items-center gap-1.5">
           <span id="bar-avatar-crest" class="w-4 h-4 inline-flex items-center justify-center shrink-0"></span>
@@ -201,8 +205,8 @@
         <button id="btn-ambient" onclick="toggleAmbientAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition" title="开启/关闭禅意白噪音与环境声景">
           🌧️ 意境: 关
         </button>
-        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition">
-          🔊 音效: 开
+        <button id="btn-audio" onclick="toggleAudio()" class="text-zinc-400 hover:text-amber-300 text-xs px-2 py-1 rounded-md border border-zinc-700 hover:border-amber-400/50 transition" title="调节主音量 (100% / 50% / 静音)">
+          🔊 100%
         </button>
       </div>
     </div>
@@ -580,11 +584,19 @@
         </div>
 
         <!-- 详细生平小说纪传 -->
-        <div class="mb-6">
-          <h3 class="text-sm md:text-base font-bold text-amber-200 tracking-wide mb-2.5 flex items-center">
-            <span class="w-1.5 h-3.5 bg-amber-500 mr-2 rounded-full inline-block"></span>
-            生平纪传 · 时代的回响（长卷全纪）
-          </h3>
+        <div class="mb-6 font-sans-sc">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <h3 class="text-sm md:text-base font-bold text-amber-200 tracking-wide flex items-center font-serif">
+              <span class="w-1.5 h-3.5 bg-amber-500 mr-2 rounded-full inline-block"></span>
+              生平纪传 · 时代的回响（长卷全纪）
+            </h3>
+            <div class="flex items-center gap-1 text-[11px]" id="chronicle-filter-bar">
+              <button onclick="filterChronicle('all')" data-filter="all" class="chronicle-filter-btn px-2.5 py-1 rounded-md bg-amber-600 text-zinc-950 font-bold transition">全部时序</button>
+              <button onclick="filterChronicle('key')" data-filter="key" class="chronicle-filter-btn px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition">关键分水岭</button>
+              <button onclick="filterChronicle('success')" data-filter="success" class="chronicle-filter-btn px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition">顺遂高光</button>
+              <button onclick="filterChronicle('failure')" data-filter="failure" class="chronicle-filter-btn px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition">挫折磨砺</button>
+            </div>
+          </div>
           <div id="end-biography" class="text-zinc-300 text-xs md:text-sm leading-relaxed md:leading-loose whitespace-pre-line bg-zinc-900/40 p-4 md:p-6 rounded-lg border border-zinc-800/60 font-serif">
             正在生成个人纪传...
           </div>
@@ -869,6 +881,7 @@
   <script>
     // --- 离线 Web Audio 音效引擎 ---
     let audioCtx = null;
+    let audioVolumeLevel = 1.0;
     let audioEnabled = true;
 
     function initAudio() {
@@ -878,7 +891,7 @@
     }
 
     function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.08) {
-      if (!audioEnabled) return;
+      if (audioVolumeLevel <= 0.01) return;
       try {
         initAudio();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -886,7 +899,8 @@
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        const effectiveGain = gainVal * audioVolumeLevel;
+        gain.gain.setValueAtTime(effectiveGain, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -921,8 +935,23 @@
       setTimeout(() => playTone(329.63, 'sine', 1.0, 0.08), 400);
     }
     function toggleAudio() {
-      audioEnabled = !audioEnabled;
-      document.getElementById('btn-audio').innerText = audioEnabled ? '🔊 音效: 开' : '🔇 音效: 关';
+      if (audioVolumeLevel >= 0.9) {
+        audioVolumeLevel = 0.5;
+        audioEnabled = true;
+      } else if (audioVolumeLevel >= 0.4) {
+        audioVolumeLevel = 0.0;
+        audioEnabled = false;
+      } else {
+        audioVolumeLevel = 1.0;
+        audioEnabled = true;
+      }
+      const btn = document.getElementById('btn-audio');
+      if (btn) {
+        if (audioVolumeLevel >= 0.9) btn.innerText = '🔊 100%';
+        else if (audioVolumeLevel >= 0.4) btn.innerText = '🔉 50%';
+        else btn.innerText = '🔇 静音';
+      }
+      soundClick();
     }
 
     // --- 禅意白噪音与环境意境声景合成器 (纯 Web Audio，零外部资源依赖) ---
@@ -4939,9 +4968,28 @@
       return text;
     }
 
-        function generateVividBiography() {
+    let currentChronicleFilter = 'all';
+
+    function filterChronicle(type) {
+      soundClick();
+      currentChronicleFilter = type;
+      const buttons = document.querySelectorAll('#chronicle-filter-bar button');
+      if (buttons && buttons.forEach) {
+        buttons.forEach(btn => {
+          btn.className = "chronicle-filter-btn px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition";
+        });
+      }
+      const activeBtn = document.querySelector(`#chronicle-filter-bar button[data-filter="${type}"]`);
+      if (activeBtn) {
+        activeBtn.className = "chronicle-filter-btn px-2.5 py-1 rounded-md bg-amber-600 text-zinc-950 font-bold transition";
+      }
+      generateVividBiography(type);
+    }
+
+    function generateVividBiography(filterType = 'all') {
       const p = player;
       const container = document.getElementById('end-biography');
+      if (!container) return;
       container.innerHTML = '';
 
       // 顶部人生轨迹与终身位阶总结条
@@ -4982,7 +5030,14 @@
       ];
 
       stages.forEach(st => {
-        const records = p.history.filter(h => h.age >= st.minAge && h.age <= st.maxAge);
+        let records = p.history.filter(h => h.age >= st.minAge && h.age <= st.maxAge);
+        if (filterType === 'key') {
+          records = records.filter(h => h.isKey);
+        } else if (filterType === 'success') {
+          records = records.filter(h => h.isSuccess);
+        } else if (filterType === 'failure') {
+          records = records.filter(h => !h.isSuccess);
+        }
         if (records.length === 0) return;
 
         const startRec = records[0];
@@ -4990,12 +5045,12 @@
         const eraInfo = resolveEraDetails(startRec.year, p.epochMode);
 
         const card = document.createElement('div');
-        card.className = "p-4 bg-zinc-900/60 rounded-xl border border-zinc-800/80 hover:border-amber-600/40 transition";
+        card.className = "p-4 bg-zinc-900/60 rounded-xl border border-zinc-800/80 hover:border-amber-600/40 transition mb-3";
 
         let recordsHTML = records.map(r => `
           <div class="text-xs leading-relaxed space-y-1 bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-800/60">
             <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400">
-              <span class="text-amber-300 font-bold">${r.year} 年 (${r.age} 岁) · ${r.title}</span>
+              <span class="text-amber-300 font-bold">${r.year} 年 (${r.age} 岁) · ${r.title} ${r.isKey ? '<span class="text-amber-400 font-bold">[分水岭]</span>' : ''}</span>
               <span class="${r.isSuccess ? 'text-emerald-400' : 'text-rose-400'}">${r.isSuccess ? '★ 顺遂' : '✕ 坎坷'}</span>
             </div>
             <div class="text-zinc-300 font-medium pl-1 border-l-2 border-amber-500/50">
@@ -5024,6 +5079,13 @@
         `;
         container.appendChild(card);
       });
+
+      if (container.children.length <= (p.activeSaga ? 2 : 1)) {
+        const emptyTip = document.createElement('div');
+        emptyTip.className = "text-center py-8 text-zinc-500 text-xs italic font-serif";
+        emptyTip.innerText = "当前筛选类别下未见对应记录。";
+        container.appendChild(emptyTip);
+      }
     }
 
 function renderKeyTurningPoints() {
