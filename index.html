@@ -151,7 +151,10 @@
       <div class="flex items-center space-x-2">
         <span class="text-lg md:text-xl font-bold tracking-widest text-amber-200/90 font-serif">浮生录</span>
         <!-- 角色姓名与性别 -->
-        <span id="display-player-badge" class="hidden text-[11px] md:text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium"></span>
+        <span id="display-player-badge" class="hidden text-[11px] md:text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium inline-flex items-center gap-1.5">
+          <span id="bar-avatar-crest" class="w-4 h-4 inline-flex items-center justify-center shrink-0"></span>
+          <span id="bar-player-name"></span>
+        </span>
         <!-- 时代与年份标识 -->
         <span id="display-era-badge" class="hidden text-[11px] md:text-xs px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/60 era-pulse font-mono truncate max-w-[150px] md:max-w-none">
           1985 · 浪潮初起
@@ -278,23 +281,27 @@
           </div>
 
           <!-- 投胎预览数据 -->
-          <div class="space-y-3 text-xs md:text-sm">
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">出生年份与时代：</span>
-              <span id="init-era-text" class="font-bold text-amber-200">1982年 · 改革开放初潮</span>
+          <div class="flex items-center gap-3.5 pb-1">
+            <div id="init-avatar-crest" class="w-16 h-16 shrink-0 rounded-full bg-zinc-950/80 p-1 border border-zinc-700/80 shadow-inner flex items-center justify-center"></div>
+            <div class="space-y-1.5 flex-grow text-xs md:text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-zinc-400">出生年份与时代：</span>
+                <span id="init-era-text" class="font-bold text-amber-200">1982年 · 改革开放初潮</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-zinc-400">先天性别设定：</span>
+                <span id="init-gender-text" class="font-bold text-amber-300">女 ♀</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-zinc-400">降生家庭背景：</span>
+                <span id="init-origin-text" class="font-bold text-zinc-200">三线工业国企职工家庭</span>
+              </div>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">先天性别设定：</span>
-              <span id="init-gender-text" class="font-bold text-amber-300">女 ♀</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-zinc-400">降生家庭背景：</span>
-              <span id="init-origin-text" class="font-bold text-zinc-200">三线工业国企职工家庭</span>
-            </div>
-            <div class="flex items-start justify-between">
-              <span class="text-zinc-400 flex-shrink-0">家庭底色机缘：</span>
-              <span id="init-desc-text" class="text-right text-zinc-300 text-xs ml-4">父母手捧铁饭碗，家属大院邻里相濡以沫，但隐隐面临未知的重组大潮。</span>
-            </div>
+          </div>
+          <div class="flex items-start justify-between text-xs mb-3">
+            <span class="text-zinc-400 flex-shrink-0">家庭底色机缘：</span>
+            <span id="init-desc-text" class="text-right text-zinc-300 text-xs ml-4">父母手捧铁饭碗，家属大院邻里相濡以沫，但隐隐面临未知的重组大潮。</span>
+          </div>
 
             <!-- 初始天赋属性条 -->
             <div class="border-t border-zinc-800/80 pt-3">
@@ -452,7 +459,8 @@
         
         <!-- 顶部称号与享年 -->
         <div class="text-center mb-6 border-b border-zinc-800 pb-5">
-          <div class="text-xs uppercase tracking-widest text-amber-500/80 font-mono mb-1">EPITAPH & ERA CHRONICLE</div>
+          <div class="text-xs uppercase tracking-widest text-amber-500/80 font-mono mb-2">EPITAPH & ERA CHRONICLE</div>
+          <div id="end-avatar-crest" class="w-16 h-16 mx-auto mb-2 flex items-center justify-center"></div>
           <h1 class="text-2xl md:text-4xl font-black text-amber-100 font-serif tracking-wider mb-2">
             <span id="end-player-name">某某</span> 的一生长卷
           </h1>
@@ -756,6 +764,40 @@
         <button onclick="nextFlashbackSlide()" class="px-3.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
           下一回眸 ▶
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 千古风流 · 时代风云人物际会 弹窗模态框 -->
+  <div id="modal-luminary" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/85 backdrop-blur-md animate-fade-in font-sans-sc">
+    <div class="bg-gradient-to-b from-[#1c1d2b] via-[#141620] to-[#0d0e14] border-2 border-amber-500/80 rounded-2xl w-full max-w-xl shadow-2xl p-6 md:p-8 space-y-4 relative overflow-hidden">
+      <!-- 祥云/光辉背景特效 -->
+      <div class="absolute -top-16 -right-16 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="text-center border-b border-amber-600/30 pb-3">
+        <div class="text-[10px] tracking-widest text-amber-400 font-mono uppercase">LUMINARY ENCOUNTER · 时代先贤际会</div>
+        <div id="luminary-epoch-badge" class="inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-600/40 my-1">
+          --
+        </div>
+        <h3 id="luminary-name-title" class="text-2xl md:text-3xl font-black text-amber-100 font-serif tracking-wider">
+          --
+        </h3>
+      </div>
+
+      <div class="space-y-3 font-serif">
+        <p id="luminary-desc" class="text-zinc-300 text-xs md:text-sm leading-relaxed text-justify bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-800/60">
+          --
+        </p>
+        <blockquote id="luminary-quote" class="text-amber-200/90 text-xs md:text-sm italic px-4 py-2 border-l-2 border-amber-500/60 bg-amber-950/20 rounded-r">
+          “--”
+        </blockquote>
+      </div>
+
+      <div class="pt-2">
+        <div class="text-xs text-zinc-400 font-sans-sc mb-2 font-bold">请选择你的对答与志向：</div>
+        <div id="luminary-choices-container" class="space-y-2.5">
+          <!-- 动态注入先贤对答选项 -->
+        </div>
       </div>
     </div>
   </div>
@@ -1522,6 +1564,39 @@
       return { total, reasons };
     }
 
+    // ==================== 天命剪影纹章 (Avatar Crest) 生成器 ====================
+    function generateAvatarCrestSVG(epochId, gender, careerTrack, rank, size = 64) {
+      const tones = {
+        ancient: { stroke: "#d4af37", fill: "#78350f", glow: "#fef08a" },
+        premodern: { stroke: "#10b981", fill: "#064e3b", glow: "#a7f3d0" },
+        modern: { stroke: "#f43f5e", fill: "#881337", glow: "#fecdd3" },
+        contemporary: { stroke: "#38bdf8", fill: "#0c4a6e", glow: "#bae6fd" },
+        future: { stroke: "#a855f7", fill: "#581c87", glow: "#e9d5ff" }
+      };
+      const t = tones[epochId] || tones.contemporary;
+      const isLeader = (rank === "时代领军巨擘");
+      const isHigh = (rank === "德高望重栋梁" || isLeader);
+
+      const trackIcons = {
+        "体制政务": '<path d="M32 14 L44 26 L20 26 Z M23 26 L23 42 L41 42 L41 26 Z M32 30 L32 38" fill="none" stroke="' + t.glow + '" stroke-width="2.5" stroke-linecap="round"/>',
+        "商海实业": '<circle cx="32" cy="30" r="11" fill="none" stroke="' + t.glow + '" stroke-width="2.5"/><rect x="28" y="26" width="8" height="8" fill="none" stroke="' + t.glow + '" stroke-width="2"/><path d="M32 15 L32 19 M32 41 L32 45" stroke="' + t.glow + '" stroke-width="2"/>',
+        "学术科技": '<ellipse cx="32" cy="30" rx="14" ry="5" fill="none" stroke="' + t.glow + '" stroke-width="2" transform="rotate(-30 32 30)"/><ellipse cx="32" cy="30" rx="14" ry="5" fill="none" stroke="' + t.glow + '" stroke-width="2" transform="rotate(30 32 30)"/><circle cx="32" cy="30" r="3.5" fill="' + t.glow + '"/>',
+        "文艺江湖": '<path d="M22 42 L38 18 M38 18 L43 23 M38 18 L34 16 M20 40 L16 44 M20 44 L16 40" stroke="' + t.glow + '" stroke-width="2.5" stroke-linecap="round"/>',
+        "守拙布衣": '<path d="M32 44 C32 32 20 26 20 20 C24 20 28 24 32 30 C36 24 40 20 44 20 C44 26 32 32 32 44 Z" fill="' + t.glow + '" opacity="0.9"/>'
+      };
+      const iconSvg = trackIcons[careerTrack] || trackIcons["守拙布衣"];
+      const genderColor = gender === "female" ? "#fda4af" : "#93c5fd";
+      const genderGlyph = gender === "female" ? "♀" : "♂";
+
+      return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="30" fill="${t.fill}" stroke="${t.stroke}" stroke-width="${isHigh ? '3' : '2'}"/>
+        ${isLeader ? `<circle cx="32" cy="32" r="26" fill="none" stroke="${t.glow}" stroke-width="1" stroke-dasharray="3 3"/>` : ''}
+        ${iconSvg}
+        <circle cx="48" cy="48" r="8" fill="#18181b" stroke="${genderColor}" stroke-width="1.5"/>
+        <text x="48" y="52" font-size="10" font-family="sans-serif" font-weight="bold" fill="${genderColor}" text-anchor="middle">${genderGlyph}</text>
+      </svg>`;
+    }
+
     function generateRandomDestiny() {
       const cfg = getEpochConfig(selectedEpochMode);
 
@@ -1580,6 +1655,11 @@
       if (genderEl) {
         genderEl.innerText = currentDestinyDraft.gender === "female" ? "女 ♀" : "男 ♂";
         genderEl.className = currentDestinyDraft.gender === "female" ? "font-bold text-rose-300 font-serif" : "font-bold text-sky-300 font-serif";
+      }
+
+      const crestEl = document.getElementById('init-avatar-crest');
+      if (crestEl) {
+        crestEl.innerHTML = generateAvatarCrestSVG(currentDestinyDraft.epochMode, currentDestinyDraft.gender, "守拙布衣", "风雨布衣", 56);
       }
 
       document.getElementById('init-origin-text').innerText = currentDestinyDraft.origin.title;
@@ -3828,6 +3908,7 @@
       player.values = { righteousness: 0, duty: 0 };
       player.mindset = "兼济天下 · 铁肩义士";
       player.activeSaga = null;
+      player.hasMetLuminary = false;
 
       // 决定剧本池（包含女性专属事件动态注入）
       activeEpochEvents = assembleDynamicSessionEvents(player.birthYear, player.gender);
@@ -3842,7 +3923,7 @@
 
       const pBadge = document.getElementById('display-player-badge');
       if (pBadge) {
-        pBadge.innerText = `${player.name} (${player.gender === 'female' ? '女 ♀' : '男 ♂'})`;
+        pBadge.innerHTML = `<span id="bar-avatar-crest" class="w-4 h-4 inline-flex items-center justify-center shrink-0">${generateAvatarCrestSVG(player.epochMode, player.gender, player.careerTrack, player.socialRank, 18)}</span><span id="bar-player-name">${player.name} (${player.gender === 'female' ? '女 ♀' : '男 ♂'})</span>`;
         pBadge.classList.remove('hidden');
       }
 
@@ -3969,6 +4050,11 @@
         updateUIStats();
       } else {
         randomBox.classList.add('hidden');
+      }
+
+      // --- 时代先贤风云际会机制 (每世至多一次，适龄16-70岁，匹配当前年份) ---
+      if (!player.hasMetLuminary && age >= 16 && age <= 70) {
+        checkAndTriggerLuminary(year, currEra);
       }
 
       // 动态生成本关选项（数量随机 2 ~ 4 项，融入先天特质、至亲伴侣与时代权衡）
@@ -4363,6 +4449,10 @@
 
       const endYear = player.birthYear + player.age;
       document.getElementById('end-player-name').innerText = player.name;
+      const endCrest = document.getElementById('end-avatar-crest');
+      if (endCrest) {
+        endCrest.innerHTML = generateAvatarCrestSVG(player.epochMode, player.gender, player.careerTrack, player.socialRank, 64);
+      }
       document.getElementById('end-lifespan').innerText =
         `${player.name} (${player.gender === 'female' ? '女 ♀' : '男 ♂'}) · ${formatYearMonth(player.birthYear, player.birthMonth)} - ${formatYearOnly(endYear)} · 享年 ${player.age} 岁 · ${deathReason}`;
 
@@ -5178,6 +5268,18 @@ function renderKeyTurningPoints() {
       ctx.moveTo(120, 190);
       ctx.lineTo(630, 190);
       ctx.stroke();
+
+      // Heraldic Crest Emblem Badge
+      ctx.beginPath();
+      ctx.arc(375, 204, 15, 0, Math.PI * 2);
+      ctx.fillStyle = isParchment ? 'rgba(146, 64, 14, 0.15)' : 'rgba(212, 175, 55, 0.2)';
+      ctx.fill();
+      ctx.strokeStyle = goldColor;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.font = '14px sans-serif';
+      ctx.fillStyle = subColor;
+      ctx.fillText(p.gender === 'female' ? '♀' : '♂', 375, 209);
 
       // Player Name & Archetype & Epithet
       ctx.font = '900 32px "Noto Serif SC", serif';
@@ -6135,6 +6237,177 @@ function renderKeyTurningPoints() {
       }
     }
 
+    // ==================== 时代先贤风云际会系统 ====================
+    let currentActiveLuminary = null;
+
+    function checkAndTriggerLuminary(year, currEra) {
+      const lums = (typeof LUMINARY_ENCOUNTERS !== 'undefined' && LUMINARY_ENCOUNTERS[currEra]) || [];
+      const matched = lums.find(l => year >= l.yearMin && year <= l.yearMax);
+      if (matched && Math.random() < 0.70) {
+        player.hasMetLuminary = true;
+        setTimeout(() => { triggerLuminaryModal(matched); }, 250);
+      }
+    }
+
+    function triggerLuminaryModal(lum) {
+      currentActiveLuminary = lum;
+      const modal = document.getElementById('modal-luminary');
+      if (!modal) return;
+      soundDice();
+
+      const bEl = document.getElementById('luminary-epoch-badge');
+      if (bEl) bEl.innerText = `${getEpochConfig(player.epochMode).eraIcon} ${lum.title}`;
+
+      const nameEl = document.getElementById('luminary-name-title');
+      if (nameEl) nameEl.innerText = lum.name;
+
+      const descEl = document.getElementById('luminary-desc');
+      if (descEl) descEl.innerText = lum.desc;
+
+      const qEl = document.getElementById('luminary-quote');
+      if (qEl) qEl.innerText = lum.quote;
+
+      const container = document.getElementById('luminary-choices-container');
+      if (container) {
+        container.innerHTML = lum.choices.map((c, idx) => `
+          <button onclick="handleLuminaryChoice(${idx})" class="w-full text-left p-3.5 rounded-xl bg-zinc-900/90 border border-amber-600/50 hover:bg-zinc-800 hover:border-amber-400 text-xs md:text-sm text-zinc-200 transition font-sans-sc group shadow-md flex items-start space-x-2">
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-zinc-800 text-amber-300 text-xs font-mono font-bold group-hover:bg-amber-500 group-hover:text-zinc-950 shrink-0 mt-0.5">${idx + 1}</span>
+            <span class="group-hover:text-amber-200">${c.text}</span>
+          </button>
+        `).join('');
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function handleLuminaryChoice(idx) {
+      if (!currentActiveLuminary || !currentActiveLuminary.choices || !currentActiveLuminary.choices[idx]) return;
+      const c = currentActiveLuminary.choices[idx];
+      soundDecision(player.epochMode);
+
+      const eff = c.effect || {};
+      player.health = Math.max(10, Math.min(100, player.health + (eff.health || 0)));
+      player.wealth = parseFloat((player.wealth + (eff.wealth || 0)).toFixed(1));
+      player.intellect = Math.max(10, Math.min(100, player.intellect + (eff.intellect || 0)));
+      player.happiness = Math.max(10, Math.min(100, player.happiness + (eff.happiness || 0)));
+      player.luck = Math.max(10, Math.min(100, player.luck + (eff.luck || 0)));
+      player.reputation = Math.max(10, Math.min(100, player.reputation + (eff.rep || 0)));
+
+      if (c.tag && !player.tags.includes(c.tag)) {
+        player.tags.push(c.tag);
+      }
+
+      player.history.push({
+        age: player.age,
+        year: player.birthYear + player.age,
+        title: `先贤际会 · ${currentActiveLuminary.name}`,
+        choiceText: c.text,
+        otherChoiceText: currentActiveLuminary.choices[1 - idx] ? currentActiveLuminary.choices[1 - idx].text : "",
+        isSuccess: true,
+        roll: 100,
+        successChance: 100,
+        fateNote: "千古因缘",
+        feedback: c.feedback,
+        isKey: true
+      });
+
+      closeLuminaryModal();
+      updateHistoryUI();
+      updateUIStats(eff);
+      saveActiveGame();
+    }
+
+    function closeLuminaryModal() {
+      const modal = document.getElementById('modal-luminary');
+      if (modal) modal.classList.add('hidden');
+      currentActiveLuminary = null;
+    }
+
+    // ==================== 全局键盘操作与无障碍快捷键系统 ====================
+    function setupKeyboardShortcuts() {
+      if (typeof window === 'undefined') return;
+      window.addEventListener('keydown', (e) => {
+        // 如果正在输入名字，不拦截常规按键（Enter可直接开局）
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+          if (e.key === 'Enter' && e.target.id === 'input-name') {
+            startGame();
+          }
+          return;
+        }
+
+        // Escape: 关闭任何处于打开状态的模态框
+        if (e.key === 'Escape') {
+          closeLuminaryModal();
+          closeHallOfFame();
+          closeLifePoster();
+          closeLifeFlashback();
+          return;
+        }
+
+        // 先贤际会弹窗打开时的 1, 2 选择
+        const lumModal = document.getElementById('modal-luminary');
+        if (lumModal && !lumModal.classList.contains('hidden')) {
+          if (e.key === '1' || e.key === '2') {
+            const btns = document.querySelectorAll('#luminary-choices-container button');
+            const idx = parseInt(e.key, 10) - 1;
+            if (btns[idx]) btns[idx].click();
+          }
+          return;
+        }
+
+        // 其他模态框打开时静默拦截，避免误触后台选项
+        const hofModal = document.getElementById('modal-hall-of-fame');
+        const posterModal = document.getElementById('modal-life-poster');
+        const flashbackModal = document.getElementById('modal-life-flashback');
+        if ((hofModal && !hofModal.classList.contains('hidden')) ||
+            (posterModal && !posterModal.classList.contains('hidden')) ||
+            (flashbackModal && !flashbackModal.classList.contains('hidden'))) {
+          return;
+        }
+
+        const key = e.key.toLowerCase();
+        const introScreen = document.getElementById('screen-intro');
+        const gameScreen = document.getElementById('screen-game');
+        const endingScreen = document.getElementById('screen-ending');
+
+        // 开局界面快捷键
+        if (introScreen && !introScreen.classList.contains('hidden')) {
+          if (key === 'r') rollNewDestiny();
+          else if (key === ' ' || key === 'enter') startGame();
+        }
+        // 游戏交互界面快捷键 (1, 2, 3, 4 或 Space/Enter)
+        else if (gameScreen && !gameScreen.classList.contains('hidden')) {
+          const nextBtn = document.querySelector('#choices-container button[onclick="nextEvent()"]');
+          if (nextBtn) {
+            if (key === ' ' || key === 'enter') {
+              e.preventDefault();
+              nextEvent();
+            }
+            return;
+          }
+          if (['1', '2', '3', '4'].includes(key)) {
+            const idx = parseInt(key, 10) - 1;
+            const choiceBtns = document.querySelectorAll('#choices-container button.choice-card');
+            if (choiceBtns[idx]) {
+              e.preventDefault();
+              choiceBtns[idx].click();
+            }
+          }
+        }
+        // 终局结算界面快捷键
+        else if (endingScreen && !endingScreen.classList.contains('hidden')) {
+          if (key === ' ' || key === 'enter') restartGame();
+          else if (key === 'p') openLifePoster();
+          else if (key === 'f') openLifeFlashback();
+        }
+
+        // 全局通用功能快捷键
+        if (key === 'm') toggleAudio();
+        else if (key === 't') cycleTheme();
+        else if (key === 'h') openHallOfFame();
+      });
+    }
+
     // ==================== 视觉美学主题切换 (墨金 / 宣纸 / 幽蓝) ====================
     const THEMES = [
       { id: "ink", label: "墨金", className: "" },
@@ -6206,6 +6479,7 @@ function renderKeyTurningPoints() {
     updateAchievementBadge();
     checkResumeAvailable();
     renderKarmaAndBlessings();
+    setupKeyboardShortcuts();
 
     // 注册 PWA Service Worker (支持手机离线安装与全屏独立运行)
     if ('serviceWorker' in navigator) {

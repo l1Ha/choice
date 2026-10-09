@@ -86,6 +86,7 @@ class Player:
         self.values = {"righteousness": 0, "duty": 0}
         self.mindset = "兼济天下 · 铁肩义士"
         self.active_saga = None
+        self.has_met_luminary = False
 
     def show_dashboard(self, stage_idx, total_stages):
         clear_screen()
@@ -906,6 +907,55 @@ def main():
     run_game_loop(player, 1, total_stages, timeline)
 
 
+def trigger_terminal_luminary(player, lum, curr_year):
+    print(f"\n{Color.PURPLE}{'='*68}{Color.RESET}")
+    print(f"{Color.BOLD}{Color.GOLD}    🌌  千 古 风 流  ·  时 代 先 贤 际 会{Color.RESET}")
+    print(f"{Color.PURPLE}{'='*68}{Color.RESET}")
+    print(f" {Color.YELLOW}【{lum['title']}】 {Color.BOLD}{lum['name']}{Color.RESET}")
+    print(f" {Color.WHITE}{lum['desc']}{Color.RESET}")
+    print(f" {Color.CYAN}“{lum['quote']}”{Color.RESET}\n")
+
+    print(f"{Color.GOLD}请选择你的对答与志向：{Color.RESET}")
+    for idx, c in enumerate(lum["choices"], 1):
+        print(f"  {idx}. {c['text']}")
+
+    while True:
+        c_in = input(f"\n{Color.GOLD}请选择 [1-{len(lum['choices'])}]: {Color.RESET}").strip()
+        if c_in.isdigit() and 1 <= int(c_in) <= len(lum["choices"]):
+            c_idx = int(c_in) - 1
+            break
+        print(f"{Color.RED}输入无效，请重新选择。{Color.RESET}")
+
+    chosen = lum["choices"][c_idx]
+    eff = chosen.get("effect", {})
+    player.health = max(10, min(100, player.health + eff.get("health", 0)))
+    player.wealth = round(player.wealth + eff.get("wealth", 0), 1)
+    player.intellect = max(10, min(100, player.intellect + eff.get("intellect", 0)))
+    player.happiness = max(10, min(100, player.happiness + eff.get("happiness", 0)))
+    player.luck = max(10, min(100, player.luck + eff.get("luck", 0)))
+    player.reputation = max(10, min(100, player.reputation + eff.get("rep", 0)))
+
+    tag = chosen.get("tag")
+    if tag and tag not in player.tags:
+        player.tags.append(tag)
+
+    print(f"\n{Color.GREEN}先贤回响：{Color.RESET}{chosen['feedback']}\n")
+    other_text = lum["choices"][1 - c_idx]["text"] if len(lum["choices"]) > 1 else ""
+    player.history.append({
+        "year": curr_year,
+        "age": player.age,
+        "title": f"先贤际会 · {lum['name']}",
+        "choice_text": chosen["text"],
+        "other_choice": other_text,
+        "is_success": True,
+        "roll": 100,
+        "chance": 100,
+        "feedback": chosen["feedback"],
+        "is_key": True,
+    })
+    input(f"{Color.GRAY}按回车继续岁月历程...{Color.RESET}")
+
+
 def run_game_loop(player, start_stage, total_stages, timeline):
     # 游戏主轮次
     for idx_stage in range(start_stage, total_stages + 1):
@@ -943,6 +993,14 @@ def run_game_loop(player, start_stage, total_stages, timeline):
             player.luck = max(10, min(100, player.luck + eff.get("luck", 0)))
             player.random_events.append((curr_year, player.age, re["title"]))
             time.sleep(0.05)
+
+        # 时代先贤风云际会 (每世至多触发一次)
+        if not getattr(player, "has_met_luminary", False) and 16 <= player.age <= 70:
+            lums = LUMINARY_ENCOUNTERS.get(era_id, [])
+            matched = next((l for l in lums if l["year_min"] <= curr_year <= l["year_max"]), None)
+            if matched and random.random() < 0.65:
+                player.has_met_luminary = True
+                trigger_terminal_luminary(player, matched, curr_year)
 
         print(f"{Color.BOLD}{Color.YELLOW}【{curr_year}年 · {stage['title']}】{Color.RESET}")
         print(f"{Color.WHITE}{stage['narrative']}{Color.RESET}\n")

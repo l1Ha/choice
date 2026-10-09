@@ -503,3 +503,65 @@ def build_random_events_py():
         L.append("    ],")
     L.append("}")
     return "\n".join(L)
+
+
+def build_luminaries_js():
+    import civ_luminaries as LM
+    L = []
+    L.append("    // ==================== 千古风流 · 时代风云人物际会库 ====================")
+    L.append("    const LUMINARY_ENCOUNTERS = {")
+    for eid, lums in LM.LUMINARY_ENCOUNTERS.items():
+        L.append("      %s: [" % C.js_str(eid))
+        for lum in lums:
+            choices_js = []
+            for c in lum["choices"]:
+                eff_parts = ["%s: %s" % (k, "%g" % v) for k, v in c["effect"].items()]
+                eff_str = "{ " + ", ".join(eff_parts) + " }"
+                choices_js.append(
+                    "          { text: %s, feedback: %s, effect: %s, tag: %s }"
+                    % (C.js_str(c["text"]), C.js_str(c["feedback"]), eff_str, C.js_str(c["tag"]))
+                )
+            L.append("        {")
+            L.append("          id: %s," % C.js_str(lum["id"]))
+            L.append("          name: %s," % C.js_str(lum["name"]))
+            L.append("          title: %s," % C.js_str(lum["title"]))
+            L.append("          yearMin: %d," % lum["year_min"])
+            L.append("          yearMax: %d," % lum["year_max"])
+            L.append("          desc: %s," % C.js_str(lum["desc"]))
+            L.append("          quote: %s," % C.js_str(lum["quote"]))
+            L.append("          choices: [\n%s\n          ]" % ",\n".join(choices_js))
+            L.append("        },")
+        L.append("      ],")
+    L.append("    };")
+    return "\n".join(L)
+
+
+def build_luminaries_py():
+    import civ_luminaries as LM
+    L = []
+    L.append("# ==================== 千古风流 · 时代风云人物际会库 ====================")
+    L.append("LUMINARY_ENCOUNTERS = {")
+    for eid, lums in LM.LUMINARY_ENCOUNTERS.items():
+        L.append("    %s: [" % C.py_str(eid))
+        for lum in lums:
+            choices_py = []
+            for c in lum["choices"]:
+                eff_parts = ['"%s": %s' % (k, "%g" % v) for k, v in c["effect"].items()]
+                eff_str = "{" + ", ".join(eff_parts) + "}"
+                choices_py.append(
+                    '            {"text": %s, "feedback": %s, "effect": %s, "tag": %s}'
+                    % (C.py_str(c["text"]), C.py_str(c["feedback"]), eff_str, C.py_str(c["tag"]))
+                )
+            L.append("        {")
+            L.append('            "id": %s,' % C.py_str(lum["id"]))
+            L.append('            "name": %s,' % C.py_str(lum["name"]))
+            L.append('            "title": %s,' % C.py_str(lum["title"]))
+            L.append('            "year_min": %d,' % lum["year_min"])
+            L.append('            "year_max": %d,' % lum["year_max"])
+            L.append('            "desc": %s,' % C.py_str(lum["desc"]))
+            L.append('            "quote": %s,' % C.py_str(lum["quote"]))
+            L.append('            "choices": [\n%s\n            ],' % ",\n".join(choices_py))
+            L.append("        },")
+        L.append("    ],")
+    L.append("}")
+    return "\n".join(L)
